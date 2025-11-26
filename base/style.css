@@ -1,0 +1,903 @@
+/* ====================
+   [신규 추가] 스마트 헤더 스타일
+   ==================== */
+/* 헤더 기본 설정 (Fixed) */
+.site-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: #fff;
+    border-bottom: 1px solid #000; /* 이미지처럼 테두리 */
+    z-index: 9999;
+    transition: transform 0.3s ease-in-out; /* 부드러운 이동 애니메이션 */
+}
+
+/* 스크롤 내릴 때 헤더 숨김 클래스 */
+.site-header.hide {
+    transform: translateY(-100%);
+}
+
+/* 헤더 내부 레이아웃 */
+.header-inner {
+    max-width: 1300px; /* 기존 컨테이너 너비에 맞춤 (조절 가능) */
+    margin: 0 auto;
+    height: 80px; /* 헤더 높이 */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+}
+
+/* 왼쪽 로고 스타일 (이미지 로고용) */
+.logo-area {
+    flex-shrink: 0;
+    display: flex; /* 로고 이미지를 수직 중앙 정렬하기 위함 */
+    align-items: center; /* 이미지 수직 중앙 정렬 */
+    height: 100%; /* .header-inner의 높이만큼 차지 */
+}
+
+.logo-link {
+    display: block; /* 이미지 링크는 블록으로 */
+    height: 50px; /* 로고 이미지의 최대 높이 (조절 가능) */
+}
+
+.logo-link img {
+    height: 100%; /* 부모 링크 높이에 맞춤 */
+    width: auto; /* 비율 유지 */
+    display: block;
+}
+
+/* 오른쪽 영역 (메뉴 + 햄버거) */
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 30px; /* 메뉴와 햄버거 사이 간격 */
+}
+
+/* PC 메뉴 스타일 */
+.gnb-pc {
+    display: flex;
+    gap: 30px; /* 메뉴 간 간격 */
+}
+
+.gnb-pc a {
+    text-decoration: none;
+    color: #333;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.5px;
+    transition: color 0.3s;
+}
+
+
+	#LIM_quick{position:fixed; top:20%; right:15px;  z-index:10; text-align:center; }
+	#LIM_quick dd{border-bottom:0.1px solid #dddddd;}
+	#LIM_quick dd + dd{border-top:0}
+	#LIM_quick img{max-width:120px; max-height:120px;}
+
+
+.gnb-pc a:hover {
+    color: #c5a47e; /* 호버 시 브랜드 컬러 */
+}
+
+/* 햄버거 아이콘 스타일 */
+.hamburger-menu {
+    width: 24px;
+    height: 18px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    cursor: pointer;
+}
+
+.hamburger-menu span {
+    display: block;
+    width: 100%;
+    height: 3px;
+    background-color: #333;
+    border-radius: 2px;
+}
+
+/* 반응형 처리 (모바일에서는 글자 메뉴 숨김) */
+@media (max-width: 768px) {
+    .gnb-pc {
+        display: none; /* 모바일에서는 텍스트 메뉴 숨김 */
+    }
+    .header-inner {
+        height: 60px; /* 모바일 헤더 높이 축소 */
+    }
+    /* 모바일에서 로고 이미지 크기 조절 */
+    .logo-link {
+        height: 40px; /* 모바일에서 로고 높이 조정 */
+    }
+}
+
+/* [중요] 헤더가 고정되면서 본문이 가려지는 것을 방지하기 위해 body에 여백 추가 */
+body {
+    padding-top: 80px; /* 헤더 높이만큼 띄워줌 */
+}
+
+/* [PC 설정] 정확히 3장 노출 */
+@media (min-width: 769px) {
+    .slide-item { 
+        flex: 0 0 33.3333%; 
+        padding: 10px;
+    }
+}
+
+/* [모바일 설정: 768px 이하] 1장 + 양옆 여백 (60% 너비) */
+/* 중요: 이 설정이 가장 아래에 있어야 적용됩니다 */
+@media (max-width: 768px) {
+    .slide-item { 
+        /* 너비를 60%로 설정 -> 좌우에 20%씩 여백이 생겨 이전/다음 사진이 보임 */
+        flex: 0 0 60%; 
+        padding: 5px; 
+    }
+}
+
+/* [모바일 설정: 768px 이하] */
+@media (max-width: 768px) {
+    /* 스마일 아이콘 위치 조정 */
+    .big-smile {
+        font-size: 8rem;
+        font-weight: 100;
+        color: #eee;
+        line-height: 1;
+        margin-top: -20px;
+    }
+
+    #LIM_quick{position:fixed;top:auto; left:0; margin-left:0; bottom:0; width:100vw; z-index:10;  }
+	#LIM_quick dl{ display:flex}
+	#LIM_quick dt{ display:none}
+	#LIM_quick dd { width:25%;border:1px solid var(--color-line); border:0.1px solid #cccccc;}
+	#LIM_quick dd img {width:100%; max-width:100%; max-height:100%;}
+ 	#LIM_quick dd + dd{border-left:0;border-top:1px solid var(--color-line); border:0.1px solid #cccccc;}
+
+    /* 서브 슬라이더 컨테이너 위치 */
+    .sub-slider-container {
+        margin-top: -75px;
+        /* 중요: overflow를 visible로 해서 양옆이 보이게 함 */
+        overflow: visible !important; 
+    }
+
+    /* [중요 수정] 트랙 너비를 강제로 늘리지 않고 기본값 유지 */
+    .sub-slider-track {
+        width: 100%; 
+        /* 양옆으로 넘치는 것을 허용 */
+    }
+
+    /* 사진 크기 60% (화면 중앙 차지, 양옆 20%씩 여백) */
+    .slide-item { 
+        /* 중요: flex-basis를 60%로 강제 지정 */
+        flex: 0 0 60% !important; 
+        max-width: 60% !important;
+        padding: 5px; 
+    }
+
+    .badge-signature {
+        align-self: center !important;
+    }
+
+    .feature-text {
+        background-color: rgba(255, 255, 255, 0.95);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+    }
+
+    .main-view {
+        height: 100% !important;
+    }
+    
+    .main-view img {
+        height: 100%;
+        object-fit: cover;
+    }
+}
+
+/* ====================
+   [신규 추가] Footer 스타일 (타겟 디자인 이식)
+   ==================== */
+.footer-section {
+    #width: 100%;
+    #height: 100%;
+    background-color: #c5a47e; /* 타겟 소스의 짙은 회색 배경 */
+    padding: 50px 0;
+    color: #fff;
+    border-top: 1px solid #ddd;
+}
+
+.footer-container {
+    max-width: 1300px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    align-items: center; /* 수직 중앙 정렬 */
+    justify-content: flex-start;
+    flex-wrap: wrap;
+}
+
+/* 로고 영역 */
+.footer-logo {
+    margin-right: 60px;
+}
+
+.footer-logo img {
+    width: 300px; /* 타겟 소스 사이즈 유지 */
+    height: auto;
+    display: block;
+}
+
+/* 정보 텍스트 영역 */
+.footer-info {
+    flex: 1;
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+.footer-info address {
+    font-style: normal;
+    margin-bottom: 15px;
+}
+
+/* 정보 사이의 구분선 (|) 처리 */
+.footer-info span {
+    position: relative;
+    display: inline-block;
+    padding-right: 15px;
+    margin-right: 5px;
+    color: #fff;
+    white-space: nowrap;
+}
+
+/* 첫 번째 요소를 제외하고 왼쪽에 구분선 추가 */
+.footer-info span:not(:first-child)::before {
+    content: "";
+    position: absolute;
+    left: -10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 1px;
+    height: 10px;
+    background-color: #aaa;
+}
+
+/* 줄바꿈용 br 태그 후 첫 번째 span은 구분선 제거 */
+.footer-info br + span::before {
+    display: none;
+}
+
+.footer-copyright {
+    color: #aaa; /* 타겟 소스 느낌 살림 */
+    font-size: 0.9rem;
+}
+
+.footer-copyright b {
+    color: #fff;
+}
+
+/* ====================
+   Footer 반응형 (모바일)
+   ==================== */
+@media (max-width: 768px) {
+    .footer-section {
+        padding: 30px 0;
+        text-align: center;
+    }
+
+    .footer-container {
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .footer-logo {
+        margin-right: 0;
+        margin-bottom: 20px;
+    }
+
+    .footer-logo img {
+        width: 200px; /* 모바일에서는 로고 크기 조정 */
+        margin: 0 auto;
+    }
+
+    .footer-info {
+        width: 100%;
+        font-size: 13px;
+    }
+    
+    .footer-info span {
+        display: inline-block; /* 모바일에서는 줄바꿈 자연스럽게 */
+        padding-right: 5px;
+        margin-right: 0;
+        margin-bottom: 5px;
+        color: #ffffff;
+    }
+
+    /* 모바일에서는 구분선 숨김 */
+    .footer-info span::before,
+    .footer-info span:not(:first-child)::before {
+        display: none;
+    }
+    
+    .footer-info br {
+        display: none; /* 모바일에서 강제 줄바꿈 무시 */
+    }
+    
+    .footer-copyright {
+        margin-top: 15px;
+        font-size: 12px;
+    }
+}
+
+/* ====================
+   기본 스타일 & 변수
+   ==================== */
+:root {
+    --brand-gold: #c5a47e;
+    --brand-bg: #fdfcf8;
+    --brand-dark: #2c3e50;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body { 
+    font-family: 'Noto Sans KR', sans-serif; 
+    line-height: 1.6; 
+    color: #333; 
+    overflow-x: hidden; 
+}
+
+ul, li { list-style: none; }
+
+img { width: 100%; display: block; }
+    
+/* ====================
+   스크롤 애니메이션
+   ==================== */
+.text-animate {
+    opacity: 0;
+    transform: translateY(50px);
+    transition: all 0.8s ease-out;
+}
+
+.text-animate.active {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* ====================
+   헤더 (Main Hero)
+   ==================== */
+.main-hero {
+    width: 100%;
+    height: 600px;
+    position: relative;
+    overflow: hidden;
+    background-color: #000;
+}
+
+.hero-track {
+    display: flex;
+    width: 400%;
+    height: 100%;
+    transition: transform 0.5s ease-in-out;
+}
+
+.hero-slide { width: 25%; height: 100%; position: relative; }
+.hero-slide img { width: 100%; height: 100%; object-fit: cover; }
+
+.hero-text {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    color: #fff; text-align: center; text-shadow: 0 5px 10px rgba(0,0,0,0.5); width: 100%;
+}
+
+.hero-text h1 { font-size: 3rem; margin-bottom: 10px; font-weight: 300; line-height: 1.2; }
+.hero-text h1 span { font-weight: 700; }
+.hero-text h2 {font-size: 1.7rem; margin-bottom: 10px; font-weight: 300; line-height: 1.2; }
+
+.hero-indicators {
+    position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
+    display: flex; gap: 10px; z-index: 10;
+}
+
+.dot {
+    width: 12px; height: 12px; background-color: rgba(255, 255, 255, 0.5);
+    border-radius: 50%; cursor: pointer; transition: background-color 0.3s;
+}
+
+.dot.active { background-color: #fff; transform: scale(1.2); }
+
+/* ====================
+   Intro Section (Middle)
+   ==================== */
+.middle-section {
+    position: relative; 
+    width: 100%;
+    padding: 100px 0;
+    background-color: var(--brand-bg);
+    overflow: hidden;
+}
+
+.bg-watermark {
+    position: absolute; top: 15%; left: 50%; transform: translate(-50%, -50%);
+    font-family: 'Playfair Display', serif;
+    font-size: 150px; font-weight: bold; 
+    color: rgba(0, 0, 0, 0.05);
+    z-index: 0; white-space: nowrap; pointer-events: none; line-height: 1;
+}
+
+.middle-container {
+    max-width: 1300px; margin: 0 auto; padding: 0 20px;
+    display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; 
+    position: relative; z-index: 1;
+}
+
+.intro-text { flex: 1; min-width: 300px; padding-right: 60px; margin-bottom: 30px; position: relative; }
+.intro-sub { font-family: 'Playfair Display', serif; font-size: 1.5rem; color: #999; margin-bottom: 10px; }
+.intro-title { font-family: 'Playfair Display', serif; font-size: 3rem; color: var(--brand-gold); margin-bottom: 30px; line-height: 1.2; }
+.intro-desc { font-size: 1rem; color: #555; line-height: 1.8; }
+.big-smile { font-size: 8rem; font-weight: 100; color: #eee; line-height: 1; margin-top: 20px; }
+
+/* 서브 슬라이더 */
+/* ====================
+   [수정] 서브 슬라이더 CSS
+   ==================== */
+/* ====================
+   [수정됨] 서브 슬라이더 스타일
+   ==================== */
+.sub-slider-container { 
+    flex: 1.5; 
+    min-width: 300px; 
+    overflow: hidden; 
+    position: relative; 
+    padding: 0; 
+}
+
+.sub-slider-track { 
+    display: flex; 
+    transition: transform 0.5s ease-in-out; 
+    width: 100%;
+    /* 트랙 정렬을 위해 will-change 속성 추가 (성능 최적화) */
+    will-change: transform; 
+}
+
+.slide-item { 
+    padding: 10px; 
+    display: flex; 
+    justify-content: center; 
+    box-sizing: border-box; 
+    flex-shrink: 0; 
+}
+
+/* slide-box는 항상 부모 크기에 맞춤 */
+.slide-box {
+    width: 100%; 
+    max-width: 320px; 
+    margin: 0 auto;    
+    height: 450px; 
+    border-radius: 10px; 
+    overflow: hidden;
+    #box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.slide-box img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s; }
+.slide-box img:hover { transform: scale(1.05); }
+
+/* flex-shrink: 0을 추가하여 어떤 상황에서도 이미지가 찌그러지지 않게 고정 */
+@media (min-width: 1024px) { .slide-item { flex: 0 0 33.3333%; flex-shrink: 0; } }
+@media (max-width: 1023px) { .slide-item { flex: 0 0 50%; flex-shrink: 0; } }
+@media (max-width: 699px) { .slide-item { flex: 0 0 100%; flex-shrink: 0; } }
+
+/* ====================
+   Features Section (Points)
+   ==================== */
+.features-section { max-width: 1300px; margin: 100px auto; padding: 0 20px; }
+.feature-item { display: flex; position: relative; }
+
+.feature-img {
+    border: none; 
+    display: flex; justify-content: center; align-items: center;
+    z-index: 1; overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+}
+.feature-img img { width: 100%; height: 100%; object-fit: cover; }
+
+.feature-text {
+    position: relative; z-index: 2;
+    display: flex; flex-direction: column; justify-content: center;
+    #background-color: rgba(255, 255, 255, 0.95); 
+    padding: 40px;
+    #box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+}
+
+.badge-signature {
+    background-color: var(--brand-gold); color: white; padding: 5px 15px; border-radius: 20px;
+    font-family: 'Playfair Display', serif; font-size: 0.9rem; display: inline-block;
+    margin-bottom: 15px; align-self: flex-start; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.feature-title {
+    font-family: 'Playfair Display', serif; font-size: 2rem; color: var(--brand-gold);
+    margin-bottom: 10px; line-height: 1.2; font-weight: 700;
+}
+
+.feature-subtitle { font-size: 2rem; font-weight: bold; color: #333; margin-bottom: 15px; }
+.feature-desc { color: #666; font-size: 0.9rem; margin-bottom: 30px; line-height: 1.6; word-break: keep-all; }
+
+.btn-arrow {
+    width: 50px; height: 50px; border: 1px solid var(--brand-gold); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--brand-gold); font-size: 1.2rem; cursor: pointer; transition: all 0.3s; background: transparent;
+}
+.btn-arrow:hover { background-color: var(--brand-gold); color: white; }
+
+/* Points Layout */
+.feature-item:nth-child(1) { justify-content: flex-start; align-items: center; margin-bottom: 120px; }
+.feature-item:nth-child(1) .feature-img { width: 65%; height: 550px; }
+.feature-item:nth-child(1) .feature-text { width: 45%; margin-left: -10%; padding: 50px; }
+
+.feature-item:nth-child(2) { flex-direction: column; align-items: flex-start; width: 48%; margin-right: auto; margin-bottom: 0; }
+.feature-item:nth-child(2) .feature-img { width: 100%; height: 400px; margin-bottom: -50px; }
+.feature-item:nth-child(2) .feature-text { width: 90%; margin-left: 30px; margin-right: 0; }
+
+.feature-item:nth-child(3) { flex-direction: column; align-items: flex-end; width: 48%; margin-left: auto; margin-top: -520px; margin-bottom: 30px; }
+.feature-item:nth-child(3) .feature-img { width: 100%; height: 400px; margin-bottom: -50px; }
+.feature-item:nth-child(3) .feature-text { width: 90%; margin-right: auto; margin-left: 30px; text-align: right; align-items: flex-end; }
+.feature-item:nth-child(3) .badge-signature { align-self: flex-end; }
+
+.feature-item:nth-child(4) { justify-content: flex-end; align-items: center; flex-direction: row-reverse; }
+.feature-item:nth-child(4) .feature-img { width: 65%; height: 450px; }
+.feature-item:nth-child(4) .feature-text { width: 45%; margin-right: -10%; padding: 50px; text-align: left; align-items: flex-start; }
+
+/* Footer */
+.footer-bg { width: 100%; height: 100%; object-fit: cover; }
+.footer-overlay {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    text-align: center; color: white;
+}
+.footer-title { font-family: 'Playfair Display', serif; font-size: 5rem; margin-bottom: 20px; }
+.footer-line { width: 50px; height: 1px; background-color: rgba(255,255,255,0.5); margin-bottom: 20px; }
+.footer-text { font-size: 1.2rem; font-weight: 300; letter-spacing: 1px; }
+
+/* 반응형 */
+@media (max-width: 768px) {
+    .bg-watermark { font-size: 80px; }
+    .main-hero { height: 400px; margin-top: -18px; }
+    .main-hero h1 { font-size: 1.8rem; }
+    .intro-text { padding-right: 0; margin-bottom: 50px; text-align: center; }
+    .feature-item:nth-child(n) { width: 100%; flex-direction: column; align-items: center; margin-bottom: 80px; margin-top: 0 !important; }
+    .feature-item:nth-child(n) .feature-img { width: 100%; height: 300px; margin-bottom: -30px; }
+    .feature-item:nth-child(n) .feature-text { width: 90%; margin: 0 auto; padding: 30px; text-align: center; align-items: center; }
+    .feature-item:nth-child(3) .badge-signature { align-self: center; }
+    .footer-title { font-size: 3rem; }
+}
+
+/* ====================
+   [수정됨] 갤러리 및 텍스트 스타일 수정
+   ==================== */
+.gallery-section {
+    width: 100%;
+    background-color: var(--brand-bg); /* 배경색 적용 */
+    padding: 100px 0; /* 기존의 margin을 padding으로 변경하여 색상이 채워지게 함 */
+}
+
+/* 2. 중앙 정렬과 내용 폭을 담당하는 자식 클래스 수정 */
+.gallery-container {
+    width: 100%;
+    max-width: 1300px;
+    margin: 0 auto; /* 위아래 여백은 부모의 padding이 담당하므로 0 */
+    padding: 0 20px;
+    /* background-color: #fff; -> 제거 (부모 색상을 따라가거나 투명해야 함) */
+}
+
+/* 텍스트 정렬을 위한 래퍼 */
+.gallery-text-wrap {
+    text-align: center; /* 중앙 정렬 */
+    margin-bottom: 40px;
+}
+
+.gallery-sub {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem;
+    color: #999;
+    margin-bottom: 10px;
+}
+
+.gallery-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 3rem;
+    color: var(--brand-gold);
+    margin-bottom: 20px;
+    line-height: 1.2;
+    font-weight: bold;
+}
+
+.gallery-desc {
+    font-size: 1rem;
+    color: #555;
+    line-height: 1.8;
+}
+
+/* 1. 상단 메인 뷰 */
+.main-view {
+    width: 100%;
+    height: 800px; /* 상단 이미지 높이 */
+    position: relative;
+    overflow: hidden;
+    background-color: #333;
+}
+
+.main-view img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* 비율 유지하며 꽉 채우기 */
+    transition: opacity 0.3s ease;
+}
+
+.main-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 1.5rem;
+    font-weight: bold;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    pointer-events: none; /* 클릭 방지 */
+}
+
+/* 2. 하단 썸네일 영역 */
+.thumbnail-wrapper {
+    width: 100%;
+    height: 180px; /* 하단 영역 높이 */
+    overflow: hidden; /* 넘치는 부분 숨김 */
+    position: relative;
+    background-color: #222;
+    margin-top: 5px; /* 상단과 간격 */
+}
+
+.thumbnail-track {
+    display: flex;
+    height: 100%;
+    transition: transform 0.5s ease-in-out; /* 부드러운 이동 효과 */
+}
+
+/* 개별 썸네일 아이템 */
+.thumb-item {
+    min-width: 33.333%; /* 화면에 3개씩 보임 (100% / 3) */
+    height: 100%;
+    position: relative;
+    cursor: pointer;
+    border-right: 2px solid #fff; /* 사진 사이 간격 */
+}
+
+.thumb-item:last-child {
+    border-right: none;
+}
+
+.thumb-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* 검은색 불투명 오버레이 (비활성화 상태) */
+.thumb-item .overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6); /* 60% 불투명 검정 */
+    transition: background-color 0.3s;
+}
+
+/* 활성화 상태 (Active) */
+/* active 클래스가 붙은 아이템은 오버레이를 투명하게 */
+.thumb-item.active .overlay {
+    background-color: rgba(0, 0, 0, 0); /* 투명 */
+    box-sizing: border-box;
+}
+
+/* 활성화 시 이미지 줌 효과 (선택사항) */
+.thumb-item.active img {
+    transform: scale(1.05);
+    transition: transform 0.5s;
+}
+
+/* ====================
+   [신규 추가] 오시는 길 & 진료 안내 섹션
+   ==================== */
+.location-section {
+    width: 100%;
+    padding: 100px 0;
+    background-color: #fff; /* 깔끔한 흰색 배경 */
+}
+
+.location-container {
+    max-width: 1300px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* [수정 1] 지도를 감싸는 틀 (타겟 HTML의 #main_f 방식) */
+.map-wrap {
+    position: relative;
+    width: 100%;
+    height: 0;             /* 높이를 0으로 죽입니다 */
+    padding-top: 450px;    /* 대신 패딩으로 높이 450px을 확보합니다 (이게 핵심) */
+    overflow: hidden;
+    border: 1px solid #ddd;
+    background-color: #f4f4f4;
+}
+
+/* [수정 2] 지도 전체 컨테이너 (타겟 HTML과 동일하게 absolute로 띄움) */
+.location-container .root_daum_roughmap {
+    position: absolute;    /* 패딩으로 확보된 공간 위에 덮어씌웁니다 */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+/* [수정 3] 스크립트가 강제로 300px 주는 것을 무시하고 꽉 채우기 */
+.root_daum_roughmap .wrap_map {
+    width: 100%;
+    height: 100% !important; /* !important 필수 */
+}
+
+/* 상단 타이틀 */
+.location-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+.location-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 3rem;
+    color: var(--brand-gold);
+    margin-bottom: 30px;
+    line-height: 1.2;
+}
+.location-sub {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem;
+    color: #999;
+    margin-bottom: 10px;
+}
+
+/* 지도 영역 (검은 테두리 컨셉 유지하되 세련되게) */
+.map-area {
+    width: 100%;
+    /* 높이는 스크립트에서 제어하므로 auto 혹은 제거 */
+    background-color: #f4f4f4;
+    border: 1px solid #ddd;
+    margin-bottom: 50px;
+    position: relative;
+    overflow: hidden; /* 지도가 둥근 모서리 밖으로 나가지 않게 */
+}
+
+.root_daum_roughmap .wrap_controllers {
+    background-color: #f9f9f9;
+    border: 1px solid rgba(0, 0, 0, .1);
+    border-radius: 0 0 2px 2px;
+    overflow: hidden;
+    padding: 7px 11px;
+    display: none;
+}
+
+.daumRoughmapContainer1763693511773{
+    width: 100%;
+}
+
+/* 실제 지도 API 연동 전 플레이스홀더 스타일 */
+.map-placeholder {
+    text-align: center;
+    color: #999;
+}
+.map-placeholder h3 { font-size: 2rem; font-weight: 300; margin-bottom: 10px; }
+.map-placeholder p { font-size: 1rem; }
+
+/* 하단 3단 정보 영역 */
+.info-grid {
+    display: flex;
+    justify-content: space-between;
+    border-top: 2px solid #c5a47e; /* 상단 구분선 */
+    padding-top: 40px;
+}
+
+.info-col {
+    flex: 1;
+    padding-right: 30px;
+    border-right: 1px solid #eee; /* 칸 구분선 */
+}
+.info-col:last-child {
+    border-right: none;
+    padding-right: 0;
+    padding-left: 30px;
+}
+.info-col:nth-child(2) {
+    padding-left: 30px;
+}
+
+/* 각 컬럼 타이틀 */
+.info-head {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--brand-gold); /* 브랜드 컬러 적용 */
+    margin-bottom: 20px;
+    font-family: 'Playfair Display', serif;
+}
+
+/* 텍스트 내용 */
+.info-content p {
+    margin-bottom: 10px;
+    color: #555;
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+.info-content strong {
+    color: #333;
+    font-weight: 600;
+    display: inline-block;
+    width: 70px; /* 라벨 정렬 */
+}
+.info-note {
+    margin-top: 15px;
+    font-size: 0.85rem;
+    color: #888;
+}
+
+/* 전화번호 강조 */
+.tel-number {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #333;
+    display: block;
+    margin-bottom: 15px;
+    letter-spacing: -1px;
+}
+
+/* 네이버 지도 버튼 */
+.btn-naver-map {
+    display: inline-flex;
+    align-items: center;
+    background-color: #03C75A; /* 네이버 브랜드 컬러 */
+    color: white;
+    padding: 10px 20px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 0.9rem;
+    margin-top: 15px;
+    transition: opacity 0.3s;
+}
+.btn-naver-map:hover {
+    opacity: 0.9;
+}
+.btn-naver-map span {
+    margin-left: 5px;
+    font-weight: 900; /* NAVER 로고 느낌 */
+}
+
+/* 반응형 (모바일) */
+@media (max-width: 768px) {
+    .location-title { font-size: 1.8rem; }
+    .map-area { height: 300px; }
+    
+    .info-grid {
+        flex-direction: column;
+        border-top: 1px solid #ddd;
+        padding-top: 0;
+    }
+    .info-col {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid #eee;
+        padding: 30px 0 !important; /* 강제 여백 조정 */
+    }
+    .info-col:last-child {
+        border-bottom: none;
+    }
+}
