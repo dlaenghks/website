@@ -1,12 +1,12 @@
 <script charset="UTF-8" class="daum_roughmap_loader_script" src="https://ssl.daumcdn.net/dmaps/map_js_init/roughmapLoader.js"></script>
 
-    <script src="/base/script.js"></script>
+    <script src="./base/script2.js"></script>
 
     <footer class="footer-section">
         <div class="footer-container">
             <div class="footer-logo">
                 <a href="/">
-                    <img src="/base/logo.png" alt="Logo">
+                    <img src="./base/logo.png" alt="Logo">
                 </a>
             </div>
             <article class="footer-info">
