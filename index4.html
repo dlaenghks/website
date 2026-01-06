@@ -1,4 +1,4 @@
-<?php include_once('./base/head.php'); ?>
+<?php include_once('./base/head.html'); ?>
 
     <header class="main-hero">
         <div class="hero-track" id="heroTrack">
@@ -344,6 +344,22 @@
     });
 </script>
 
+<div id="footer-load"></div> <script>
+    // 헤더 불러오기
+    fetch('./base/head.html')
+        .then(response => response.text())
+        .then(data => {
+            document.getElementById('header-load').innerHTML = data;
+            // 헤더 로드 후 실행되어야 하는 스크립트(햄버거 메뉴 등)를 여기에 배치
+        });
 
+    // 푸터 불러오기
+    fetch('./base/tail.html')
+        .then(response => response.text())
+        .then(data => {
+            document.getElementById('footer-load').innerHTML = data;
+        });
+</script>
+</html>
 
 <?php include_once('./base/tail.php'); ?>
