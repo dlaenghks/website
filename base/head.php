@@ -10,7 +10,7 @@ if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
     <link rel="icon" type="image/png" href="http://woorikidsclinic.co.kr/img/favicon.png"/>
     
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/base/style.css">
+    <link rel="stylesheet" href="./base/style2.css">
 
     <style>
         /* 1. 전체 화면 메뉴 오버레이 */
@@ -120,11 +120,11 @@ if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
 
 <div id='LIM_quick'>
     <dl>
-        <dd><img src='/base/quick_img1.jpg' /></dd>
-        <dd><a href="tel:010-3605-9637"><img src='/base/quick_img2.jpg' /></a></dd>
-        <dd><a href="https://m.search.naver.com/search.naver?where=m&query=빠른길찾기&nso_path=placeType%5Eplace%3Bname%5E%3Baddress%5E%3Blatitude%5E%3Blongitude%5E%3Bcode%5E%7Ctype%5Eplace%3Bname%5E연세우리아동발달클리닉%3Baddress%5E%3Bcode%5E1263800380%3Blongitude%5E126.6570549%3Blatitude%5E37.3808813%7Cobjtype%5Epath%3Bby%5Epubtrans" target="_blank"><img src='/base/quick_img3.jpg' /></a></dd>
-        <dd><a href="https://naver.me/x8DWlTzS" target="_blank"><img src='/base/quick_img4.jpg' /></a></dd>
-        <dd><a href="https://blog.naver.com/woorikidsclinic" target="_blank"><img src='/base/quick_img5.jpg' /></a></dd>
+        <dd><img src='./base/quick_img1.jpg' /></dd>
+        <dd><a href="tel:010-3605-9637"><img src='./base/quick_img2.jpg' /></a></dd>
+        <dd><a href="https://m.search.naver.com/search.naver?where=m&query=빠른길찾기&nso_path=placeType%5Eplace%3Bname%5E%3Baddress%5E%3Blatitude%5E%3Blongitude%5E%3Bcode%5E%7Ctype%5Eplace%3Bname%5E연세우리아동발달클리닉%3Baddress%5E%3Bcode%5E1263800380%3Blongitude%5E126.6570549%3Blatitude%5E37.3808813%7Cobjtype%5Epath%3Bby%5Epubtrans" target="_blank"><img src='./base/quick_img3.jpg' /></a></dd>
+        <dd><a href="https://naver.me/x8DWlTzS" target="_blank"><img src='./base/quick_img4.jpg' /></a></dd>
+        <dd><a href="https://blog.naver.com/woorikidsclinic" target="_blank"><img src='./base/quick_img5.jpg' /></a></dd>
     </dl>
 </div>
 
@@ -132,7 +132,7 @@ if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
         <div class="header-inner">
             <div class="logo-area">
                 <a href="http://bareunent.co.kr/2.html" class="logo-link">
-                    <img src="/base/hd_logo.png" alt="로고">
+                    <img src="./base/hd_logo.png" alt="로고">
                 </a>
             </div>
 
@@ -194,7 +194,7 @@ if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
         
         <div class="all-menu-header">
             <a href="/" class="all-menu-logo">
-                <img src="http://bareunent.co.kr/base/hd_logo.png" alt="로고">
+                <img src="http://bareunent.co.kr./base/hd_logo.png" alt="로고">
             </a>
             <button type="button" class="btn-menu-close" id="btn_menu_close"></button>
         </div>
@@ -284,4 +284,5 @@ if (!defined('_GNUBOARD_')) exit; // 개별 페이지 접근 불가
             });
         });
     });
+
     </script>
