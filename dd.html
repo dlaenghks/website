@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>통합 관리 대시보드</title>
+    <style>
+        /* [레이아웃] */
+        body { font-family: 'Malgun Gothic', sans-serif; margin: 0; display: flex; height: 100vh; color: #333; overflow: hidden; background-color: #f5f6fa; }
+        
+        /* [사이드바] */
+        .sidebar { 
+            width: 240px; background-color: #fff; border-right: 1px solid #ddd; 
+            display: flex; flex-direction: column; flex-shrink: 0; user-select: none; overflow-y: auto; 
+        }
+        .sidebar::-webkit-scrollbar { width: 5px; }
+        .sidebar::-webkit-scrollbar-thumb { background-color: #ccc; border-radius: 10px; }
+        .sidebar-header { padding: 15px; font-weight: bold; font-size: 1.1rem; border-bottom: 1px solid #eee; color: #444; position: sticky; top: 0; background: #fff; z-index: 10; }
+        
+        .menu-group { border-bottom: 1px solid #f0f0f0; }
+        .menu-title { padding: 12px 15px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: bold; color: #555; transition: 0.2s; }
+        .menu-title:hover { background-color: #f8f9fa; color: #3498db; }
+        .menu-title .icon { font-size: 10px; transition: transform 0.3s; }
+        .submenu-container { display: none; background-color: #fcfcfc; padding-bottom: 5px; }
+        .submenu-container.open { display: block; } 
+        .menu-group.active .icon { transform: rotate(180deg); }
+        .submenu-item { padding: 8px 15px 8px 30px; cursor: pointer; font-size: 13px; color: #666; transition: 0.2s; border-left: 3px solid transparent; }
+        .submenu-item:hover { background-color: #eef2f5; color: #333; }
+        .submenu-item.active { background-color: #e6f7ff; color: #007bff; border-left-color: #007bff; font-weight: bold; }
+
+        /* [메인 컨텐츠] */
+        .main-content { flex-grow: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; }
+        .content-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 2px solid #007bff; padding-bottom: 10px; }
+        h2 { margin: 0; font-size: 1.2rem; color: #2c3e50; }
+        .refresh-btn { padding: 6px 12px; cursor: pointer; background-color: #3498db; color: white; border: none; border-radius: 4px; font-weight: bold; }
+
+        .keyword-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 15px; }
+        .keyword-btn { padding: 6px 12px; cursor: pointer; border: 1px solid #ccc; background: white; font-size: 12px; font-weight: bold; color: #555; }
+        .keyword-btn.active { background-color: #3498db; color: white; border-color: #3498db; box-shadow: 0 2px 3px rgba(0,0,0,0.1); }
+
+        /* [테이블 스타일] */
+        table { border-collapse: collapse; width: 100%; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1); table-layout: fixed; }
+        th, td { 
+            border: 1px solid #eee; padding: 10px; text-align: left; font-size: 13px; 
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        /* td의 기본 cursor는 auto로 설정 (클릭 가능한 것만 JS로 pointer 지정) */
+        td { cursor: default; }
+        
+        th { background-color: #f8f9fa; position: sticky; top: 0; z-index: 5; font-weight: bold; color: #555; }
+        tr:hover { background-color: #f9f9f9; }
+
+        /* 열 너비 설정 */
+        .review-table th:nth-child(1) { width: 110px; } /* 작성일 */
+        .review-table th:nth-child(2) { width: 90px; }  /* 작성자 */
+        .review-table th:nth-child(3) { width: 70px; }  /* 부정 */
+        .review-table th:nth-child(4) { width: auto; }  /* 내용 */
+        .review-table th:nth-child(5) { width: 130px; } /* 수집 */
+        .review-table th:nth-child(6) { width: 60px; text-align: center; } /* AI */
+
+        .rank-table th:nth-child(1) { width: 130px; } 
+        .rank-table th:nth-child(2) { width: 90px; } 
+        .rank-table th:nth-child(3) { width: auto; }
+
+        .bad-row { background-color: #ffebee !important; }
+        .rank-up { color: #e74c3c; font-weight: bold; }
+        .rank-down { color: #3498db; font-weight: bold; }
+
+        /* [로딩 & 팝업 공통 오버레이] */
+        .overlay { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.5); z-index: 9999; 
+            display: flex; justify-content: center; align-items: center; 
+            visibility: hidden; opacity: 0; transition: 0.3s; 
+        }
+        .overlay.visible { visibility: visible; opacity: 1; }
+
+        /* 로딩 스피너 */
+        .loading-box { background: white; padding: 20px; border-radius: 10px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .spinner { width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 10px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* 팝업 모달창 */
+        .modal { 
+            background: white; width: 85%; max-width: 500px; max-height: 80vh; 
+            border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); 
+            display: flex; flex-direction: column; overflow: hidden; transform: translateY(20px); transition: 0.3s; 
+        }
+        .overlay.visible .modal { transform: translateY(0); }
+        .modal-header { padding: 15px; border-bottom: 1px solid #eee; font-weight: bold; display: flex; justify-content: space-between; background: #f8f9fa; }
+        .close-btn { cursor: pointer; font-size: 20px; color: #888; line-height: 1; }
+        .modal-body { padding: 20px; overflow-y: auto; line-height: 1.6; font-size: 14px; word-break: break-all; white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+
+    <div id="loading-overlay" class="overlay">
+        <div class="loading-box">
+            <div class="spinner"></div>
+            <div class="loading-text">데이터 동기화 중...</div>
+        </div>
+    </div>
+
+    <div id="detail-modal" class="overlay" onclick="closeModal()">
+        <div class="modal" onclick="event.stopPropagation()"> <div class="modal-header">
+                <span id="modal-title">상세 내용</span>
+                <span class="close-btn" onclick="closeModal()">&times;</span>
+            </div>
+            <div class="modal-body" id="modal-content"></div>
+        </div>
+    </div>
+
+    <nav class="sidebar">
+        <div class="sidebar-header">통합 관리 대시보드</div>
+        
+        <div class="menu-group" id="group-review">
+            <div class="menu-title" onclick="toggleGroup('review')">
+                플레이스 리뷰 <span class="icon">▼</span>
+            </div>
+            <div class="submenu-container" id="submenu-review"></div>
+        </div>
+
+        <div class="menu-group" id="group-rank">
+            <div class="menu-title" onclick="toggleGroup('rank')">
+                플레이스 순위 <span class="icon">▼</span>
+            </div>
+            <div class="submenu-container" id="submenu-rank"></div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="content-header">
+            <h2 id="page-title">데이터를 동기화 중입니다. 잠시만 기다려주세요...</h2>
+            <button class="refresh-btn" onclick="initDashboard(true)">새로고침 ↻</button>
+        </div>
+        
+        <div id="keyword-container" class="keyword-tabs"></div>
+        <div id="table-container"></div>
+    </main>
+
+<script>
+    const CONFIG = {
+        review: {
+            url: "https://script.google.com/macros/s/AKfycbxxg_DqI5cLfTT1Nx73CCl7_dVVjeP9NbdaCUvr5SBKm7VMr19ZjClofZ_ggm0O6dtC/exec",
+            title: "리뷰 모니터링"
+        },
+        rank: {
+            url: "https://script.google.com/macros/s/AKfycbya7-b5zXTEM7xGnM6jfuJHuqnvDgVS1Pvo5CsxBetBqELjDUR8GoEvRFg8WeZv8G9o/exec", 
+            title: "순위 현황"
+        }
+    };
+
+    const REVIEW_COMPANY_COL_IDX = 0; 
+    const RANK_KEYWORD_COL_IDX = 1;    
+
+    let dataCache = { review: null, rank: null };
+    
+    function parseKoreanDate(dateStr) {
+        if (!dateStr || typeof dateStr !== 'string') return new Date(0);
+        const matches = dateStr.match(/(\d+)년\s*(\d+)월\s*(\d+)일/);
+        return matches ? new Date(matches[1], matches[2] - 1, matches[3]) : new Date(0);
+    }
+
+    async function initDashboard(isRefresh = false) {
+        const overlay = document.getElementById('loading-overlay');
+        overlay.classList.add('visible');
+        const urlParams = new URLSearchParams(window.location.search);
+        const userKey = urlParams.get('id');
+
+        if (!userKey) { alert("ID 코드가 없습니다."); overlay.classList.remove('visible'); return; }
+
+        try {
+            const [resReview, resRank] = await Promise.all([
+                fetch(`${CONFIG.review.url}?id=${userKey}`).then(r => r.json()),
+                fetch(`${CONFIG.rank.url}?id=${userKey}`).then(r => r.json())
+            ]);
+
+            dataCache.review = resReview;
+            dataCache.rank = resRank;
+
+            buildSidebar('review', resReview);
+            buildSidebar('rank', resRank);
+
+            document.getElementById('group-review').classList.add('active');
+            document.getElementById('submenu-review').classList.add('open');
+            
+            const firstReviewSheet = Object.keys(resReview)[0];
+            if (firstReviewSheet) selectClinic('review', firstReviewSheet);
+
+        } catch (e) {
+            console.error(e);
+            alert("오류 발생: 데이터를 가져오지 못했습니다.");
+        } finally {
+            overlay.classList.remove('visible');
+        }
+    }
+
+    function buildSidebar(mode, data) {
+        const container = document.getElementById(`submenu-${mode}`);
+        container.innerHTML = ""; 
+
+        if (!data || data.error) {
+            container.innerHTML = "<div style='padding:10px; font-size:12px; color:#999'>데이터 없음</div>";
+            return;
+        }
+
+        for (const sheetName in data) {
+            const item = document.createElement('div');
+            item.className = 'submenu-item';
+            item.id = `nav-${mode}-${sheetName}`; 
+            item.innerText = sheetName;
+            item.onclick = () => selectClinic(mode, sheetName);
+            container.appendChild(item);
+        }
+    }
+
+    function toggleGroup(mode) {
+        const allGroups = document.querySelectorAll('.menu-group');
+        const allSubmenus = document.querySelectorAll('.submenu-container');
+        const targetGroup = document.getElementById(`group-${mode}`);
+        const targetSubmenu = document.getElementById(`submenu-${mode}`);
+        const isOpen = targetGroup.classList.contains('active');
+
+        allGroups.forEach(el => el.classList.remove('active'));
+        allSubmenus.forEach(el => el.classList.remove('open'));
+
+        if (!isOpen) {
+            targetGroup.classList.add('active');
+            targetSubmenu.classList.add('open');
+        }
+    }
+
+    function selectClinic(mode, sheetName) {
+        document.querySelectorAll('.submenu-item').forEach(el => el.classList.remove('active'));
+        const currentItem = document.getElementById(`nav-${mode}-${sheetName}`);
+        if (currentItem) currentItem.classList.add('active');
+
+        const modeTitle = CONFIG[mode].title;
+        document.getElementById('page-title').innerText = `[${modeTitle}] ${sheetName}`;
+
+        const rows = dataCache[mode][sheetName];
+        renderContent(mode, rows);
+    }
+
+    function renderContent(mode, rows) {
+        const keywordContainer = document.getElementById('keyword-container');
+        const tableContainer = document.getElementById('table-container');
+        
+        keywordContainer.innerHTML = "";
+        tableContainer.innerHTML = "";
+
+        if (!rows || rows.length < 1) {
+            tableContainer.innerHTML = "<p>데이터가 없습니다.</p>";
+            return;
+        }
+
+        if (mode === 'review') {
+            const header = rows[0];
+            const body = rows.slice(1);
+            body.sort((a, b) => parseKoreanDate(a[1]) - parseKoreanDate(b[1]));
+            tableContainer.innerHTML = createTable([header, ...body], mode, false);
+        }
+        else if (mode === 'rank') {
+            const header = rows[0];
+            const body = rows.slice(1);
+            const keywords = [...new Set(body.map(r => r[RANK_KEYWORD_COL_IDX]))].filter(k => k);
+            
+            keywords.forEach((keyword, idx) => {
+                const btn = document.createElement('button');
+                btn.className = `keyword-btn ${idx === 0 ? 'active' : ''}`;
+                btn.innerText = keyword;
+                btn.onclick = () => {
+                    document.querySelectorAll('.keyword-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    const filtered = body.filter(r => r[RANK_KEYWORD_COL_IDX] === keyword);
+                    tableContainer.innerHTML = createTable([header, ...filtered], mode, true);
+                };
+                keywordContainer.appendChild(btn);
+            });
+
+            if (keywords.length > 0) {
+                const firstKey = keywords[0];
+                const filtered = body.filter(r => r[RANK_KEYWORD_COL_IDX] === firstKey);
+                tableContainer.innerHTML = createTable([header, ...filtered], mode, true);
+            } else {
+                tableContainer.innerHTML = "<p>표시할 키워드가 없습니다.</p>";
+            }
+        }
+    }
+
+    function createTable(rows, mode, hideKeywordCol) {
+        const tableClass = (mode === 'review') ? 'review-table' : 'rank-table';
+        let html = `<table class="${tableClass}"><thead><tr>`;
+        
+        // 헤더
+        let headers = [];
+        for (let j = 0; j < rows[0].length; j++) {
+            if (mode === 'review' && j === REVIEW_COMPANY_COL_IDX) continue;
+            if (mode === 'rank' && hideKeywordCol && j === RANK_KEYWORD_COL_IDX) continue;
+            html += `<th>${rows[0][j] || ''}</th>`;
+            headers.push(rows[0][j] || '');
+        }
+        html += '</tr></thead><tbody>';
+
+        // 바디
+        for (let i = 1; i < rows.length; i++) {
+            const isBad = (mode === 'review' && rows[i][3] === "O (AI Check)");
+            const rowClass = isBad ? ' class="bad-row"' : '';
+            html += `<tr${rowClass}>`;
+
+            for (let j = 0; j < rows[i].length; j++) {
+                if (mode === 'review' && j === REVIEW_COMPANY_COL_IDX) continue;
+                if (mode === 'rank' && hideKeywordCol && j === RANK_KEYWORD_COL_IDX) continue;
+
+                let val = rows[i][j] !== null ? rows[i][j] : '';
+                
+                // 순위 모드: 등락 색상 적용
+                let cellClass = "";
+                if (mode === 'rank') { 
+                    if (String(val).includes('▲')) cellClass = "rank-up";
+                    else if (String(val).includes('▼')) cellClass = "rank-down";
+                }
+                
+                // [수정 핵심] 리뷰 모드: 클릭 이벤트 생성 시 특수문자(줄바꿈, 따옴표) 처리 강화
+                let clickEvent = "";
+                if (mode === 'review') {
+                    const safeVal = String(val)
+                        .replace(/"/g, '&quot;')   // HTML 속성용 큰따옴표 이스케이프
+                        .replace(/'/g, "\\'")      // JS 문자열용 작은따옴표 이스케이프
+                        .replace(/\n/g, '\\n')     // 줄바꿈 문자를 '\n' 문자열로 변환
+                        .replace(/\r/g, '');       // 캐리지 리턴 제거
+                        
+                    clickEvent = ` onclick="openModal('${safeVal}')" style="cursor: pointer;"`;
+                }
+
+                html += `<td class="${cellClass}"${clickEvent}>${val}</td>`;
+            }
+            html += '</tr>';
+        }
+        html += '</tbody></table>';
+        return html;
+    }
+
+    // [팝업 기능 구현]
+    function openModal(content) {
+        document.getElementById('modal-content').innerText = content;
+        document.getElementById('detail-modal').classList.add('visible');
+    }
+
+    function closeModal() {
+        document.getElementById('detail-modal').classList.remove('visible');
+    }
+
+    initDashboard();
+</script>
+</body>
+</html>
