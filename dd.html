@@ -5,13 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>통합 관리 대시보드</title>
     <style>
-        /* [레이아웃] */
+        /* [레이아웃 공통] */
         body { font-family: 'Malgun Gothic', sans-serif; margin: 0; display: flex; height: 100vh; color: #333; overflow: hidden; background-color: #f5f6fa; }
         
         /* [사이드바] */
         .sidebar { 
             width: 240px; background-color: #fff; border-right: 1px solid #ddd; 
             display: flex; flex-direction: column; flex-shrink: 0; user-select: none; overflow-y: auto; 
+            transition: 0.3s;
         }
         .sidebar::-webkit-scrollbar { width: 5px; }
         .sidebar::-webkit-scrollbar-thumb { background-color: #ccc; border-radius: 10px; }
@@ -30,13 +31,49 @@
 
         /* [메인 컨텐츠] */
         .main-content { flex-grow: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; }
-        .content-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 2px solid #007bff; padding-bottom: 10px; }
-        h2 { margin: 0; font-size: 1.2rem; color: #2c3e50; }
-        .refresh-btn { padding: 6px 12px; cursor: pointer; background-color: #3498db; color: white; border: none; border-radius: 4px; font-weight: bold; }
+        .content-header { display: flex; align-items: center; margin-bottom: 15px; border-bottom: 2px solid #007bff; padding-bottom: 10px; }
+        h2 { margin: 0; font-size: 1.2rem; color: #2c3e50; flex-grow: 1; }
+        .refresh-btn { padding: 6px 12px; cursor: pointer; background-color: #3498db; color: white; border: none; border-radius: 4px; font-weight: bold; font-size: 12px; margin-left: 10px; }
+
+        /* [모바일 전용 뒤로가기 버튼] */
+        .mobile-back-btn { 
+            display: none; /* PC에서는 숨김 */
+            margin-right: 10px; padding: 6px 12px; 
+            background-color: #fff; border: 1px solid #ccc; border-radius: 4px; 
+            cursor: pointer; font-weight: bold; color: #555; font-size: 12px;
+        }
+
+        /* [반응형 처리: 모바일] */
+        @media (max-width: 768px) {
+            /* 1. 기본 상태: 사이드바만 보임, 메인은 숨김 */
+            .sidebar { width: 100%; height: 100vh; border-right: none; position: absolute; z-index: 100; }
+            .main-content { display: none; width: 100%; height: 100vh; }
+
+            /* 2. 'show-content' 클래스가 body에 붙으면: 사이드바 숨김, 메인 보임 */
+            body.show-content .sidebar { display: none; }
+            body.show-content .main-content { display: flex; }
+            
+            /* 뒤로가기 버튼 표시 */
+            .mobile-back-btn { display: inline-block; }
+            
+            /* 모바일 여백 조정 */
+            .content-header h2 { font-size: 1rem; }
+            .refresh-btn { padding: 4px 8px; font-size: 11px; }
+        }
+
+        /* [공지사항 박스] */
+        .notice-box {
+            background-color: #e8f4fd; color: #2c3e50;
+            padding: 12px 15px; margin-bottom: 15px;
+            border-left: 5px solid #3498db; border-radius: 4px;
+            font-size: 13px; line-height: 1.5;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            display: none;
+        }
 
         .keyword-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 15px; }
-        .keyword-btn { padding: 6px 12px; cursor: pointer; border: 1px solid #ccc; background: white; font-size: 12px; font-weight: bold; color: #555; }
-        .keyword-btn.active { background-color: #3498db; color: white; border-color: #3498db; box-shadow: 0 2px 3px rgba(0,0,0,0.1); }
+        .keyword-btn { padding: 6px 12px; cursor: pointer; border: 1px solid #ccc; background: white; border-radius: 20px; font-size: 12px; font-weight: bold; color: #555; }
+        .keyword-btn.active { background-color: #27ae60; color: white; border-color: #27ae60; box-shadow: 0 2px 3px rgba(0,0,0,0.1); }
 
         /* [테이블 스타일] */
         table { border-collapse: collapse; width: 100%; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1); table-layout: fixed; }
@@ -44,23 +81,24 @@
             border: 1px solid #eee; padding: 10px; text-align: left; font-size: 13px; 
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
-        /* td의 기본 cursor는 auto로 설정 (클릭 가능한 것만 JS로 pointer 지정) */
         td { cursor: default; }
         
         th { background-color: #f8f9fa; position: sticky; top: 0; z-index: 5; font-weight: bold; color: #555; }
         tr:hover { background-color: #f9f9f9; }
 
         /* 열 너비 설정 */
-        .review-table th:nth-child(1) { width: 110px; } /* 작성일 */
-        .review-table th:nth-child(2) { width: 90px; }  /* 작성자 */
-        .review-table th:nth-child(3) { width: 70px; }  /* 부정 */
-        .review-table th:nth-child(4) { width: auto; }  /* 내용 */
-        .review-table th:nth-child(5) { width: 130px; } /* 수집 */
-        .review-table th:nth-child(6) { width: 60px; text-align: center; } /* AI */
+        .review-table th:nth-child(1) { width: 110px; } 
+        .review-table th:nth-child(2) { width: 90px; }  
+        .review-table th:nth-child(3) { width: 70px; }  
+        .review-table th:nth-child(4) { width: auto; }  
+        .review-table th:nth-child(5) { width: 130px; } 
+        .review-table th:nth-child(6) { width: 60px; text-align: center; } 
 
         .rank-table th:nth-child(1) { width: 130px; } 
         .rank-table th:nth-child(2) { width: 90px; } 
         .rank-table th:nth-child(3) { width: auto; }
+
+        .power-table th { width: auto; }
 
         .bad-row { background-color: #ffebee !important; }
         .rank-up { color: #e74c3c; font-weight: bold; }
@@ -75,12 +113,10 @@
         }
         .overlay.visible { visibility: visible; opacity: 1; }
 
-        /* 로딩 스피너 */
         .loading-box { background: white; padding: 20px; border-radius: 10px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
         .spinner { width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 10px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* 팝업 모달창 */
         .modal { 
             background: white; width: 85%; max-width: 500px; max-height: 80vh; 
             border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); 
@@ -126,14 +162,23 @@
             </div>
             <div class="submenu-container" id="submenu-rank"></div>
         </div>
+
+        <div class="menu-group" id="group-power">
+            <div class="menu-title" onclick="toggleGroup('power')">
+                파워링크 현황 <span class="icon">▼</span>
+            </div>
+            <div class="submenu-container" id="submenu-power"></div>
+        </div>
     </nav>
 
     <main class="main-content">
         <div class="content-header">
-            <h2 id="page-title">데이터를 동기화 중입니다. 잠시만 기다려주세요...</h2>
+            <button class="mobile-back-btn" onclick="showMobileMenu()">&#60; 목록</button>
+            <h2 id="page-title">데이터를 동기화 중입니다...</h2>
             <button class="refresh-btn" onclick="initDashboard(true)">새로고침 ↻</button>
         </div>
         
+        <div id="notice-box" class="notice-box"></div>
         <div id="keyword-container" class="keyword-tabs"></div>
         <div id="table-container"></div>
     </main>
@@ -147,13 +192,23 @@
         rank: {
             url: "https://script.google.com/macros/s/AKfycbya7-b5zXTEM7xGnM6jfuJHuqnvDgVS1Pvo5CsxBetBqELjDUR8GoEvRFg8WeZv8G9o/exec", 
             title: "순위 현황"
+        },
+        power: {
+            url: "https://script.google.com/macros/s/AKfycbzJI5NLmLt8uU5dXCoWbZAx9sZCSHh6mGkiECGTfaTXXPFTmCe7c4RxEoDbiJBF2hRM/exec",
+            title: "파워링크 현황"
         }
+    };
+
+    const NOTICE_MESSAGES = {
+        review: "💡 <b>Tip:</b> AI가 분석한 '부정적 리뷰(O)'는 클릭하여 내용을 확인하고 신속하게 대응하세요.",
+        rank: "📊 <b>Info:</b> 키워드별 순위는 실시간으로 변동될 수 있으며, ▲상승/▼하락이 색상으로 표시됩니다.",
+        power: "📢 <b>Notice:</b> 파워링크 광고는 실시간 입찰 경쟁에 따라 노출 순위가 달라질 수 있습니다."
     };
 
     const REVIEW_COMPANY_COL_IDX = 0; 
     const RANK_KEYWORD_COL_IDX = 1;    
 
-    let dataCache = { review: null, rank: null };
+    let dataCache = { review: null, rank: null, power: null };
     
     function parseKoreanDate(dateStr) {
         if (!dateStr || typeof dateStr !== 'string') return new Date(0);
@@ -170,22 +225,26 @@
         if (!userKey) { alert("ID 코드가 없습니다."); overlay.classList.remove('visible'); return; }
 
         try {
-            const [resReview, resRank] = await Promise.all([
+            const [resReview, resRank, resPower] = await Promise.all([
                 fetch(`${CONFIG.review.url}?id=${userKey}`).then(r => r.json()),
-                fetch(`${CONFIG.rank.url}?id=${userKey}`).then(r => r.json())
+                fetch(`${CONFIG.rank.url}?id=${userKey}`).then(r => r.json()),
+                fetch(`${CONFIG.power.url}?id=${userKey}`).then(r => r.json())
             ]);
 
             dataCache.review = resReview;
             dataCache.rank = resRank;
+            dataCache.power = resPower;
 
             buildSidebar('review', resReview);
             buildSidebar('rank', resRank);
+            buildSidebar('power', resPower);
 
             document.getElementById('group-review').classList.add('active');
             document.getElementById('submenu-review').classList.add('open');
             
             const firstReviewSheet = Object.keys(resReview)[0];
-            if (firstReviewSheet) selectClinic('review', firstReviewSheet);
+            // [수정] 초기 로드 시에는(isInitial=true) 모바일 화면 전환을 하지 않음
+            if (firstReviewSheet) selectClinic('review', firstReviewSheet, true);
 
         } catch (e) {
             console.error(e);
@@ -208,8 +267,11 @@
             const item = document.createElement('div');
             item.className = 'submenu-item';
             item.id = `nav-${mode}-${sheetName}`; 
-            item.innerText = sheetName;
-            item.onclick = () => selectClinic(mode, sheetName);
+            
+            item.innerText = sheetName.replace('(파워링크)', '');
+            
+            // 클릭 시에는 isInitial=false (화면 전환 발생)
+            item.onclick = () => selectClinic(mode, sheetName, false);
             container.appendChild(item);
         }
     }
@@ -230,16 +292,40 @@
         }
     }
 
-    function selectClinic(mode, sheetName) {
+    // [수정] isInitial 파라미터 추가
+    function selectClinic(mode, sheetName, isInitial = false) {
         document.querySelectorAll('.submenu-item').forEach(el => el.classList.remove('active'));
         const currentItem = document.getElementById(`nav-${mode}-${sheetName}`);
         if (currentItem) currentItem.classList.add('active');
 
         const modeTitle = CONFIG[mode].title;
-        document.getElementById('page-title').innerText = `[${modeTitle}] ${sheetName}`;
+        const displaySheetName = sheetName.replace('(파워링크)', '');
+        document.getElementById('page-title').innerText = `[${modeTitle}] ${displaySheetName}`;
+
+        const noticeBox = document.getElementById('notice-box');
+        if (NOTICE_MESSAGES[mode]) {
+            noticeBox.innerHTML = NOTICE_MESSAGES[mode];
+            noticeBox.style.display = 'block';
+        } else {
+            noticeBox.style.display = 'none';
+        }
 
         const rows = dataCache[mode][sheetName];
         renderContent(mode, rows);
+
+        // [추가] 초기 로딩이 아닐 때만(유저 클릭 시) 모바일에서 화면 전환
+        if (!isInitial) {
+            showMobileContent();
+        }
+    }
+
+    // [추가] 모바일 화면 전환용 함수들
+    function showMobileContent() {
+        document.body.classList.add('show-content');
+    }
+
+    function showMobileMenu() {
+        document.body.classList.remove('show-content');
     }
 
     function renderContent(mode, rows) {
@@ -286,13 +372,20 @@
                 tableContainer.innerHTML = "<p>표시할 키워드가 없습니다.</p>";
             }
         }
+        else if (mode === 'power') {
+            const header = rows[0];
+            const body = rows.slice(1);
+            tableContainer.innerHTML = createTable([header, ...body], mode, false);
+        }
     }
 
     function createTable(rows, mode, hideKeywordCol) {
-        const tableClass = (mode === 'review') ? 'review-table' : 'rank-table';
+        let tableClass = 'rank-table'; 
+        if (mode === 'review') tableClass = 'review-table';
+        else if (mode === 'power') tableClass = 'power-table';
+
         let html = `<table class="${tableClass}"><thead><tr>`;
         
-        // 헤더
         let headers = [];
         for (let j = 0; j < rows[0].length; j++) {
             if (mode === 'review' && j === REVIEW_COMPANY_COL_IDX) continue;
@@ -302,7 +395,6 @@
         }
         html += '</tr></thead><tbody>';
 
-        // 바디
         for (let i = 1; i < rows.length; i++) {
             const isBad = (mode === 'review' && rows[i][3] === "O (AI Check)");
             const rowClass = isBad ? ' class="bad-row"' : '';
@@ -314,21 +406,19 @@
 
                 let val = rows[i][j] !== null ? rows[i][j] : '';
                 
-                // 순위 모드: 등락 색상 적용
                 let cellClass = "";
-                if (mode === 'rank') { 
+                if (mode === 'rank' || mode === 'power') { 
                     if (String(val).includes('▲')) cellClass = "rank-up";
                     else if (String(val).includes('▼')) cellClass = "rank-down";
                 }
                 
-                // [수정 핵심] 리뷰 모드: 클릭 이벤트 생성 시 특수문자(줄바꿈, 따옴표) 처리 강화
                 let clickEvent = "";
                 if (mode === 'review') {
                     const safeVal = String(val)
-                        .replace(/"/g, '&quot;')   // HTML 속성용 큰따옴표 이스케이프
-                        .replace(/'/g, "\\'")      // JS 문자열용 작은따옴표 이스케이프
-                        .replace(/\n/g, '\\n')     // 줄바꿈 문자를 '\n' 문자열로 변환
-                        .replace(/\r/g, '');       // 캐리지 리턴 제거
+                        .replace(/"/g, '&quot;')   
+                        .replace(/'/g, "\\'")     
+                        .replace(/\n/g, '\\n')     
+                        .replace(/\r/g, '');       
                         
                     clickEvent = ` onclick="openModal('${safeVal}')" style="cursor: pointer;"`;
                 }
@@ -341,7 +431,6 @@
         return html;
     }
 
-    // [팝업 기능 구현]
     function openModal(content) {
         document.getElementById('modal-content').innerText = content;
         document.getElementById('detail-modal').classList.add('visible');
