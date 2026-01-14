@@ -6,7 +6,8 @@
     <title>통합 관리 대시보드</title>
     <style>
         /* [레이아웃 공통] */
-        body { font-family: 'Malgun Gothic', sans-serif; margin: 0; display: flex; height: 100vh; color: #333; overflow: hidden; background-color: #f5f6fa; }
+        /* [수정 1] height를 100vh -> 100dvh로 변경하여 모바일 주소창 대응 */
+        body { font-family: 'Malgun Gothic', sans-serif; margin: 0; display: flex; height: 100dvh; color: #333; overflow: hidden; background-color: #f5f6fa; }
         
         /* [사이드바] */
         .sidebar { 
@@ -30,9 +31,17 @@
         .submenu-item.active { background-color: #e6f7ff; color: #007bff; border-left-color: #007bff; font-weight: bold; }
 
         /* [메인 컨텐츠] */
-        .main-content { flex-grow: 1; padding: 0 20px 20px 20px; /* 상단 패딩 제거 (헤더 고정 때문) */ overflow-y: auto; display: flex; flex-direction: column; }
+        /* [수정 2] padding-bottom을 80px 추가하여 스크롤 끝부분 여유 확보 */
+        .main-content { 
+            flex-grow: 1; 
+            padding: 0 20px 80px 20px; /* 하단 패딩 80px */
+            overflow-y: auto; 
+            display: flex; 
+            flex-direction: column; 
+            -webkit-overflow-scrolling: touch; /* 모바일 부드러운 스크롤 */
+        }
         
-        /* [수정] 컨텐츠 헤더 고정 (Sticky Header) */
+        /* 컨텐츠 헤더 고정 (Sticky Header) */
         .content-header { 
             display: flex; align-items: center; 
             border-bottom: 2px solid #007bff; 
@@ -42,8 +51,8 @@
             /* 고정 설정 */
             position: sticky; 
             top: 0; 
-            background-color: #f5f6fa; /* 배경색 필수 (투명 방지) */
-            z-index: 20; /* 테이블 헤더보다 높아야 함 */
+            background-color: #f5f6fa; 
+            z-index: 20; 
         }
 
         h2 { margin: 0; font-size: 1.2rem; color: #2c3e50; flex-grow: 1; }
@@ -59,8 +68,9 @@
 
         /* [반응형 처리: 모바일] */
         @media (max-width: 768px) {
-            .sidebar { width: 100%; height: 100vh; border-right: none; position: absolute; z-index: 100; }
-            .main-content { display: none; width: 100%; height: 100vh; }
+            /* [수정 3] 모바일에서도 높이를 100dvh로 통일 */
+            .sidebar { width: 100%; height: 100dvh; border-right: none; position: absolute; z-index: 100; }
+            .main-content { display: none; width: 100%; height: 100dvh; }
 
             body.show-content .sidebar { display: none; }
             body.show-content .main-content { display: flex; }
@@ -93,17 +103,15 @@
         }
         td { cursor: default; }
         
-        /* [수정] 테이블 헤더 고정 위치 조정 */
+        /* 테이블 헤더 고정 위치 조정 */
         th { 
             background-color: #f8f9fa; 
             font-weight: bold; color: #555;
             
             /* 고정 설정 */
             position: sticky; 
-            top: 58px; /* [중요] content-header 높이만큼 띄움 */
-            z-index: 10; /* 헤더보다는 낮게 설정 */
-            
-            /* 그림자 추가 (헤더와 구분감) */
+            top: 58px; 
+            z-index: 10; 
             box-shadow: 0 2px 2px -1px rgba(0,0,0,0.1);
         }
         tr:hover { background-color: #f9f9f9; }
