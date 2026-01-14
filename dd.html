@@ -30,14 +30,28 @@
         .submenu-item.active { background-color: #e6f7ff; color: #007bff; border-left-color: #007bff; font-weight: bold; }
 
         /* [메인 컨텐츠] */
-        .main-content { flex-grow: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; }
-        .content-header { display: flex; align-items: center; margin-bottom: 15px; border-bottom: 2px solid #007bff; padding-bottom: 10px; }
+        .main-content { flex-grow: 1; padding: 0 20px 20px 20px; /* 상단 패딩 제거 (헤더 고정 때문) */ overflow-y: auto; display: flex; flex-direction: column; }
+        
+        /* [수정] 컨텐츠 헤더 고정 (Sticky Header) */
+        .content-header { 
+            display: flex; align-items: center; 
+            border-bottom: 2px solid #007bff; 
+            padding: 15px 0 10px 0; 
+            margin-bottom: 15px;
+            
+            /* 고정 설정 */
+            position: sticky; 
+            top: 0; 
+            background-color: #f5f6fa; /* 배경색 필수 (투명 방지) */
+            z-index: 20; /* 테이블 헤더보다 높아야 함 */
+        }
+
         h2 { margin: 0; font-size: 1.2rem; color: #2c3e50; flex-grow: 1; }
         .refresh-btn { padding: 6px 12px; cursor: pointer; background-color: #3498db; color: white; border: none; border-radius: 4px; font-weight: bold; font-size: 12px; margin-left: 10px; }
 
         /* [모바일 전용 뒤로가기 버튼] */
         .mobile-back-btn { 
-            display: none; /* PC에서는 숨김 */
+            display: none; 
             margin-right: 10px; padding: 6px 12px; 
             background-color: #fff; border: 1px solid #ccc; border-radius: 4px; 
             cursor: pointer; font-weight: bold; color: #555; font-size: 12px;
@@ -45,18 +59,14 @@
 
         /* [반응형 처리: 모바일] */
         @media (max-width: 768px) {
-            /* 1. 기본 상태: 사이드바만 보임, 메인은 숨김 */
             .sidebar { width: 100%; height: 100vh; border-right: none; position: absolute; z-index: 100; }
             .main-content { display: none; width: 100%; height: 100vh; }
 
-            /* 2. 'show-content' 클래스가 body에 붙으면: 사이드바 숨김, 메인 보임 */
             body.show-content .sidebar { display: none; }
             body.show-content .main-content { display: flex; }
             
-            /* 뒤로가기 버튼 표시 */
             .mobile-back-btn { display: inline-block; }
             
-            /* 모바일 여백 조정 */
             .content-header h2 { font-size: 1rem; }
             .refresh-btn { padding: 4px 8px; font-size: 11px; }
         }
@@ -83,7 +93,19 @@
         }
         td { cursor: default; }
         
-        th { background-color: #f8f9fa; position: sticky; top: 0; z-index: 5; font-weight: bold; color: #555; }
+        /* [수정] 테이블 헤더 고정 위치 조정 */
+        th { 
+            background-color: #f8f9fa; 
+            font-weight: bold; color: #555;
+            
+            /* 고정 설정 */
+            position: sticky; 
+            top: 58px; /* [중요] content-header 높이만큼 띄움 */
+            z-index: 10; /* 헤더보다는 낮게 설정 */
+            
+            /* 그림자 추가 (헤더와 구분감) */
+            box-shadow: 0 2px 2px -1px rgba(0,0,0,0.1);
+        }
         tr:hover { background-color: #f9f9f9; }
 
         /* 열 너비 설정 */
@@ -243,7 +265,6 @@
             document.getElementById('submenu-review').classList.add('open');
             
             const firstReviewSheet = Object.keys(resReview)[0];
-            // [수정] 초기 로드 시에는(isInitial=true) 모바일 화면 전환을 하지 않음
             if (firstReviewSheet) selectClinic('review', firstReviewSheet, true);
 
         } catch (e) {
@@ -270,7 +291,6 @@
             
             item.innerText = sheetName.replace('(파워링크)', '');
             
-            // 클릭 시에는 isInitial=false (화면 전환 발생)
             item.onclick = () => selectClinic(mode, sheetName, false);
             container.appendChild(item);
         }
@@ -292,7 +312,6 @@
         }
     }
 
-    // [수정] isInitial 파라미터 추가
     function selectClinic(mode, sheetName, isInitial = false) {
         document.querySelectorAll('.submenu-item').forEach(el => el.classList.remove('active'));
         const currentItem = document.getElementById(`nav-${mode}-${sheetName}`);
@@ -313,13 +332,11 @@
         const rows = dataCache[mode][sheetName];
         renderContent(mode, rows);
 
-        // [추가] 초기 로딩이 아닐 때만(유저 클릭 시) 모바일에서 화면 전환
         if (!isInitial) {
             showMobileContent();
         }
     }
 
-    // [추가] 모바일 화면 전환용 함수들
     function showMobileContent() {
         document.body.classList.add('show-content');
     }
