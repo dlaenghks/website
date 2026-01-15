@@ -6,7 +6,6 @@
     <title>통합 관리 대시보드</title>
     <style>
         /* [레이아웃 공통] */
-        /* [수정 1] height를 100vh -> 100dvh로 변경하여 모바일 주소창 대응 */
         body { font-family: 'Malgun Gothic', sans-serif; margin: 0; display: flex; height: 100dvh; color: #333; overflow: hidden; background-color: #f5f6fa; }
         
         /* [사이드바] */
@@ -31,24 +30,24 @@
         .submenu-item.active { background-color: #e6f7ff; color: #007bff; border-left-color: #007bff; font-weight: bold; }
 
         /* [메인 컨텐츠] */
-        /* [수정 2] padding-bottom을 80px 추가하여 스크롤 끝부분 여유 확보 */
         .main-content { 
             flex-grow: 1; 
-            padding: 0 20px 80px 20px; /* 하단 패딩 80px */
+            padding: 0 20px 80px 20px; 
             overflow-y: auto; 
             display: flex; 
             flex-direction: column; 
-            -webkit-overflow-scrolling: touch; /* 모바일 부드러운 스크롤 */
+            -webkit-overflow-scrolling: touch; 
         }
         
-        /* 컨텐츠 헤더 고정 (Sticky Header) */
+        /* 테이블 컨테이너 가로 스크롤 */
+        #table-container { width: 100%; overflow-x: auto; }
+        
+        /* 컨텐츠 헤더 고정 */
         .content-header { 
             display: flex; align-items: center; 
             border-bottom: 2px solid #007bff; 
             padding: 15px 0 10px 0; 
             margin-bottom: 15px;
-            
-            /* 고정 설정 */
             position: sticky; 
             top: 0; 
             background-color: #f5f6fa; 
@@ -66,11 +65,12 @@
             cursor: pointer; font-weight: bold; color: #555; font-size: 12px;
         }
 
+        /* [날짜 표시용 클래스 (기본 PC 상태)] */
+        .mo-date { display: none; } /* 모바일용 짧은 날짜는 평소에 숨김 */
+        .pc-date { display: inline; } /* PC용 긴 날짜는 보임 */
+
         /* [반응형 처리: 모바일] */
-        
-                /* [반응형 처리: 모바일] */
         @media (max-width: 768px) {
-            /* [수정 3] 모바일에서도 높이를 100dvh로 통일 */
             .sidebar { width: 100%; height: 100dvh; border-right: none; position: absolute; z-index: 100; }
             .main-content { display: none; width: 100%; height: 100dvh; }
 
@@ -82,17 +82,18 @@
             .content-header h2 { font-size: 1rem; }
             .refresh-btn { padding: 4px 8px; font-size: 11px; }
 
-            /* ▼▼▼ [여기 추가됨] 모바일에서만 적용되는 리뷰 테이블 칸 너비 ▼▼▼ */
-            /* 필요에 따라 px 숫자를 조절하세요 */
+            /* [모바일 테이블 너비 조정] */
             .review-table th:nth-child(1) { width: 90px; }  /* 작성일 */
             .review-table th:nth-child(2) { width: 70px; }  /* 작성자 */
             .review-table th:nth-child(3) { width: 50px; }  /* 부정 */
-            .review-table th:nth-child(4) { width: 250px; } /* 내용 (넓게) */
+            .review-table th:nth-child(4) { width: 250px; } /* 내용 */
             .review-table th:nth-child(5) { width: 120px; } /* 수집 */
             .review-table th:nth-child(6) { width: 50px; }  /* AI */
+
+            /* [모바일 날짜 교체 로직] */
+            .pc-date { display: none; } /* PC용 숨김 */
+            .mo-date { display: inline; } /* 모바일용 보임 */
         }
-
-
 
         /* [공지사항 박스] */
         .notice-box {
@@ -120,8 +121,6 @@
         th { 
             background-color: #f8f9fa; 
             font-weight: bold; color: #555;
-            
-            /* 고정 설정 */
             position: sticky; 
             top: 58px; 
             z-index: 10; 
@@ -129,16 +128,13 @@
         }
         tr:hover { background-color: #f9f9f9; }
 
-        /* 열 너비 설정 */
-        
-
-    .review-table th:nth-child(1) { width: 90px; }  /* 작성일 */
-    .review-table th:nth-child(2) { width: 70px; }  /* 작성자 */
-    .review-table th:nth-child(3) { width: 50px; }  /* 부정 */
-    .review-table th:nth-child(4) { width: 250px; } /* 리뷰내용 (가장 넓게) */
-    .review-table th:nth-child(5) { width: 120px; } /* 수집일시 */
-    .review-table th:nth-child(6) { width: 50px; }  /* AI */
-
+        /* [PC 기본 너비 설정] */
+        .review-table th:nth-child(1) { width: 110px; } 
+        .review-table th:nth-child(2) { width: 90px; }  
+        .review-table th:nth-child(3) { width: 70px; }  
+        .review-table th:nth-child(4) { width: auto; }  
+        .review-table th:nth-child(5) { width: 130px; } 
+        .review-table th:nth-child(6) { width: 60px; text-align: center; } 
 
         .rank-table th:nth-child(1) { width: 130px; } 
         .rank-table th:nth-child(2) { width: 90px; } 
@@ -446,7 +442,8 @@
                 if (mode === 'rank' && hideKeywordCol && j === RANK_KEYWORD_COL_IDX) continue;
 
                 let val = rows[i][j] !== null ? rows[i][j] : '';
-                
+                let cellContent = val; // 표시할 내용
+
                 let cellClass = "";
                 if (mode === 'rank' || mode === 'power') { 
                     if (String(val).includes('▲')) cellClass = "rank-up";
@@ -455,6 +452,17 @@
                 
                 let clickEvent = "";
                 if (mode === 'review') {
+                    // [수정: 모바일 날짜 줄임 처리]
+                    // 1번열(작성일) 또는 5번열(수집일)인 경우
+                    if (j === 1 || j === 5) {
+                        const strVal = String(val);
+                        // 앞이 '20'으로 시작하면 제거 (예: 2025 -> 25)
+                        const shortVal = strVal.startsWith('20') ? strVal.substring(2) : strVal;
+                        
+                        // PC용(전체)과 모바일용(단축)을 span으로 구분해서 넣음
+                        cellContent = `<span class="pc-date">${val}</span><span class="mo-date">${shortVal}</span>`;
+                    }
+
                     const safeVal = String(val)
                         .replace(/"/g, '&quot;')   
                         .replace(/'/g, "\\'")     
@@ -464,7 +472,7 @@
                     clickEvent = ` onclick="openModal('${safeVal}')" style="cursor: pointer;"`;
                 }
 
-                html += `<td class="${cellClass}"${clickEvent}>${val}</td>`;
+                html += `<td class="${cellClass}"${clickEvent}>${cellContent}</td>`;
             }
             html += '</tr>';
         }
