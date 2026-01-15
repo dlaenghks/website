@@ -6,6 +6,7 @@
     <title>통합 관리 대시보드</title>
     <style>
         /* [레이아웃 공통] */
+        /* [수정 1] height를 100vh -> 100dvh로 변경하여 모바일 주소창 대응 */
         body { font-family: 'Malgun Gothic', sans-serif; margin: 0; display: flex; height: 100dvh; color: #333; overflow: hidden; background-color: #f5f6fa; }
         
         /* [사이드바] */
@@ -30,27 +31,24 @@
         .submenu-item.active { background-color: #e6f7ff; color: #007bff; border-left-color: #007bff; font-weight: bold; }
 
         /* [메인 컨텐츠] */
+        /* [수정 2] padding-bottom을 80px 추가하여 스크롤 끝부분 여유 확보 */
         .main-content { 
             flex-grow: 1; 
-            padding: 0 20px 80px 20px; 
+            padding: 0 20px 80px 20px; /* 하단 패딩 80px */
             overflow-y: auto; 
             display: flex; 
             flex-direction: column; 
-            -webkit-overflow-scrolling: touch; 
+            -webkit-overflow-scrolling: touch; /* 모바일 부드러운 스크롤 */
         }
         
-        /* [수정] 테이블 컨테이너에 가로 스크롤 속성 명시 */
-        #table-container {
-            width: 100%;
-            overflow-x: auto; /* 내용이 넘치면 가로 스크롤 발생 */
-        }
-        
-        /* 컨텐츠 헤더 고정 */
+        /* 컨텐츠 헤더 고정 (Sticky Header) */
         .content-header { 
             display: flex; align-items: center; 
             border-bottom: 2px solid #007bff; 
             padding: 15px 0 10px 0; 
             margin-bottom: 15px;
+            
+            /* 고정 설정 */
             position: sticky; 
             top: 0; 
             background-color: #f5f6fa; 
@@ -70,6 +68,7 @@
 
         /* [반응형 처리: 모바일] */
         @media (max-width: 768px) {
+            /* [수정 3] 모바일에서도 높이를 100dvh로 통일 */
             .sidebar { width: 100%; height: 100dvh; border-right: none; position: absolute; z-index: 100; }
             .main-content { display: none; width: 100%; height: 100dvh; }
 
@@ -108,6 +107,8 @@
         th { 
             background-color: #f8f9fa; 
             font-weight: bold; color: #555;
+            
+            /* 고정 설정 */
             position: sticky; 
             top: 58px; 
             z-index: 10; 
@@ -115,20 +116,18 @@
         }
         tr:hover { background-color: #f9f9f9; }
 
-        /* [수정] 열 너비 설정 (auto 대신 고정 px 사용) */
+        /* 열 너비 설정 */
         .review-table th:nth-child(1) { width: 110px; } 
         .review-table th:nth-child(2) { width: 90px; }  
         .review-table th:nth-child(3) { width: 70px; }  
-        .review-table th:nth-child(4) { width: 300px; } /* [중요] 내용 컬럼 최소 너비 확보 */  
+        .review-table th:nth-child(4) { width: auto; }  
         .review-table th:nth-child(5) { width: 130px; } 
         .review-table th:nth-child(6) { width: 60px; text-align: center; } 
 
         .rank-table th:nth-child(1) { width: 130px; } 
         .rank-table th:nth-child(2) { width: 90px; } 
-        .rank-table th:nth-child(3) { width: 150px; } /* [중요] 순위 변동 컬럼도 너비 확보 */
+        .rank-table th:nth-child(3) { width: auto; }
 
-        /* 파워링크는 컬럼 수가 유동적일 수 있으니 최소 너비 설정 */
-        .power-table { min-width: 500px; } 
         .power-table th { width: auto; }
 
         .bad-row { background-color: #ffebee !important; }
