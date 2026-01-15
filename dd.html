@@ -6,6 +6,7 @@
     <title>통합 관리 대시보드</title>
     <style>
         /* [레이아웃 공통] */
+        /* [수정 1] height를 100vh -> 100dvh로 변경하여 모바일 주소창 대응 */
         body { font-family: 'Malgun Gothic', sans-serif; margin: 0; display: flex; height: 100dvh; color: #333; overflow: hidden; background-color: #f5f6fa; }
         
         /* [사이드바] */
@@ -29,30 +30,29 @@
         .submenu-item:hover { background-color: #eef2f5; color: #333; }
         .submenu-item.active { background-color: #e6f7ff; color: #007bff; border-left-color: #007bff; font-weight: bold; }
 
-        /* [메인 컨텐츠 레이아웃 재설계] */
+        /* [메인 컨텐츠] */
+        /* [수정 2] padding-bottom을 80px 추가하여 스크롤 끝부분 여유 확보 */
         .main-content { 
             flex-grow: 1; 
+            padding: 0 20px 80px 20px; /* 하단 패딩 80px */
+            overflow-y: auto; 
             display: flex; 
             flex-direction: column; 
-            overflow: hidden; /* 전체 스크롤 막음 (헤더 고정 위해) */
+            -webkit-overflow-scrolling: touch; /* 모바일 부드러운 스크롤 */
         }
         
-        /* [수정] 컨텐츠 헤더: 스크롤 되지 않고 상단에 고정됨 */
+        /* 컨텐츠 헤더 고정 (Sticky Header) */
         .content-header { 
             display: flex; align-items: center; 
             border-bottom: 2px solid #007bff; 
-            padding: 15px 20px 10px 20px; 
+            padding: 15px 0 10px 0; 
+            margin-bottom: 15px;
+            
+            /* 고정 설정 */
+            position: sticky; 
+            top: 0; 
             background-color: #f5f6fa; 
-            flex-shrink: 0; /* 크기 줄어들지 않음 */
             z-index: 20; 
-        }
-
-        /* [수정] 테이블 컨테이너: 여기서 스크롤(가로/세로) 담당 */
-        #table-container {
-            flex-grow: 1;           /* 남은 공간 모두 차지 */
-            overflow: auto;         /* 가로, 세로 스크롤 모두 허용 */
-            padding: 0 20px 80px 20px; /* 하단 여백 확보 */
-            -webkit-overflow-scrolling: touch;
         }
 
         h2 { margin: 0; font-size: 1.2rem; color: #2c3e50; flex-grow: 1; }
@@ -66,12 +66,11 @@
             cursor: pointer; font-weight: bold; color: #555; font-size: 12px;
         }
 
-        /* [날짜 표시용 클래스] */
-        .mo-date { display: none; }
-        .pc-date { display: inline; }
-
         /* [반응형 처리: 모바일] */
+        
+                /* [반응형 처리: 모바일] */
         @media (max-width: 768px) {
+            /* [수정 3] 모바일에서도 높이를 100dvh로 통일 */
             .sidebar { width: 100%; height: 100dvh; border-right: none; position: absolute; z-index: 100; }
             .main-content { display: none; width: 100%; height: 100dvh; }
 
@@ -83,37 +82,29 @@
             .content-header h2 { font-size: 1rem; }
             .refresh-btn { padding: 4px 8px; font-size: 11px; }
 
-            /* 모바일 테이블 너비 조정 */
-            .review-table th:nth-child(1) { width: 90px; }  
-            .review-table th:nth-child(2) { width: 70px; }  
-            .review-table th:nth-child(3) { width: 50px; }  
-            .review-table th:nth-child(4) { width: 250px; } 
-            .review-table th:nth-child(5) { width: 120px; } 
-            .review-table th:nth-child(6) { width: 50px; }  
-
-            /* 모바일 날짜 교체 */
-            .pc-date { display: none; }
-            .mo-date { display: inline; }
+            /* ▼▼▼ [여기 추가됨] 모바일에서만 적용되는 리뷰 테이블 칸 너비 ▼▼▼ */
+            /* 필요에 따라 px 숫자를 조절하세요 */
+            .review-table th:nth-child(1) { width: 50px; }  /* 작성일 */
+            .review-table th:nth-child(2) { width: 50px; }  /* 작성자 */
+            .review-table th:nth-child(3) { width: 30px; }  /* 부정 */
+            .review-table th:nth-child(4) { width: 250px; } /* 내용 (넓게) */
+            .review-table th:nth-child(5) { width: 50px; } /* 수집 */
+            .review-table th:nth-child(6) { width: 30px; }  /* AI */
         }
+
+
 
         /* [공지사항 박스] */
         .notice-box {
             background-color: #e8f4fd; color: #2c3e50;
-            padding: 12px 15px; 
-            margin: 0 20px 15px 20px; /* 좌우 여백 추가 */
+            padding: 12px 15px; margin-bottom: 15px;
             border-left: 5px solid #3498db; border-radius: 4px;
             font-size: 13px; line-height: 1.5;
             box-shadow: 0 1px 2px rgba(0,0,0,0.05);
             display: none;
-            flex-shrink: 0; /* 공지사항 크기 유지 */
         }
-        
-        .keyword-tabs { 
-            display: flex; flex-wrap: wrap; gap: 6px; 
-            margin: 0 20px 15px 20px; /* 좌우 여백 추가 */
-            flex-shrink: 0;
-        }
-        
+
+        .keyword-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 15px; }
         .keyword-btn { padding: 6px 12px; cursor: pointer; border: 1px solid #ccc; background: white; border-radius: 20px; font-size: 12px; font-weight: bold; color: #555; }
         .keyword-btn.active { background-color: #27ae60; color: white; border-color: #27ae60; box-shadow: 0 2px 3px rgba(0,0,0,0.1); }
 
@@ -125,24 +116,29 @@
         }
         td { cursor: default; }
         
-        /* [수정] 테이블 헤더 고정 (컨테이너 기준 0px) */
+        /* 테이블 헤더 고정 위치 조정 */
         th { 
             background-color: #f8f9fa; 
             font-weight: bold; color: #555;
+            
+            /* 고정 설정 */
             position: sticky; 
-            top: 0; /* 이제 58px이 아닌 0으로 설정해도 완벽히 붙습니다 */
+            top: 58px; 
             z-index: 10; 
             box-shadow: 0 2px 2px -1px rgba(0,0,0,0.1);
         }
         tr:hover { background-color: #f9f9f9; }
 
-        /* PC 기본 너비 설정 */
-        .review-table th:nth-child(1) { width: 110px; } 
-        .review-table th:nth-child(2) { width: 90px; }  
-        .review-table th:nth-child(3) { width: 70px; }  
-        .review-table th:nth-child(4) { width: auto; }  
-        .review-table th:nth-child(5) { width: 130px; } 
-        .review-table th:nth-child(6) { width: 60px; text-align: center; } 
+        /* 열 너비 설정 */
+        
+
+    .review-table th:nth-child(1) { width: 90px; }  /* 작성일 */
+    .review-table th:nth-child(2) { width: 70px; }  /* 작성자 */
+    .review-table th:nth-child(3) { width: 50px; }  /* 부정 */
+    .review-table th:nth-child(4) { width: 250px; } /* 리뷰내용 (가장 넓게) */
+    .review-table th:nth-child(5) { width: 120px; } /* 수집일시 */
+    .review-table th:nth-child(6) { width: 50px; }  /* AI */
+
 
         .rank-table th:nth-child(1) { width: 130px; } 
         .rank-table th:nth-child(2) { width: 90px; } 
@@ -450,8 +446,7 @@
                 if (mode === 'rank' && hideKeywordCol && j === RANK_KEYWORD_COL_IDX) continue;
 
                 let val = rows[i][j] !== null ? rows[i][j] : '';
-                let cellContent = val; // 표시할 내용
-
+                
                 let cellClass = "";
                 if (mode === 'rank' || mode === 'power') { 
                     if (String(val).includes('▲')) cellClass = "rank-up";
@@ -460,14 +455,6 @@
                 
                 let clickEvent = "";
                 if (mode === 'review') {
-                    // 모바일 날짜 줄임 처리 (1열: 작성일, 5열: 수집일)
-                    if (j === 1 || j === 5) {
-                        const strVal = String(val);
-                        // '20'으로 시작하면 제거
-                        const shortVal = strVal.startsWith('20') ? strVal.substring(2) : strVal;
-                        cellContent = `<span class="pc-date">${val}</span><span class="mo-date">${shortVal}</span>`;
-                    }
-
                     const safeVal = String(val)
                         .replace(/"/g, '&quot;')   
                         .replace(/'/g, "\\'")     
@@ -477,7 +464,7 @@
                     clickEvent = ` onclick="openModal('${safeVal}')" style="cursor: pointer;"`;
                 }
 
-                html += `<td class="${cellClass}"${clickEvent}>${cellContent}</td>`;
+                html += `<td class="${cellClass}"${clickEvent}>${val}</td>`;
             }
             html += '</tr>';
         }
