@@ -446,12 +446,18 @@
             const rowClass = isBad ? ' class="bad-row"' : '';
             html += `<tr${rowClass}>`;
 
+
             for (let j = 0; j < rows[i].length; j++) {
                 if (mode === 'review' && j === REVIEW_COMPANY_COL_IDX) continue;
                 if (mode === 'rank' && hideKeywordCol && j === RANK_KEYWORD_COL_IDX) continue;
 
                 let val = rows[i][j] !== null ? rows[i][j] : '';
                 
+                // [수정] 플레이스 리뷰의 작성일(1번) 및 수집일시(5번)에서 앞의 '20' 제거
+                if (mode === 'review' && (j === 1 || j === 5)) {
+                    val = String(val).replace(/^20/, '');
+                }
+    
                 let cellClass = "";
                 if (mode === 'rank' || mode === 'power') { 
                     if (String(val).includes('▲')) cellClass = "rank-up";
