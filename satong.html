@@ -182,8 +182,9 @@
             .mobile-back-btn { display: inline-block; }
             .content-header h2 { font-size: 1rem; }
             .review-table th:nth-child(1), .review-table th:nth-child(5) { width: 50px; }
-            .review-table th:nth-child(2) { width: 40px; }
-            .review-table th:nth-child(4) { width: 120px; }
+            .review-table th:nth-child(3), .review-table th:nth-child(6) { width: 20px; }
+            .review-table th:nth-child(2) { width: 30px; }
+            .review-table th:nth-child(4) { width: 100px; }
         }
     </style>
 </head>
@@ -243,7 +244,7 @@
             <div class="summary-cards-grid">
                 <div class="summary-card" id="balance-card">
                     <div class="label">
-                        현재 광고 잔액
+                        광고 잔액 * 아침 9시 기준
                         <span id="d-day-tag" style="font-weight: 800; color: #4a5568;"></span>
                     </div>
                     <div class="value" id="current-balance">0원</div>
@@ -260,7 +261,7 @@
                 </div>
             </div>
             <div id="charge-alert" class="charge-status">
-                ⚠️ 잔액이 매우 부족합니다! 1~2일 이내 소진 예상되오니 즉시 충전하세요.
+                ⚠️ 잔액이 매우 부족합니다! <br>1~2일 이내 소진 예상되오니 즉시 충전하세요.
             </div>
         </div>
 
@@ -277,9 +278,9 @@
     };
 
     const NOTICE_MESSAGES = {
-        review: "📢 <b>Notice:</b> 리뷰 모니터링은 오전(단어 필터링 + AI 검수), 오후(AI 검수) 총 2회 진행되고, 각 업체의 <b>리뷰 목록도 2회 업데이트</b> 되며, <b>부정 리뷰 발견 시 이메일이 발송</b>됩니다. <b>리뷰 내용을 클릭하시면 자세한 내용</b>을 확인할 수 있습니다.",
-        rank: "📢 <b>Notice:</b> 플레이스 순위 모니터링은 <b>오전, 오후 총 2회 진행</b>되고, 순위 변동은 ▲ 상승/▼ 하락으로 표시됩니다. 50위 미만은 기록되지 않습니다.",
-        power: "📢 <b>Notice:</b> 최근 7일 소진액 및 잔액 기반으로 분석한 광고비 현황입니다. 현재 광고 잔액에 노출되는 건 <b>금일 아침에 조회한 액수</b>입니다."
+        review: "📢 <b>Notice:</b> 오전(단어 필터링 + AI 검수), 오후(AI 검수) 총 2회 진행(<b>리뷰 목록 2회 업데이트</b>)<br><b>부정 리뷰 발견 시 이메일 발송</b>되며, <b>리뷰 내용 클릭 시 상세한 내용</b>을 확인할 수 있습니다.",
+        rank: "📢 <b>Notice:</b> <b>오전, 오후 총 2회 노출 순위 확인</b><br>순위 변동은 ▲ 상승/▼ 하락으로 표시되고, 50위 미만은 기록되지 않습니다.",
+        power: "📢 <b>Notice:</b> <b>최근 7일 소진액 및 잔액 기반으로 분석한 광고비 현황</b><br>현재 광고 잔액에 노출되는 건 <b>금일 아침 조회한 액수</b>입니다."
     };
 
     const REVIEW_COMPANY_COL_IDX = 0; 
