@@ -5,15 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>통합 관리 대시보드</title>
     <style>
-        /* [레이아웃 공통] */
+        /* [레이아웃 및 공통 스타일] */
         body { font-family: 'Malgun Gothic', sans-serif; margin: 0; display: flex; height: 100dvh; color: #333; overflow: hidden; background-color: #f5f6fa; }
         
         /* [사이드바] */
-        .sidebar { 
-            width: 240px; background-color: #fff; border-right: 1px solid #ddd; 
-            display: flex; flex-direction: column; flex-shrink: 0; user-select: none; overflow-y: auto; 
-            transition: 0.3s;
-        }
+        .sidebar { width: 240px; background-color: #fff; border-right: 1px solid #ddd; display: flex; flex-direction: column; flex-shrink: 0; user-select: none; overflow-y: auto; transition: 0.3s; }
         .sidebar::-webkit-scrollbar { width: 5px; }
         .sidebar::-webkit-scrollbar-thumb { background-color: #ccc; border-radius: 10px; }
         .sidebar-header { padding: 15px; font-weight: bold; font-size: 1.1rem; border-bottom: 1px solid #eee; color: #ffffff; position: sticky; top: 0; background: #3498db; z-index: 10; }
@@ -29,112 +25,34 @@
         .submenu-item:hover { background-color: #eef2f5; color: #333; }
         .submenu-item.active { background-color: #e6f7ff; color: #007bff; border-left-color: #007bff; font-weight: bold; }
 
-        /* [수정된 구분선 스타일] */
-        .menu-divider {
-            margin: 10px 15px; /* 여백 조정 */
-            border-top: 1px solid #ccc; /* 색상 진하게 */
-            height: 0;
-        }
+        .menu-divider { margin: 10px 15px; border-top: 1px solid #ccc; height: 0; }
 
         /* [메인 컨텐츠] */
-        .main-content { 
-            flex-grow: 1; 
-            padding: 0 20px 80px 20px;
-            overflow-y: auto; 
-            display: flex; 
-            flex-direction: column; 
-            -webkit-overflow-scrolling: touch;
-        }
-        
-        .content-header { 
-            display: flex; align-items: center; 
-            border-bottom: 2px solid #007bff; 
-            padding: 15px 0 10px 0; 
-            margin-bottom: 15px;
-            position: sticky; 
-            top: 0; 
-            background-color: #f5f6fa; 
-            z-index: 20; 
-        }
-
+        .main-content { flex-grow: 1; padding: 0 20px 80px 20px; overflow-y: auto; display: flex; flex-direction: column; -webkit-overflow-scrolling: touch; }
+        .content-header { display: flex; align-items: center; border-bottom: 2px solid #007bff; padding: 15px 0 10px 0; margin-bottom: 15px; position: sticky; top: 0; background-color: #f5f6fa; z-index: 20; }
         h2 { margin: 0; font-size: 1.2rem; color: #2c3e50; flex-grow: 1; }
         .refresh-btn { padding: 6px 12px; cursor: pointer; background-color: #3498db; color: white; border: none; border-radius: 4px; font-weight: bold; font-size: 12px; margin-left: 10px; }
         .mobile-back-btn { display: none; margin-right: 10px; padding: 6px 12px; background-color: #3498db; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; font-weight: bold; color: #ffffff; font-size: 12px; }
 
-        /* [공지사항 박스] */
-        .notice-box {
-            background-color: #e8f4fd; color: #2c3e50;
-            padding: 12px 15px; margin-bottom: 15px;
-            border-left: 5px solid #3498db; border-radius: 4px;
-            font-size: 13px; line-height: 1.5;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-            display: none;
-        }
+        .notice-box { background-color: #e8f4fd; color: #2c3e50; padding: 12px 15px; margin-bottom: 15px; border-left: 5px solid #3498db; border-radius: 4px; font-size: 13px; line-height: 1.5; box-shadow: 0 1px 2px rgba(0,0,0,0.05); display: none; }
 
-        /* [파워링크 요약 영역] */
-        .power-summary-container {
-            display: none; 
-            flex-direction: column; 
-            gap: 12px;
-            margin-bottom: 15px;
-            animation: fadeIn 0.4s ease-out;
-        }
-        
-        .summary-cards-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 12px;
-        }
-
+        /* [파워링크 요약] */
+        .power-summary-container { display: none; flex-direction: column; gap: 12px; margin-bottom: 15px; animation: fadeIn 0.4s ease-out; }
+        .summary-cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
-
-        .summary-card {
-            background: white;
-            padding: 15px;
-            border-radius: 12px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
-            border: 1px solid #e2e8f0;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-        }
-        
-        .summary-card .label { 
-            font-size: 11px; 
-            color: #64748b; 
-            margin-bottom: 4px; 
-            font-weight: bold; 
-            display: flex; 
-            justify-content: flex-start; 
-            align-items: center;
-            gap: 6px; 
-        }
-        
+        .summary-card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.04); border: 1px solid #e2e8f0; display: flex; flex-direction: column; position: relative; }
+        .summary-card .label { font-size: 11px; color: #64748b; margin-bottom: 4px; font-weight: bold; display: flex; justify-content: flex-start; align-items: center; gap: 6px; }
         .summary-card .value { font-size: 18px; color: #1e293b; font-weight: 800; margin-bottom: 8px; }
-        
         .trend-tag { font-size: 10px; padding: 2px 6px; border-radius: 4px; }
         .trend-up { background-color: #fff5f5; color: #e53e3e; } 
         .trend-down { background-color: #f0fff4; color: #38a169; } 
-
         .gauge-container { width: 100%; height: 6px; background-color: #edf2f7; border-radius: 10px; overflow: hidden; margin-top: auto; }
         .gauge-bar { height: 100%; width: 0%; transition: width 0.8s ease-in-out; }
         .gauge-green { background-color: #48bb78; }
         .gauge-yellow { background-color: #ecc94b; }
         .gauge-red { background-color: #f56565; }
-
         .summary-card.alert { border: 2px solid #fecaca; background-color: #fff5f5; }
-        
-        .charge-status {
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 12.5px;
-            font-weight: bold;
-            text-align: center;
-            display: none;
-            background-color: #fff1f2;
-            color: #be123c;
-            border: 1px dashed #fda4af;
-        }
+        .charge-status { padding: 12px; border-radius: 8px; font-size: 12.5px; font-weight: bold; text-align: center; display: none; background-color: #fff1f2; color: #be123c; border: 1px dashed #fda4af; }
 
         .keyword-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 15px; }
         .keyword-btn { padding: 6px 12px; cursor: pointer; border: 1px solid #ccc; background: white; border-radius: 4px; font-size: 12px; font-weight: bold; color: #555; }
@@ -142,23 +60,17 @@
 
         /* [테이블 스타일] */
         table { border-collapse: collapse; width: 100%; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1); table-layout: fixed; }
-        th, td { 
-            border: 1px solid #eee; padding: 10px; text-align: left; font-size: 13px; 
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-        }
+        th, td { border: 1px solid #eee; padding: 10px; text-align: left; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         th { background-color: #f8f9fa; font-weight: bold; color: #555; position: sticky; top: 58px; z-index: 10; box-shadow: 0 2px 2px -1px rgba(0,0,0,0.1); }
         tr:hover { background-color: #f9f9f9; }
-
         .review-table th:nth-child(1) { width: 75px; }
         .review-table th:nth-child(2) { width: 75px; }
         .review-table th:nth-child(3), .review-table td:nth-child(3) { width: 50px; text-align: center; }
         .review-table th:nth-child(4) { width: 250px; }
         .review-table th:nth-child(5) { width: 75px; }
         .review-table th:nth-child(6), .review-table td:nth-child(6) { width: 50px; text-align: center; }
-
         .rank-table th:nth-child(1) { width: 130px; } 
         .rank-table th:nth-child(2) { width: 90px; } 
-
         .rank-table th:nth-child(1), .rank-table td:nth-child(1) {text-align: center; }
         .rank-table th:nth-child(2), .rank-table td:nth-child(2) {text-align: center; }
         .rank-table th:nth-child(3), .rank-table td:nth-child(3) {text-align: center; }
@@ -166,13 +78,7 @@
         .rank-table th:nth-child(5), .rank-table td:nth-child(5) {text-align: center; }
         .rank-table th:nth-child(6), .rank-table td:nth-child(6) {text-align: center; }
         .rank-table th:nth-child(7), .rank-table td:nth-child(7) {text-align: center; }
-
-        .power-table th:nth-child(2), .power-table td:nth-child(2),
-        .power-table th:nth-child(6), .power-table td:nth-child(6),
-        .power-table th:nth-child(7), .power-table td:nth-child(7) {
-            display: none;
-        }
-
+        .power-table th:nth-child(2), .power-table td:nth-child(2), .power-table th:nth-child(6), .power-table td:nth-child(6), .power-table th:nth-child(7), .power-table td:nth-child(7) { display: none; }
         .bad-row { background-color: #ffebee !important; }
         .rank-up { color: #e74c3c; font-weight: bold; }
         .rank-down { color: #3498db; font-weight: bold; }
@@ -208,7 +114,7 @@
     <div id="loading-overlay" class="overlay">
         <div class="loading-box">
             <div class="spinner"></div>
-            <div class="loading-text">데이터 동기화 중...</div>
+            <div id="loading-text" class="loading-text">데이터 동기화 중...</div>
         </div>
     </div>
 
@@ -258,36 +164,25 @@
         <div id="power-summary" class="power-summary-container">
             <div class="summary-cards-grid">
                 <div class="summary-card" id="balance-card">
-                    <div class="label">
-                        광고 잔액 * 아침 9시 기준
-                        <span id="d-day-tag" style="font-weight: 800; color: #4a5568;"></span>
-                    </div>
+                    <div class="label">광고 잔액 * 아침 9시 기준 <span id="d-day-tag" style="font-weight: 800; color: #4a5568;"></span></div>
                     <div class="value" id="current-balance">0원</div>
                     <div class="gauge-container"><div id="balance-gauge" class="gauge-bar"></div></div>
                 </div>
-
                 <div class="summary-card">
-                    <div class="label">
-                        1일 평균 광고비 (최근 7일)
-                        <span id="spent-trend" class="trend-tag"></span>
-                    </div>
+                    <div class="label">1일 평균 광고비 (최근 7일) <span id="spent-trend" class="trend-tag"></span></div>
                     <div class="value" id="avg-spent">0원</div>
                     <div class="gauge-container"><div class="gauge-bar gauge-green" style="width: 100%"></div></div>
                 </div>
-
                 <div class="summary-card">
                     <div class="label" id="month-spend-label">월 광고비 사용액</div>
                     <div class="value" id="month-spend-val">0원</div>
                 </div>
-
                 <div class="summary-card">
                     <div class="label" id="month-charge-label">월 광고비 충전액</div>
                     <div class="value" id="month-charge-val">0원</div>
                 </div>
             </div>
-            <div id="charge-alert" class="charge-status">
-                ⚠️ 잔액이 매우 부족합니다! <br>1~2일 이내 소진 예상되오니 즉시 충전하세요.
-            </div>
+            <div id="charge-alert" class="charge-status">⚠️ 잔액이 매우 부족합니다! <br>1~2일 이내 소진 예상되오니 즉시 충전하세요.</div>
         </div>
 
         <div id="keyword-container" class="keyword-tabs"></div>
@@ -317,9 +212,10 @@
     const REVIEW_COMPANY_COL_IDX = 0; 
     const RANK_KEYWORD_COL_IDX = 1; 
 
-    let dataCache = { review: null, rank: null, power: null };
+    let dataCache = { review: {}, rank: null, power: null, bookmark: null };
     let orderCache = { review: [], rank: [], power: [] };
-    
+    let loadingStatus = { review: false, rank: false, power: false, bookmark: false };
+
     function parseKoreanDate(dateStr) {
         if (!dateStr || typeof dateStr !== 'string') return new Date(0);
         const matches = dateStr.match(/(\d+)년\s*(\d+)월\s*(\d+)일/);
@@ -328,121 +224,120 @@
 
     function cleanNum(val) { return Number(String(val).replace(/[^0-9.-]+/g,"")) || 0; }
 
-    async function initDashboard(isRefresh = false) {
+    function showOverlay(text) {
         const overlay = document.getElementById('loading-overlay');
+        document.getElementById('loading-text').innerText = text || "데이터 동기화 중...";
         overlay.classList.add('visible');
+    }
+
+    function hideOverlay() {
+        document.getElementById('loading-overlay').classList.remove('visible');
+    }
+
+    async function initDashboard(isRefresh = false) {
         const urlParams = new URLSearchParams(window.location.search);
         const userKey = urlParams.get('id');
+        if (!userKey) { alert("ID 코드가 없습니다."); return; }
 
-        if (!userKey) { alert("ID 코드가 없습니다."); overlay.classList.remove('visible'); return; }
+        showOverlay("데이터 로딩 중...");
+        
+        // 1. 즐겨찾기 로딩 시작
+        fetchData('bookmark', CONFIG.bookmark.url, userKey);
+        
+        // 2. 리뷰 데이터 우선 로딩 완료 대기
+        await loadReviewData(userKey);
+        
+        // 리뷰 데이터 오면 첫 화면 구성하고 스피너 제거
+        hideOverlay();
+        
+        // 3. [추가] 플레이스 리뷰 메뉴 자동 펼침
+        toggleGroup('review');
 
+        // 4. 나머지 백그라운드 로딩 시작
+        fetchData('rank', CONFIG.rank.url, userKey);
+        fetchData('power', CONFIG.power.url, userKey);
+    }
+
+    async function loadReviewData(userKey) {
+        loadingStatus.review = true;
+        buildSidebar('review', null, null);
         try {
-            const [resReviewList, resRank, resPower, resBookmark] = await Promise.all([
-                Promise.all(CONFIG.review.urls.map(url => fetch(`${url}?id=${userKey}`).then(r => r.json()))),
-                fetch(`${CONFIG.rank.url}?id=${userKey}`).then(r => r.json()),
-                fetch(`${CONFIG.power.url}?id=${userKey}`).then(r => r.json()),
-                fetch(`${CONFIG.bookmark.url}?id=${userKey}`).then(r => r.json())
-            ]);
-            
-            let mergedReviewData = {};
-            let mergedReviewOrder = [];
-
-            resReviewList.forEach(res => {
+            const results = await Promise.all(CONFIG.review.urls.map(url => fetch(`${url}?id=${userKey}`).then(r => r.json())));
+            let mergedData = {};
+            let mergedOrder = [];
+            results.forEach(res => {
                 if (!res) return;
                 const sheets = res.sheets || res;
                 Object.keys(sheets).forEach(key => {
-                    if (key !== 'error' && key !== 'status' && key !== 'order') {
-                        mergedReviewData[key] = sheets[key];
-                    }
+                    if (!['error', 'status', 'order'].includes(key)) mergedData[key] = sheets[key];
                 });
-                if (res.order && Array.isArray(res.order)) {
-                    mergedReviewOrder = mergedReviewOrder.concat(res.order);
-                }
+                if (res.order) mergedOrder = mergedOrder.concat(res.order);
             });
-
-            Object.keys(mergedReviewData).forEach(sheetName => {
-                if (!mergedReviewOrder.includes(sheetName)) {
-                    mergedReviewOrder.push(sheetName);
-                }
-            });
-
-            dataCache.review = mergedReviewData;
-            orderCache.review = mergedReviewOrder;
-
-            dataCache.rank = resRank.sheets || resRank;
-            orderCache.rank = resRank.order || [];
-
-            dataCache.power = resPower.sheets || resPower;
-            orderCache.power = resPower.order || [];
-
-            buildSidebar('bookmark', resBookmark.links, null);
+            dataCache.review = mergedData;
+            orderCache.review = [...new Set([...mergedOrder, ...Object.keys(mergedData)])];
             buildSidebar('review', dataCache.review, orderCache.review);
-            buildSidebar('rank', dataCache.rank, orderCache.rank);
-            buildSidebar('power', dataCache.power, orderCache.power);
-
-            document.getElementById('group-review').classList.add('active');
-            document.getElementById('submenu-review').classList.add('open');
-            
-            let firstSheet = "";
-            if (orderCache.review.length > 0) {
-                firstSheet = orderCache.review.find(name => dataCache.review[name]);
-            }
-            if (!firstSheet && dataCache.review) firstSheet = Object.keys(dataCache.review)[0];
-            
+            let firstSheet = orderCache.review.find(name => dataCache.review[name]) || Object.keys(dataCache.review)[0];
             if (firstSheet) selectClinic('review', firstSheet, true);
+        } catch (e) { console.error(e); }
+        loadingStatus.review = false;
+    }
 
-        } catch (e) {
-            console.error(e);
-            alert("데이터를 가져오지 못했습니다.");
-        } finally {
-            overlay.classList.remove('visible');
-        }
+    async function fetchData(mode, url, userKey) {
+        loadingStatus[mode] = true;
+        buildSidebar(mode, null, null);
+        try {
+            const res = await fetch(`${url}?id=${userKey}`).then(r => r.json());
+            if (mode === 'bookmark') {
+                dataCache.bookmark = res.links;
+            } else {
+                dataCache[mode] = res.sheets || res;
+                orderCache[mode] = res.order || [];
+            }
+            buildSidebar(mode, dataCache[mode], orderCache[mode]);
+        } catch (e) { console.error(e); }
+        loadingStatus[mode] = false;
+        buildSidebar(mode, dataCache[mode], orderCache[mode]);
     }
 
     function buildSidebar(mode, data, order) {
         const container = document.getElementById(`submenu-${mode}`);
+        if (!container) return;
         container.innerHTML = ""; 
+
+        if (loadingStatus[mode] && (!data || Object.keys(data).length === 0)) {
+            container.innerHTML = "<div style='padding:10px; font-size:12px; color:#3498db;'>목록 로딩 중...</div>";
+            return;
+        }
 
         if (mode === 'bookmark') {
             if (!data || data.length === 0) {
-                container.innerHTML = "<div style='padding:10px; font-size:12px; color:#999'>데이터 없음</div>";
+                if (!loadingStatus.bookmark) container.innerHTML = "<div style='padding:10px; font-size:12px; color:#999'>데이터 없음</div>";
                 return;
             }
             data.forEach(item => {
-                // [수정: 데이터 안정성 강화] 
-                // item.name을 강제로 문자열로 변환한 후 trim() 및 비교
                 const itemName = item.name ? String(item.name).trim() : "";
-                
                 if (itemName === '-') {
-                    const sep = document.createElement('div');
-                    sep.className = 'menu-divider';
-                    container.appendChild(sep);
-                    return; 
+                    const sep = document.createElement('div'); sep.className = 'menu-divider'; container.appendChild(sep); return; 
                 }
-
                 const link = document.createElement('a');
-                link.className = 'submenu-item';
-                link.innerText = item.name;
+                link.className = 'submenu-item'; link.innerText = item.name;
                 link.href = item.url.startsWith('http') ? item.url : 'http://' + item.url;
-                link.target = "_blank"; 
-                link.style.color = "#333";
+                link.target = "_blank"; link.style.color = "#333";
                 container.appendChild(link);
             });
             return;
         }
 
-        if (!data || data.error) {
+        let keys = (order && order.length > 0) ? order : Object.keys(data || {});
+        if (keys.length === 0 && !loadingStatus[mode]) {
             container.innerHTML = "<div style='padding:10px; font-size:12px; color:#999'>데이터 없음</div>";
             return;
         }
 
-        let keys = (order && order.length > 0) ? order : Object.keys(data);
-        
         keys.forEach(function(sheetName) {
-            if (!data[sheetName]) return;
-
             if (mode === 'power' && !sheetName.includes("(파워링크)")) return;
             if (mode !== 'power' && sheetName.includes("(파워링크)")) return;
+            if (!data[sheetName]) return;
 
             const item = document.createElement('div');
             item.className = 'submenu-item';
@@ -454,14 +349,24 @@
     }
 
     function toggleGroup(mode) {
-        const allGroups = document.querySelectorAll('.menu-group');
-        const allSubmenus = document.querySelectorAll('.submenu-container');
         const targetGroup = document.getElementById(`group-${mode}`);
         const targetSubmenu = document.getElementById(`submenu-${mode}`);
         const isAlreadyOpen = targetGroup.classList.contains('active');
 
-        allGroups.forEach(el => el.classList.remove('active'));
-        allSubmenus.forEach(el => el.classList.remove('open'));
+        if (!isAlreadyOpen && loadingStatus[mode] && (!dataCache[mode] || Object.keys(dataCache[mode]).length === 0)) {
+            showOverlay(`데이터 로딩 중...`);
+            const checkTimer = setInterval(() => {
+                if (!loadingStatus[mode]) {
+                    clearInterval(checkTimer);
+                    hideOverlay();
+                    if (!targetGroup.classList.contains('active')) toggleGroup(mode);
+                }
+            }, 500);
+            return;
+        }
+
+        document.querySelectorAll('.menu-group').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.submenu-container').forEach(el => el.classList.remove('open'));
 
         if (!isAlreadyOpen) {
             targetGroup.classList.add('active');
@@ -471,7 +376,21 @@
 
     function selectClinic(mode, sheetName, isInitial = false) {
         if (mode === 'bookmark') return;
+        if (loadingStatus[mode]) {
+            showOverlay(`데이터 로딩 중...`);
+            const checkDataTimer = setInterval(() => {
+                if (!loadingStatus[mode]) {
+                    clearInterval(checkDataTimer);
+                    hideOverlay();
+                    renderContentNow(mode, sheetName, isInitial);
+                }
+            }, 500);
+            return;
+        }
+        renderContentNow(mode, sheetName, isInitial);
+    }
 
+    function renderContentNow(mode, sheetName, isInitial) {
         document.querySelectorAll('.submenu-item').forEach(el => el.classList.remove('active'));
         const currentItem = document.getElementById(`nav-${mode}-${sheetName}`);
         if (currentItem) currentItem.classList.add('active');
@@ -531,66 +450,45 @@
             if (body.length > 0) {
                 const lastRow = body[body.length - 1];
                 const lastDateStr = String(lastRow[0]).trim(); 
-                
                 const targetPrefix = lastDateStr.substring(0, 6); 
                 const targetMonth = parseInt(lastDateStr.substring(4, 6)); 
-
-                let varMonthSpent = 0; 
-                let varMonthCharge = 0;
-
+                let varMonthSpent = 0, varMonthCharge = 0;
                 body.forEach(row => {
                     const rowDate = String(row[0]).trim(); 
                     if (rowDate.startsWith(targetPrefix)) {
-                        varMonthSpent += cleanNum(row[3]); 
-                        varMonthCharge += cleanNum(row[4]); 
+                        varMonthSpent += cleanNum(row[3]); varMonthCharge += cleanNum(row[4]); 
                     }
                 });
-
                 document.getElementById('month-spend-label').innerText = `${targetMonth}월 광고비 사용액`;
                 document.getElementById('month-spend-val').innerText = varMonthSpent.toLocaleString() + "원";
-
                 document.getElementById('month-charge-label').innerText = `${targetMonth}월 광고비 충전액`;
                 document.getElementById('month-charge-val').innerText = varMonthCharge.toLocaleString() + "원";
-                
                 const last7 = body.slice(-7);
-                const avgSpent = Math.round(last7.reduce((acc, r) => acc + cleanNum(r[3]), 0) / last7.length);
-                
+                const avgSpent = Math.round(last7.reduce((acc, r) => acc + cleanNum(r[3]), 0) / (last7.length || 1));
                 const trendTag = document.getElementById('spent-trend');
                 if (body.length >= 10) {
                     const prev7 = body.slice(-14, -7);
-                    const prevAvg = Math.round(prev7.reduce((acc, r) => acc + cleanNum(r[3]), 0) / prev7.length);
+                    const prevAvg = Math.round(prev7.reduce((acc, r) => acc + cleanNum(r[3]), 0) / (prev7.length || 1));
                     const diff = ((avgSpent - prevAvg) / (prevAvg || 1)) * 100;
                     trendTag.innerText = (diff >= 0 ? "▲ " : "▼ ") + Math.abs(diff).toFixed(1) + "%";
                     trendTag.className = "trend-tag " + (diff >= 0 ? "trend-up" : "trend-down");
                     trendTag.style.display = "inline-block";
                 } else { trendTag.style.display = "none"; }
-
                 const latestBalance = cleanNum(body[body.length - 1][6]); 
                 const remainingDays = avgSpent > 0 ? (latestBalance / avgSpent).toFixed(1) : 0;
-                
                 document.getElementById('avg-spent').innerText = avgSpent.toLocaleString() + "원";
                 document.getElementById('current-balance').innerText = latestBalance.toLocaleString() + "원";
                 document.getElementById('d-day-tag').innerText = `(D-${Math.floor(remainingDays)}일분)`;
-
-                const alertBox = document.getElementById('charge-alert');
-                const balCard = document.getElementById('balance-card');
                 const gauge = document.getElementById('balance-gauge');
-                
                 const gaugePercent = Math.min((remainingDays / 10) * 100, 100);
                 gauge.style.width = gaugePercent + "%";
-
+                const alertBox = document.getElementById('charge-alert'), balCard = document.getElementById('balance-card');
                 if (remainingDays < 2) {
-                    alertBox.style.display = "block";
-                    balCard.classList.add('alert');
-                    gauge.className = "gauge-bar gauge-red";
+                    alertBox.style.display = "block"; balCard.classList.add('alert'); gauge.className = "gauge-bar gauge-red";
                 } else if (remainingDays < 5) {
-                    alertBox.style.display = "none";
-                    balCard.classList.remove('alert');
-                    gauge.className = "gauge-bar gauge-yellow";
+                    alertBox.style.display = "none"; balCard.classList.remove('alert'); gauge.className = "gauge-bar gauge-yellow";
                 } else {
-                    alertBox.style.display = "none";
-                    balCard.classList.remove('alert');
-                    gauge.className = "gauge-bar gauge-green";
+                    alertBox.style.display = "none"; balCard.classList.remove('alert'); gauge.className = "gauge-bar gauge-green";
                 }
                 powerSummary.style.display = "flex";
             }
@@ -620,7 +518,6 @@
                     } else if (j === 5) val = String(val).replace(/^20/, '');
                 } else if (mode === 'rank' && j === 0) val = String(val).replace(/^20/, '');
                 else if (mode === 'power' && j === 0) val = String(val).replace(/^20(\d{2})(\d{2})(\d{2})$/, '$1-$2-$3');
-
                 let cls = (mode === 'rank' || mode === 'power') && (String(val).includes('▲') || String(val).includes('▼')) ? (String(val).includes('▲') ? "rank-up" : "rank-down") : "";
                 let evt = mode === 'review' ? ` onclick="openModal('${String(val).replace(/"/g, '&quot;').replace(/'/g, "\\'").replace(/\n/g, '\\n')}')" style="cursor: pointer;"` : "";
                 html += `<td class="${cls}"${evt}>${val}</td>`;
@@ -632,6 +529,7 @@
 
     function openModal(content) { document.getElementById('modal-content').innerText = content; document.getElementById('detail-modal').classList.add('visible'); }
     function closeModal() { document.getElementById('detail-modal').classList.remove('visible'); }
+
     initDashboard();
 </script>
 </body>
