@@ -29,6 +29,13 @@
         .submenu-item:hover { background-color: #eef2f5; color: #333; }
         .submenu-item.active { background-color: #e6f7ff; color: #007bff; border-left-color: #007bff; font-weight: bold; }
 
+        /* [수정된 구분선 스타일] */
+        .menu-divider {
+            margin: 10px 15px; /* 여백 조정 */
+            border-top: 1px solid #ccc; /* 색상 진하게 */
+            height: 0;
+        }
+
         /* [메인 컨텐츠] */
         .main-content { 
             flex-grow: 1; 
@@ -267,6 +274,16 @@
                     <div class="value" id="avg-spent">0원</div>
                     <div class="gauge-container"><div class="gauge-bar gauge-green" style="width: 100%"></div></div>
                 </div>
+
+                <div class="summary-card">
+                    <div class="label" id="month-spend-label">월 광고비 사용액</div>
+                    <div class="value" id="month-spend-val">0원</div>
+                </div>
+
+                <div class="summary-card">
+                    <div class="label" id="month-charge-label">월 광고비 충전액</div>
+                    <div class="value" id="month-charge-val">0원</div>
+                </div>
             </div>
             <div id="charge-alert" class="charge-status">
                 ⚠️ 잔액이 매우 부족합니다! <br>1~2일 이내 소진 예상되오니 즉시 충전하세요.
@@ -319,12 +336,7 @@
 
         if (!userKey) { alert("ID 코드가 없습니다."); overlay.classList.remove('visible'); return; }
 
-
-
-
-
-try {
-            // [수정] review는 배열이므로 map을 사용하여 여러 번 fetch 후 결과를 합침
+        try {
             const [resReviewList, resRank, resPower, resBookmark] = await Promise.all([
                 Promise.all(CONFIG.review.urls.map(url => fetch(`${url}?id=${userKey}`).then(r => r.json()))),
                 fetch(`${CONFIG.rank.url}?id=${userKey}`).then(r => r.json()),
@@ -332,47 +344,27 @@ try {
                 fetch(`${CONFIG.bookmark.url}?id=${userKey}`).then(r => r.json())
             ]);
             
-            // [수정] 여러 스크립트에서 온 리뷰 데이터를 하나로 병합
             let mergedReviewData = {};
             let mergedReviewOrder = [];
 
-
-
-            
-            // [수정 후] 안전한 병합 로직 (이걸로 교체하세요)
             resReviewList.forEach(res => {
-                if (!res) return; // 빈 응답 건너뛰기
-
-                // 1. 시트 데이터 추출 (Sheets 키가 없으면 전체를 사용하되, 에러 체크)
+                if (!res) return;
                 const sheets = res.sheets || res;
-                
-                // 2. 데이터를 하나씩 확인하며 합치기 ('error', 'order' 등 불필요한 키 제외)
                 Object.keys(sheets).forEach(key => {
-                    // 'error', 'status', 'order' 같은 시스템 키는 데이터에 섞이지 않도록 제외
                     if (key !== 'error' && key !== 'status' && key !== 'order') {
                         mergedReviewData[key] = sheets[key];
                     }
                 });
-
-                // 3. 순서(Order) 정보가 있으면 합치기
                 if (res.order && Array.isArray(res.order)) {
                     mergedReviewOrder = mergedReviewOrder.concat(res.order);
                 }
             });
 
-            // 4. [중요] 순서 목록(mergedReviewOrder)에 없는 시트가 있다면 끝에 추가
-            // (스크립트에서 order를 안 보내주는 경우 탭이 사라지는 것 방지)
             Object.keys(mergedReviewData).forEach(sheetName => {
                 if (!mergedReviewOrder.includes(sheetName)) {
                     mergedReviewOrder.push(sheetName);
                 }
             });
-
-            // 5. 최종 데이터 할당 (에러 속성이 제거된 깨끗한 데이터)
-            dataCache.review = mergedReviewData;
-            orderCache.review = mergedReviewOrder;
-
-
 
             dataCache.review = mergedReviewData;
             orderCache.review = mergedReviewOrder;
@@ -384,19 +376,13 @@ try {
             orderCache.power = resPower.order || [];
 
             buildSidebar('bookmark', resBookmark.links, null);
-
-
-
-
             buildSidebar('review', dataCache.review, orderCache.review);
             buildSidebar('rank', dataCache.rank, orderCache.rank);
             buildSidebar('power', dataCache.power, orderCache.power);
 
-            // [수정] 플레이스 리뷰를 기본 활성화
             document.getElementById('group-review').classList.add('active');
             document.getElementById('submenu-review').classList.add('open');
             
-            // 첫 번째 시트 선택 로직 (리뷰 우선)
             let firstSheet = "";
             if (orderCache.review.length > 0) {
                 firstSheet = orderCache.review.find(name => dataCache.review[name]);
@@ -423,6 +409,17 @@ try {
                 return;
             }
             data.forEach(item => {
+                // [수정: 데이터 안정성 강화] 
+                // item.name을 강제로 문자열로 변환한 후 trim() 및 비교
+                const itemName = item.name ? String(item.name).trim() : "";
+                
+                if (itemName === '-') {
+                    const sep = document.createElement('div');
+                    sep.className = 'menu-divider';
+                    container.appendChild(sep);
+                    return; 
+                }
+
                 const link = document.createElement('a');
                 link.className = 'submenu-item';
                 link.innerText = item.name;
@@ -532,6 +529,29 @@ try {
         else if (mode === 'power') {
             const body = rows.slice(1);
             if (body.length > 0) {
+                const lastRow = body[body.length - 1];
+                const lastDateStr = String(lastRow[0]).trim(); 
+                
+                const targetPrefix = lastDateStr.substring(0, 6); 
+                const targetMonth = parseInt(lastDateStr.substring(4, 6)); 
+
+                let varMonthSpent = 0; 
+                let varMonthCharge = 0;
+
+                body.forEach(row => {
+                    const rowDate = String(row[0]).trim(); 
+                    if (rowDate.startsWith(targetPrefix)) {
+                        varMonthSpent += cleanNum(row[3]); 
+                        varMonthCharge += cleanNum(row[4]); 
+                    }
+                });
+
+                document.getElementById('month-spend-label').innerText = `${targetMonth}월 광고비 사용액`;
+                document.getElementById('month-spend-val').innerText = varMonthSpent.toLocaleString() + "원";
+
+                document.getElementById('month-charge-label').innerText = `${targetMonth}월 광고비 충전액`;
+                document.getElementById('month-charge-val').innerText = varMonthCharge.toLocaleString() + "원";
+                
                 const last7 = body.slice(-7);
                 const avgSpent = Math.round(last7.reduce((acc, r) => acc + cleanNum(r[3]), 0) / last7.length);
                 
