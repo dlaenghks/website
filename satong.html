@@ -36,6 +36,30 @@
 
         .notice-box { background-color: #e8f4fd; color: #2c3e50; padding: 12px 15px; margin-bottom: 15px; border-left: 5px solid #3498db; border-radius: 4px; font-size: 13px; line-height: 1.5; box-shadow: 0 1px 2px rgba(0,0,0,0.05); display: none; }
 
+
+
+        /* [신규] 마케팅 도구 검색창 스타일 */
+        .search-view-container { display: none; flex-direction: column; align-items: center; justify-content: center; padding-top: 50px; animation: fadeIn 0.3s ease-out; }
+        .search-box-wrapper { position: relative; width: 100%; max-width: 600px; margin-bottom: 30px; }
+        .search-input { width: 100%; padding: 15px 20px; font-size: 16px; border: 2px solid #e2e8f0; border-radius: 50px; outline: none; transition: 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.02); box-sizing: border-box; }
+        .search-input:focus { border-color: #3498db; box-shadow: 0 4px 12px rgba(52, 152, 219, 0.15); }
+        .search-btn-icon { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: #3498db; color: white; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+        .search-btn-icon:hover { background: #2980b9; transform: translateY(-50%) scale(1.05); }
+        
+        /* [신규] 검색 결과 카드 스타일 */
+        .result-card { background: white; width: 100%; max-width: 600px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #eee; overflow: hidden; display: none; }
+        .result-header { background: #f8f9fa; padding: 15px 20px; border-bottom: 1px solid #eee; font-weight: bold; color: #555; #display: flex; justify-content: space-between; align-items: center; }
+        .keyword-badge { background: #3498db; color: #ffffff; padding: 4px 10px; border-radius: 4px; font-size: 14px; }
+        .result-grid { display: grid; grid-template-columns: 1fr 1fr; }
+        .result-item { padding: 20px; text-align: center; border-bottom: 1px solid #eee; border-right: 1px solid #eee; }
+        .result-item:nth-child(2n) { border-right: none; }
+        .result-item:nth-last-child(-n+2) { border-bottom: none; }
+        .res-label { font-size: 12px; color: #888; margin-bottom: 5px; }
+        .res-value { font-size: 18px; font-weight: 800; color: #333; }
+        .pc-mobile-ratio { font-size: 11px; color: #666; margin-top: 4px; }
+
+
+
         /* [파워링크 요약] */
         .power-summary-container { display: none; flex-direction: column; gap: 12px; margin-bottom: 15px; animation: fadeIn 0.4s ease-out; }
         .summary-cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
@@ -107,6 +131,50 @@
             .review-table th:nth-child(2) { width: 30px; }
             .review-table th:nth-child(4) { width: 100px; }
         }
+
+
+
+/* [신규] 연관검색어 테이블 스타일 */
+        .related-card { margin-top: 20px; background: white; width: 100%; max-width: 600px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #eee; overflow: hidden; display: none; }
+        .related-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .related-table th { background: #f1f3f5; padding: 10px; font-weight: bold; color: #555; text-align: center; border-bottom: 1px solid #ddd; position: sticky; top: 0; }
+        .related-table td { padding: 8px 10px; border-bottom: 1px solid #eee; text-align: center; color: #333; }
+        .related-table tr:last-child td { border-bottom: none; }
+        .related-table tr:hover { background-color: #f8f9fa; }
+        .kwd-col { text-align: left !important; font-weight: bold; color: #3498db !important; }
+
+
+/* [신규] 스켈레톤 로딩 애니메이션 */
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        .skeleton-card {
+            background: white; width: 100%; max-width: 600px; border-radius: 12px; 
+            border: 1px solid #eee; overflow: hidden; margin-bottom: 20px; display: none; /* 기본 숨김 */
+        }
+        .skeleton-header {
+            padding: 15px 20px; border-bottom: 1px solid #eee; display: flex; align-items: center; gap: 10px;
+        }
+        .skeleton-body {
+            padding: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
+        }
+        /* 회색 막대기 (뼈대) 스타일 */
+        .skeleton-box {
+            background: #f0f0f0;
+            background-image: linear-gradient(90deg, #f0f0f0 25%, #fafafa 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            border-radius: 4px;
+        }
+        .sk-title { width: 100px; height: 24px; }
+        .sk-badge { width: 150px; height: 24px; border-radius: 12px; }
+        .sk-label { width: 60px; height: 14px; margin-bottom: 8px; margin: 0 auto 8px auto; }
+        .sk-value { width: 80px; height: 24px; margin: 0 auto; }
+        .sk-item { text-align: center; }
+
+
+
     </style>
 </head>
 <body>
@@ -151,10 +219,17 @@
             <div class="submenu-container" id="submenu-integrated"></div>
         </div>
 
+        <div class="menu-group" id="group-marketing">
+            <div class="menu-title" onclick="toggleGroup('marketing')">마케팅 도구 <span class="icon">▼</span></div>
+            <div class="submenu-container" id="submenu-marketing">
+                </div>
+        </div>
+
         <div class="menu-group" id="group-bookmark">
             <div class="menu-title" onclick="toggleGroup('bookmark')">즐겨찾기 <span class="icon">▼</span></div>
             <div class="submenu-container" id="submenu-bookmark"></div>
         </div>
+
     </nav>
 
     <main class="main-content">
@@ -192,6 +267,103 @@
 
         <div id="keyword-container" class="keyword-tabs"></div>
         <div id="table-container"></div>
+
+
+<div id="marketing-search-view" class="search-view-container">
+            <div class="search-box-wrapper">
+                <input type="text" id="naver-kwd-input" class="search-input" placeholder="조회할 키워드를 입력하세요 (예: 강남맛집)" onkeypress="if(event.key === 'Enter') searchNaverKeyword()">
+                <button class="search-btn-icon" onclick="searchNaverKeyword()">🔍</button>
+            </div>
+            
+
+            
+            <div id="skeleton-ui" class="skeleton-card">
+                <div class="skeleton-header">
+                    <div class="skeleton-box sk-title"></div>
+                    <div class="skeleton-box sk-badge"></div>
+                </div>
+                <div class="skeleton-body">
+                    <div class="sk-item"><div class="skeleton-box sk-label"></div><div class="skeleton-box sk-value"></div></div>
+                    <div class="sk-item"><div class="skeleton-box sk-label"></div><div class="skeleton-box sk-value"></div></div>
+                    <div class="sk-item"><div class="skeleton-box sk-label"></div><div class="skeleton-box sk-value"></div></div>
+                    <div class="sk-item"><div class="skeleton-box sk-label"></div><div class="skeleton-box sk-value"></div></div>
+                    <div class="sk-item"><div class="skeleton-box sk-label"></div><div class="skeleton-box sk-value"></div></div>
+                    <div class="sk-item"><div class="skeleton-box sk-label"></div><div class="skeleton-box sk-value"></div></div>
+                </div>
+            </div>
+
+
+
+
+
+
+
+            <div id="kwd-result-card" class="result-card">
+                <div class="result-header">
+                    <span id="main-card-title">분석 결과</span> 
+                    <span id="res-keyword" class="keyword-badge"></span>
+                </div>
+                <div class="result-grid">
+                    <div class="result-item">
+                        <div class="res-label">월간 검색수 (PC)</div>
+                        <div class="res-value" id="res-pc-cnt">-</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="res-label">월간 검색수 (Mobile)</div>
+                        <div class="res-value" id="res-mo-cnt">-</div>
+                    </div>
+                    
+                    <div class="result-item">
+                        <div class="res-label">월평균 클릭수 (PC)</div>
+                        <div class="res-value" id="res-pc-clk">-</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="res-label">월평균 클릭수 (Mobile)</div>
+                        <div class="res-value" id="res-mo-clk">-</div>
+                    </div>
+
+                    <div class="result-item">
+                        <div class="res-label">평균 클릭률 (PC)</div>
+                        <div class="res-value" id="res-pc-ctr">-</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="res-label">평균 클릭률 (Mobile)</div>
+                        <div class="res-value" id="res-mo-ctr">-</div>
+                    </div>
+                    </div>
+            </div>
+
+
+            <div id="related-result-card" class="related-card">
+                <div class="result-header">
+                    <span>연관검색어 - 30개</span>
+                </div>
+                <div style="overflow-x: auto; max-height: 500px; overflow-y: auto;">
+                    <table class="related-table">
+                        <thead>
+                            <tr>
+<th style="width: 34%">키워드</th>
+        <th style="width: 22%">PC 검색수</th>
+        <th style="width: 22%">Mo 검색수</th>
+        <th style="width: 22%; color: #e74c3c;">Total</th> </tr>
+                            </tr>
+                        </thead>
+                        <tbody id="related-table-body">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+
+
+
+
+        </div>
+
+
+
+
     </main>
 
 <script>
@@ -206,22 +378,35 @@
         },
         rank: { url: "https://script.google.com/macros/s/AKfycbya7-b5zXTEM7xGnM6jfuJHuqnvDgVS1Pvo5CsxBetBqELjDUR8GoEvRFg8WeZv8G9o/exec", title: "순위 현황" },
         power: { url: "https://script.google.com/macros/s/AKfycbzJI5NLmLt8uU5dXCoWbZAx9sZCSHh6mGkiECGTfaTXXPFTmCe7c4RxEoDbiJBF2hRM/exec", title: "파워링크 현황" },
-        integrated: { url: "https://script.google.com/macros/s/AKfycbyYQDgn2QdOYhDwoCpHHNbUNEK5gcW5hbAZ6nyhIel_n8gQ4r3aM_O9uQEL06LqDX5x/exec", title: "통합검색 노출" }
+        integrated: { url: "https://script.google.com/macros/s/AKfycbyYQDgn2QdOYhDwoCpHHNbUNEK5gcW5hbAZ6nyhIel_n8gQ4r3aM_O9uQEL06LqDX5x/exec", title: "통합검색 노출" },
+        marketing: { url: "https://script.google.com/macros/s/AKfycbz1PL3THIbulUe4e6G9NPWMOTs3Cce5xidaC9_PZtLcpTAGjoBs7XP9kBnbNSzEfjsY/exec", title: "마케팅 도구" } 
+
+
     };
 
     const NOTICE_MESSAGES = {
         review: "📢 <b>Notice:</b> 오전(단어 필터링 + AI 검수), 오후(AI 검수) 총 2회 진행(<b>리뷰 목록 2회 업데이트</b>), 부정 리뷰 발견 시 이메일 발송합니다.",
         rank: "📢 <b>Notice:</b> <b>오전, 오후 총 2회 노출 순위 확인</b>, 순위 변동은 ▲ 상승/▼ 하락으로 표시되고, 50위 미만은 기록되지 않습니다.",
         power: "📢 <b>Notice:</b> <b>최근 7일 소진액 및 잔액 기반으로 분석한 광고비 현황입니다.</b>",
-        integrated: "📢 <b>Notice:</b> <b>통합검색 노출 현황</b>입니다. 최근 2일치 노출 순위를 표시합니다.)"
+        integrated: "📢 <b>Notice:</b> <b>통합검색 노출 현황</b>입니다. 최근 2일치 노출 순위를 표시합니다.)",
+        marketing: "📢 <b>Notice:</b> <b>네이버 검색광고 API</b>를 기반으로 한 최근 30일 조회수 데이터입니다."
+
     };
 
     const REVIEW_COMPANY_COL_IDX = 0; 
     const RANK_KEYWORD_COL_IDX = 1; 
 
-    let dataCache = { review: {}, rank: null, power: null, bookmark: null, integrated: null };
+let dataCache = { 
+    review: {}, 
+    rank: null, 
+    power: null, 
+    bookmark: null, 
+    integrated: null, 
+    marketing: { "네이버 검색량 조회": [] } // 메뉴 생성을 위한 더미 데이터
+};
+
     let orderCache = { review: [], rank: [], power: [], integrated: [] };
-    let loadingStatus = { review: false, rank: false, power: false, bookmark: false, integrated: false };
+    let loadingStatus = { review: false, rank: false, power: false, bookmark: false, integrated: false, marketing: false };
 
     function parseKoreanDate(dateStr) {
         if (!dateStr || typeof dateStr !== 'string') return new Date(0);
@@ -259,6 +444,9 @@
         
         // 3. [추가] 플레이스 리뷰 메뉴 자동 펼침
         toggleGroup('review');
+
+        // [★여기 추가] 마케팅 도구 메뉴 버튼 생성 (데이터 로딩 없이 즉시 생성)
+        buildSidebar('marketing', dataCache.marketing, orderCache.marketing);
 
         // 4. 나머지 백그라운드 로딩 시작
         fetchData('rank', CONFIG.rank.url, userKey);
@@ -424,9 +612,19 @@
         const keywordContainer = document.getElementById('keyword-container');
         const tableContainer = document.getElementById('table-container');
         const powerSummary = document.getElementById('power-summary');
+        const searchView = document.getElementById('marketing-search-view'); // [신규]
+
         keywordContainer.innerHTML = "";
         tableContainer.innerHTML = "";
         powerSummary.style.display = "none";
+        if(searchView) searchView.style.display = "none"; // [신규]
+
+        // [신규 로직] 마케팅 도구일 경우 검색 화면만 표시하고 종료
+        if (mode === 'marketing') {
+            if(searchView) searchView.style.display = "flex";
+            return;
+        }
+
 
         if (!rows || rows.length < 1) {
             tableContainer.innerHTML = "<p>데이터가 없습니다.</p>";
@@ -583,6 +781,130 @@
 
     function openModal(content) { document.getElementById('modal-content').innerText = content; document.getElementById('detail-modal').classList.add('visible'); }
     function closeModal() { document.getElementById('detail-modal').classList.remove('visible'); }
+
+
+
+
+// [최적화] 헬퍼 함수들을 밖으로 뺐습니다. (메모리 절약)
+    const safeNum = (val) => {
+        if (val === undefined || val === null || val === "") return 0;
+        const num = Number(val);
+        return isNaN(num) ? 0 : num;
+    };
+    const getRealNum = (val) => {
+        if (typeof val === 'string' && val.includes('<')) return 0;
+        return Number(val) || 0;
+    };
+    const safeStrNum = (val) => {
+        if (typeof val === 'string' && val.includes('<')) return val; 
+        return safeNum(val).toLocaleString();
+    };
+
+
+
+// [최종 수정] 네이버 키워드 검색 함수 (합산 검색수 표시 + 불필요 항목 제거)
+async function searchNaverKeyword() {
+        const input = document.getElementById('naver-kwd-input');
+        const keyword = input.value.trim();
+        if (!keyword) { alert("키워드를 입력해주세요."); return; }
+
+        // 요소 캐싱
+        const skeleton = document.getElementById('skeleton-ui');
+        const mainCard = document.getElementById('kwd-result-card');
+        const relatedCard = document.getElementById('related-result-card');
+        const btn = document.querySelector('.search-btn-icon');
+        const inputField = document.querySelector('.search-input');
+        const tbody = document.getElementById('related-table-body'); // 미리 찾기
+
+        // UI 초기화
+        mainCard.style.display = "none";
+        relatedCard.style.display = "none";
+        skeleton.style.display = "block";
+        
+        btn.disabled = true;
+        inputField.disabled = true;
+        inputField.style.opacity = "0.7"; 
+        
+        try {
+            const res = await fetch(`${CONFIG.marketing.url}?keyword=${keyword}`).then(r => r.json());
+            
+            if (res.status === 'success' && res.data) {
+                const d = res.data.main; 
+                const list = res.data.related;
+
+                // --- 메인 데이터 바인딩 ---
+                const mainTitle = document.getElementById('main-card-title');
+                if(mainTitle) mainTitle.innerText = d.relKeyword || keyword;
+
+                let mainTotal = getRealNum(d.monthlyPcQcCnt) + getRealNum(d.monthlyMobileQcCnt);
+                document.getElementById('res-keyword').innerText = `최근 30일 검색수 ${mainTotal.toLocaleString()}`;
+
+                document.getElementById('res-pc-cnt').innerText = safeStrNum(d.monthlyPcQcCnt);
+                document.getElementById('res-mo-cnt').innerText = safeStrNum(d.monthlyMobileQcCnt);
+                document.getElementById('res-pc-clk').innerText = safeNum(d.monthlyAvePcClkCnt).toFixed(1);
+                document.getElementById('res-mo-clk').innerText = safeNum(d.monthlyAveMobileClkCnt).toFixed(1);
+                document.getElementById('res-pc-ctr').innerText = safeNum(d.monthlyAvePcCtr).toFixed(2) + "%";
+                document.getElementById('res-mo-ctr').innerText = safeNum(d.monthlyAveMobileCtr).toFixed(2) + "%";
+
+                // --- [최적화] 연관검색어 테이블 (DocumentFragment 사용) ---
+                tbody.innerHTML = ""; 
+                
+                if (list && list.length > 0) {
+                    // 메모리 상에 가상의 컨테이너 생성 (리플로우 방지)
+                    const fragment = document.createDocumentFragment(); 
+
+                    list.forEach(item => {
+                        const tr = document.createElement('tr');
+                        
+                        const tdKwd = document.createElement('td');
+                        tdKwd.className = "kwd-col";
+                        tdKwd.innerText = item.relKeyword;
+                        
+                        const tdPc = document.createElement('td');
+                        tdPc.innerText = safeStrNum(item.monthlyPcQcCnt);
+                        
+                        const tdMo = document.createElement('td');
+                        tdMo.innerText = safeStrNum(item.monthlyMobileQcCnt);
+
+                        let totalSum = getRealNum(item.monthlyPcQcCnt) + getRealNum(item.monthlyMobileQcCnt);
+                        const tdTotal = document.createElement('td');
+                        tdTotal.innerText = totalSum.toLocaleString();
+                        tdTotal.style.fontWeight = "bold";
+                        tdTotal.style.color = "#333";
+
+                        tr.appendChild(tdKwd);
+                        tr.appendChild(tdPc);
+                        tr.appendChild(tdMo);
+                        tr.appendChild(tdTotal);
+                        
+                        // 실제 DOM이 아닌 메모리 상의 fragment에 추가
+                        fragment.appendChild(tr); 
+                    });
+                    
+                    // 완성된 덩어리를 한 번에 실제 DOM에 붙임 (리플로우 1회 발생)
+                    tbody.appendChild(fragment);
+                    relatedCard.style.display = "block"; 
+                }
+
+                skeleton.style.display = "none";
+                mainCard.style.display = "block"; 
+
+            } else {
+                alert("데이터를 가져오지 못했습니다: " + (res.message || "결과 없음"));
+                skeleton.style.display = "none";
+            }
+        } catch (e) {
+            console.error(e);
+            alert("검색 중 오류가 발생했습니다.");
+            skeleton.style.display = "none";
+        } finally {
+            btn.disabled = false;
+            inputField.disabled = false;
+            inputField.style.opacity = "1";
+            inputField.focus();
+        }
+    }
+
 
     initDashboard();
 </script>
