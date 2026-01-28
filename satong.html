@@ -505,7 +505,8 @@
         }
         html += '</tr></thead><tbody>';
         for (let i = 1; i < rows.length; i++) {
-            const isBad = (mode === 'review' && rows[i][3] === "O (AI Check)");
+            const isBad = (mode === 'review' && String(rows[i][3]).startsWith("O"));
+            
             html += `<tr${isBad ? ' class="bad-row"' : ''}>`;
             for (let j = 0; j < rows[i].length; j++) {
                 if (mode === 'review' && j === REVIEW_COMPANY_COL_IDX) continue;
