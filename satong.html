@@ -146,6 +146,11 @@
             <div class="submenu-container" id="submenu-power"></div>
         </div>
 
+        <div class="menu-group" id="group-integrated">
+            <div class="menu-title" onclick="toggleGroup('integrated')">통합검색 노출 <span class="icon">▼</span></div>
+            <div class="submenu-container" id="submenu-integrated"></div>
+        </div>
+
         <div class="menu-group" id="group-bookmark">
             <div class="menu-title" onclick="toggleGroup('bookmark')">즐겨찾기 <span class="icon">▼</span></div>
             <div class="submenu-container" id="submenu-bookmark"></div>
@@ -200,21 +205,23 @@
             title: "리뷰 모니터링" 
         },
         rank: { url: "https://script.google.com/macros/s/AKfycbya7-b5zXTEM7xGnM6jfuJHuqnvDgVS1Pvo5CsxBetBqELjDUR8GoEvRFg8WeZv8G9o/exec", title: "순위 현황" },
-        power: { url: "https://script.google.com/macros/s/AKfycbzJI5NLmLt8uU5dXCoWbZAx9sZCSHh6mGkiECGTfaTXXPFTmCe7c4RxEoDbiJBF2hRM/exec", title: "파워링크 현황" }
+        power: { url: "https://script.google.com/macros/s/AKfycbzJI5NLmLt8uU5dXCoWbZAx9sZCSHh6mGkiECGTfaTXXPFTmCe7c4RxEoDbiJBF2hRM/exec", title: "파워링크 현황" },
+        integrated: { url: "https://script.google.com/macros/s/AKfycbyYQDgn2QdOYhDwoCpHHNbUNEK5gcW5hbAZ6nyhIel_n8gQ4r3aM_O9uQEL06LqDX5x/exec", title: "통합검색 노출" }
     };
 
     const NOTICE_MESSAGES = {
-        review: "📢 <b>Notice:</b> 오전(단어 필터링 + AI 검수), 오후(AI 검수) 총 2회 진행(<b>리뷰 목록 2회 업데이트</b>), 부정 리뷰 발견 시 이메일 발송",
+        review: "📢 <b>Notice:</b> 오전(단어 필터링 + AI 검수), 오후(AI 검수) 총 2회 진행(<b>리뷰 목록 2회 업데이트</b>), 부정 리뷰 발견 시 이메일 발송합니다.",
         rank: "📢 <b>Notice:</b> <b>오전, 오후 총 2회 노출 순위 확인</b>, 순위 변동은 ▲ 상승/▼ 하락으로 표시되고, 50위 미만은 기록되지 않습니다.",
-        power: "📢 <b>Notice:</b> <b>최근 7일 소진액 및 잔액 기반으로 분석한 광고비 현황</b>"
+        power: "📢 <b>Notice:</b> <b>최근 7일 소진액 및 잔액 기반으로 분석한 광고비 현황입니다.</b>",
+        integrated: "📢 <b>Notice:</b> <b>통합검색 노출 현황</b>입니다. 최근 2일치 노출 순위를 표시합니다.)"
     };
 
     const REVIEW_COMPANY_COL_IDX = 0; 
     const RANK_KEYWORD_COL_IDX = 1; 
 
-    let dataCache = { review: {}, rank: null, power: null, bookmark: null };
-    let orderCache = { review: [], rank: [], power: [] };
-    let loadingStatus = { review: false, rank: false, power: false, bookmark: false };
+    let dataCache = { review: {}, rank: null, power: null, bookmark: null, integrated: null };
+    let orderCache = { review: [], rank: [], power: [], integrated: [] };
+    let loadingStatus = { review: false, rank: false, power: false, bookmark: false, integrated: false };
 
     function parseKoreanDate(dateStr) {
         if (!dateStr || typeof dateStr !== 'string') return new Date(0);
@@ -256,6 +263,7 @@
         // 4. 나머지 백그라운드 로딩 시작
         fetchData('rank', CONFIG.rank.url, userKey);
         fetchData('power', CONFIG.power.url, userKey);
+        fetchData('integrated', CONFIG.integrated.url, userKey);
     }
 
     async function loadReviewData(userKey) {
@@ -342,7 +350,14 @@
             const item = document.createElement('div');
             item.className = 'submenu-item';
             item.id = `nav-${mode}-${sheetName}`; 
-            item.innerText = sheetName.replace('(파워링크)', '');
+            
+            // [이름 변경 로직]
+            let displayName = sheetName.replace('(파워링크)', '');
+            if (mode === 'integrated') {
+                displayName = displayName.replace(' 노출 (통합검색)', '').trim();
+            }
+            item.innerText = displayName;
+            
             item.onclick = () => selectClinic(mode, sheetName, false);
             container.appendChild(item);
         });
@@ -445,6 +460,12 @@
                 tableContainer.innerHTML = createTable([header, ...filtered], mode, true);
             }
         }
+        else if (mode === 'integrated') {
+            const header = rows[0];
+            const body = rows.slice(1);
+            // 'integrated' 모드로 전달하여 createTable 내부의 전용 스타일(노란색 배경 등)이 적용되도록 함
+            tableContainer.innerHTML = createTable([header, ...body], 'integrated', false);
+        }
         else if (mode === 'power') {
             const body = rows.slice(1);
             if (body.length > 0) {
@@ -494,16 +515,29 @@
             }
             tableContainer.innerHTML = createTable(rows, mode, false);
         }
-    }
+    } // [수정됨] 이제 여기서 함수가 정상적으로 닫힙니다.
 
     function createTable(rows, mode, hideKeywordCol) {
+        // mode가 'integrated'여도 여기서 rank-table 클래스가 적용되므로 디자인은 플레이스 순위와 동일
         let html = `<table class="${mode === 'review' ? 'review-table' : (mode === 'power' ? 'power-table' : 'rank-table')}"><thead><tr>`;
+        
+        // 1. [헤더] 생성 부분
         for (let j = 0; j < rows[0].length; j++) {
             if (mode === 'review' && j === REVIEW_COMPANY_COL_IDX) continue;
             if (mode === 'rank' && hideKeywordCol && j === RANK_KEYWORD_COL_IDX) continue;
-            html += `<th>${rows[0][j] || ''}</th>`;
+            
+            let headVal = rows[0][j] || '';
+
+            // [수정] 통합검색 모드일 때, 헤더(가장 우측 2개 열) 날짜에서 '20' 제거
+            if (mode === 'integrated' && j >= rows[0].length - 2) {
+                headVal = String(headVal).trim().replace(/^20/, '');
+            }
+
+            html += `<th>${headVal}</th>`;
         }
         html += '</tr></thead><tbody>';
+
+        // 2. [바디] 생성 부분
         for (let i = 1; i < rows.length; i++) {
             const isBad = (mode === 'review' && String(rows[i][3]).startsWith("O"));
             
@@ -511,7 +545,9 @@
             for (let j = 0; j < rows[i].length; j++) {
                 if (mode === 'review' && j === REVIEW_COMPANY_COL_IDX) continue;
                 if (mode === 'rank' && hideKeywordCol && j === RANK_KEYWORD_COL_IDX) continue;
+                
                 let val = rows[i][j] !== null ? rows[i][j] : '';
+
                 if (mode === 'review') {
                     if (j === 1) {
                         const m = String(val).match(/(\d{4})년\s*(\d{1,2})월\s*(\d{1,2})일/);
@@ -519,19 +555,37 @@
                     } else if (j === 5) val = String(val).replace(/^20/, '');
                 } else if (mode === 'rank' && j === 0) val = String(val).replace(/^20/, '');
                 else if (mode === 'power' && j === 0) val = String(val).replace(/^20(\d{2})(\d{2})(\d{2})$/, '$1-$2-$3');
+                
+                // [수정] 통합검색 모드일 때, 바디(가장 우측 2개 열) 날짜 '20' 제거 및 공백 제거
+                else if (mode === 'integrated' && j >= rows[i].length - 2) {
+                    val = String(val).trim().replace(/^20/, '');
+                }
+
                 let cls = (mode === 'rank' || mode === 'power') && (String(val).includes('▲') || String(val).includes('▼')) ? (String(val).includes('▲') ? "rank-up" : "rank-down") : "";
-                let evt = mode === 'review' ? ` onclick="openModal('${String(val).replace(/"/g, '&quot;').replace(/'/g, "\\'").replace(/\n/g, '\\n')}')" style="cursor: pointer;"` : "";
-                html += `<td class="${cls}"${evt}>${val}</td>`;
+                
+                // [수정] 통합검색 모드이고 D셀(인덱스 3)인 경우 연노랑 배경색
+                let cellStyle = "";
+                if (mode === 'review') {
+                     cellStyle = "cursor: pointer;";
+                } else if (mode === 'integrated' && j === 3) {
+                     cellStyle = "background-color: #fff9c4;"; 
+                }
+
+                let evt = mode === 'review' ? ` onclick="openModal('${String(val).replace(/"/g, '&quot;').replace(/'/g, "\\'").replace(/\n/g, '\\n')}')"` : "";
+                
+                html += `<td class="${cls}"${evt} style="${cellStyle}">${val}</td>`;
             }
             html += '</tr>';
         }
         return html + '</tbody></table>';
     }
 
+
     function openModal(content) { document.getElementById('modal-content').innerText = content; document.getElementById('detail-modal').classList.add('visible'); }
     function closeModal() { document.getElementById('detail-modal').classList.remove('visible'); }
 
     initDashboard();
 </script>
+
 </body>
 </html>
