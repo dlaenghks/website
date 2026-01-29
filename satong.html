@@ -954,6 +954,33 @@ async function searchNaverKeyword() {
 
 
 
+(function() {
+    const threshold = 160; // 디버깅으로 인한 지연 허용 범위 (ms)
+
+    const devtoolsOpen = () => {
+        // 개발자 도구가 감지되었을 때 실행할 행동
+        document.body.innerHTML = '<h1>개발자 도구 사용이 감지되어 접속이 차단되었습니다.</h1>';
+        document.body.style.backgroundColor = 'white';
+        // window.location.href = "about:blank"; // 아예 빈 페이지로 튕겨내려면 주석 해제
+    };
+
+    const main = () => {
+        const start = new Date().getTime();
+        debugger; // 여기서 개발자 도구가 켜져 있으면 브라우저가 멈춤
+        const end = new Date().getTime();
+
+        // 멈춰있던 시간이 threshold보다 길면 개발자 도구가 켜진 것으로 간주
+        if (end - start > threshold) {
+            devtoolsOpen();
+        }
+    };
+
+    setInterval(main, 1000); // 1초마다 감시
+})();
+
+        
+        
+
 </script>
 
 
