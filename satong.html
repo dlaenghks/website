@@ -909,5 +909,57 @@ async function searchNaverKeyword() {
     initDashboard();
 </script>
 
+
+
+
+
+    <script>
+  // 1. 마우스 우클릭 차단
+  document.addEventListener('contextmenu', function(e) {
+      e.preventDefault();
+      alert('우클릭은 사용할 수 없습니다.');
+  });
+
+  // 2. 개발자 도구 관련 단축키 차단 (F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U 등)
+  document.addEventListener('keydown', function(e) {
+      // F12
+      if (e.key === 'F12') {
+          e.preventDefault();
+          e.returnValue = false;
+      }
+
+      // Ctrl + Shift + I (개발자 도구), J (콘솔), C (요소 검사)
+      if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) {
+          e.preventDefault();
+          e.returnValue = false;
+      }
+
+      // Ctrl + U (소스 보기)
+      if (e.ctrlKey && e.key === 'U') {
+          e.preventDefault();
+          e.returnValue = false;
+      }
+  });
+
+
+
+// 개발자 도구가 열리면 즉시 디버거가 실행되어 페이지 조작을 방해함
+(function() {
+    const preventDevTools = () => {
+        debugger; 
+        setTimeout(preventDevTools, 100);
+    };
+    preventDevTools();
+})();
+
+
+
+</script>
+
+
+
+
+    
+
 </body>
 </html>
