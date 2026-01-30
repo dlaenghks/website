@@ -130,6 +130,13 @@
             .review-table th:nth-child(3), .review-table th:nth-child(6) { width: 20px; }
             .review-table th:nth-child(2) { width: 30px; }
             .review-table th:nth-child(4) { width: 100px; }
+
+
+            .rank-table th:nth-child(1) { width: 55px; }
+            .rank-table th:nth-child(2) { width: 25px; }
+
+
+
         }
 
 
@@ -913,6 +920,7 @@ async function searchNaverKeyword() {
 
 
 
+
     <script>
   // 1. 마우스 우클릭 차단
   document.addEventListener('contextmenu', function(e) {
@@ -943,26 +951,16 @@ async function searchNaverKeyword() {
 
 
 
-// 개발자 도구가 열리면 즉시 디버거가 실행되어 페이지 조작을 방해함
-(function() {
-    const preventDevTools = () => {
-        debugger; 
-        setTimeout(preventDevTools, 100);
-    };
-    preventDevTools();
-})();
+
+
+
 
 
 
 (function() {
     const threshold = 160; // 디버깅으로 인한 지연 허용 범위 (ms)
 
-    const devtoolsOpen = () => {
-        // 개발자 도구가 감지되었을 때 실행할 행동
-        document.body.innerHTML = '<h1>개발자 도구 사용이 감지되어 접속이 차단되었습니다.</h1>';
-        document.body.style.backgroundColor = 'white';
-        // window.location.href = "about:blank"; // 아예 빈 페이지로 튕겨내려면 주석 해제
-    };
+
 
     const main = () => {
         const start = new Date().getTime();
@@ -975,6 +973,13 @@ async function searchNaverKeyword() {
         }
     };
 
+    const devtoolsOpen = () => {
+        // 개발자 도구가 감지되었을 때 실행할 행동
+        document.body.innerHTML = '<h1>개발자 도구 사용이 감지되어 접속이 차단되었습니다.</h1>';
+        document.body.style.backgroundColor = 'white';
+        // window.location.href = "about:blank"; // 아예 빈 페이지로 튕겨내려면 주석 해제
+    };
+
     setInterval(main, 1000); // 1초마다 감시
 })();
 
@@ -982,6 +987,8 @@ async function searchNaverKeyword() {
         
 
 </script>
+
+
 
 
 
