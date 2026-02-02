@@ -4,16 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>통합 관리 대시보드</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* [레이아웃 및 공통 스타일] */
+        /* [기존 스타일 유지] */
         body { font-family: 'Malgun Gothic', sans-serif; margin: 0; display: flex; height: 100dvh; color: #333; overflow: hidden; background-color: #f5f6fa; }
-        
-        /* [사이드바] */
         .sidebar { width: 240px; background-color: #fff; border-right: 1px solid #ddd; display: flex; flex-direction: column; flex-shrink: 0; user-select: none; overflow-y: auto; transition: 0.3s; }
         .sidebar::-webkit-scrollbar { width: 5px; }
         .sidebar::-webkit-scrollbar-thumb { background-color: #ccc; border-radius: 10px; }
         .sidebar-header { padding: 15px; font-weight: bold; font-size: 1.1rem; border-bottom: 1px solid #eee; color: #ffffff; position: sticky; top: 0; background: #3498db; z-index: 10; }
-        
         .menu-group { border-bottom: 1px solid #f0f0f0; }
         .menu-title { padding: 12px 15px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: bold; color: #555; transition: 0.2s; }
         .menu-title:hover { background-color: #f8f9fa; color: #3498db; }
@@ -24,31 +22,21 @@
         .submenu-item { padding: 8px 15px 8px 30px; cursor: pointer; font-size: 13px; color: #666; transition: 0.2s; border-left: 3px solid transparent; text-decoration: none; display: block; }
         .submenu-item:hover { background-color: #eef2f5; color: #333; }
         .submenu-item.active { background-color: #e6f7ff; color: #007bff; border-left-color: #007bff; font-weight: bold; }
-
         .menu-divider { margin: 10px 15px; border-top: 1px solid #ccc; height: 0; }
-
-        /* [메인 컨텐츠] */
         .main-content { flex-grow: 1; padding: 0 20px 80px 20px; overflow-y: auto; display: flex; flex-direction: column; -webkit-overflow-scrolling: touch; }
         .content-header { display: flex; align-items: center; border-bottom: 2px solid #007bff; padding: 15px 0 10px 0; margin-bottom: 15px; position: sticky; top: 0; background-color: #f5f6fa; z-index: 20; }
         h2 { margin: 0; font-size: 1.2rem; color: #2c3e50; flex-grow: 1; }
         .refresh-btn { padding: 6px 12px; cursor: pointer; background-color: #3498db; color: white; border: none; border-radius: 4px; font-weight: bold; font-size: 12px; margin-left: 10px; }
         .mobile-back-btn { display: none; margin-right: 10px; padding: 6px 12px; background-color: #3498db; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; font-weight: bold; color: #ffffff; font-size: 12px; }
-
         .notice-box { background-color: #e8f4fd; color: #2c3e50; padding: 12px 15px; margin-bottom: 15px; border-left: 5px solid #3498db; border-radius: 4px; font-size: 13px; line-height: 1.5; box-shadow: 0 1px 2px rgba(0,0,0,0.05); display: none; }
-
-
-
-        /* [신규] 마케팅 도구 검색창 스타일 */
         .search-view-container { display: none; flex-direction: column; align-items: center; justify-content: center; padding-top: 50px; animation: fadeIn 0.3s ease-out; }
         .search-box-wrapper { position: relative; width: 100%; max-width: 600px; margin-bottom: 30px; }
         .search-input { width: 100%; padding: 15px 20px; font-size: 16px; border: 2px solid #e2e8f0; border-radius: 50px; outline: none; transition: 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.02); box-sizing: border-box; }
         .search-input:focus { border-color: #3498db; box-shadow: 0 4px 12px rgba(52, 152, 219, 0.15); }
         .search-btn-icon { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: #3498db; color: white; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
         .search-btn-icon:hover { background: #2980b9; transform: translateY(-50%) scale(1.05); }
-        
-        /* [신규] 검색 결과 카드 스타일 */
-        .result-card { background: white; width: 100%; max-width: 600px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #eee; overflow: hidden; display: none; }
-        .result-header { background: #f8f9fa; padding: 15px 20px; border-bottom: 1px solid #eee; font-weight: bold; color: #555; #display: flex; justify-content: space-between; align-items: center; }
+        .result-card { background: white; width: 100%; max-width: 600px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #eee; overflow: hidden; display: none; margin-bottom: 20px; }
+        .result-header { background: #f8f9fa; padding: 15px 20px; border-bottom: 1px solid #eee; font-weight: bold; color: #555; display: flex; justify-content: space-between; align-items: center; }
         .keyword-badge { background: #3498db; color: #ffffff; padding: 4px 10px; border-radius: 4px; font-size: 14px; }
         .result-grid { display: grid; grid-template-columns: 1fr 1fr; }
         .result-item { padding: 20px; text-align: center; border-bottom: 1px solid #eee; border-right: 1px solid #eee; }
@@ -56,11 +44,7 @@
         .result-item:nth-last-child(-n+2) { border-bottom: none; }
         .res-label { font-size: 12px; color: #888; margin-bottom: 5px; }
         .res-value { font-size: 18px; font-weight: 800; color: #333; }
-        .pc-mobile-ratio { font-size: 11px; color: #666; margin-top: 4px; }
-
-
-
-        /* [파워링크 요약] */
+        .chart-container-box { padding: 20px; height: 300px; position: relative; }
         .power-summary-container { display: none; flex-direction: column; gap: 12px; margin-bottom: 15px; animation: fadeIn 0.4s ease-out; }
         .summary-cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
@@ -77,12 +61,9 @@
         .gauge-red { background-color: #f56565; }
         .summary-card.alert { border: 2px solid #fecaca; background-color: #fff5f5; }
         .charge-status { padding: 12px; border-radius: 8px; font-size: 12.5px; font-weight: bold; text-align: center; display: none; background-color: #fff1f2; color: #be123c; border: 1px dashed #fda4af; }
-
         .keyword-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 15px; }
         .keyword-btn { padding: 6px 12px; cursor: pointer; border: 1px solid #ccc; background: white; border-radius: 4px; font-size: 12px; font-weight: bold; color: #555; }
         .keyword-btn.active { background-color: #3498db; color: white; border-color: #3498db; box-shadow: 0 2px 3px rgba(0,0,0,0.1); }
-
-        /* [테이블 스타일] */
         table { border-collapse: collapse; width: 100%; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1); table-layout: fixed; }
         th, td { border: 1px solid #eee; padding: 10px; text-align: left; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         th { background-color: #f8f9fa; font-weight: bold; color: #555; position: sticky; top: 58px; z-index: 10; box-shadow: 0 2px 2px -1px rgba(0,0,0,0.1); }
@@ -95,19 +76,10 @@
         .review-table th:nth-child(6), .review-table td:nth-child(6) { width: 50px; text-align: center; }
         .rank-table th:nth-child(1) { width: 130px; } 
         .rank-table th:nth-child(2) { width: 90px; } 
-        .rank-table th:nth-child(1), .rank-table td:nth-child(1) {text-align: center; }
-        .rank-table th:nth-child(2), .rank-table td:nth-child(2) {text-align: center; }
-        .rank-table th:nth-child(3), .rank-table td:nth-child(3) {text-align: center; }
-        .rank-table th:nth-child(4), .rank-table td:nth-child(4) {text-align: center; }
-        .rank-table th:nth-child(5), .rank-table td:nth-child(5) {text-align: center; }
-        .rank-table th:nth-child(6), .rank-table td:nth-child(6) {text-align: center; }
-        .rank-table th:nth-child(7), .rank-table td:nth-child(7) {text-align: center; }
         .power-table th:nth-child(2), .power-table td:nth-child(2), .power-table th:nth-child(6), .power-table td:nth-child(6), .power-table th:nth-child(7), .power-table td:nth-child(7) { display: none; }
         .bad-row { background-color: #ffebee !important; }
         .rank-up { color: #e74c3c; font-weight: bold; }
         .rank-down { color: #3498db; font-weight: bold; }
-
-        /* [오버레이 & 모달] */
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; display: flex; justify-content: center; align-items: center; visibility: hidden; opacity: 0; transition: 0.3s; }
         .overlay.visible { visibility: visible; opacity: 1; }
         .loading-box { background: white; padding: 20px; border-radius: 10px; text-align: center; }
@@ -118,7 +90,6 @@
         .modal-header { padding: 15px; border-bottom: 1px solid #eee; font-weight: bold; display: flex; justify-content: space-between; background: #f8f9fa; }
         .close-btn { cursor: pointer; font-size: 20px; color: #888; }
         .modal-body { padding: 20px; overflow-y: auto; line-height: 1.6; font-size: 14px; word-break: break-all; white-space: pre-wrap; }
-
         @media (max-width: 768px) {
             .sidebar { width: 100%; height: 100dvh; position: absolute; z-index: 100; border-right: none; }
             .main-content { display: none; width: 100%; height: 100dvh; }
@@ -130,18 +101,9 @@
             .review-table th:nth-child(3), .review-table th:nth-child(6) { width: 20px; }
             .review-table th:nth-child(2) { width: 30px; }
             .review-table th:nth-child(4) { width: 100px; }
-
-
             .rank-table th:nth-child(1) { width: 55px; }
             .rank-table th:nth-child(2) { width: 25px; }
-
-
-
         }
-
-
-
-/* [신규] 연관검색어 테이블 스타일 */
         .related-card { margin-top: 20px; background: white; width: 100%; max-width: 600px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #eee; overflow: hidden; display: none; }
         .related-table { width: 100%; border-collapse: collapse; font-size: 13px; }
         .related-table th { background: #f1f3f5; padding: 10px; font-weight: bold; color: #555; text-align: center; border-bottom: 1px solid #ddd; position: sticky; top: 0; }
@@ -149,39 +111,16 @@
         .related-table tr:last-child td { border-bottom: none; }
         .related-table tr:hover { background-color: #f8f9fa; }
         .kwd-col { text-align: left !important; font-weight: bold; color: #3498db !important; }
-
-
-/* [신규] 스켈레톤 로딩 애니메이션 */
-        @keyframes shimmer {
-            0% { background-position: -200% 0; }
-            100% { background-position: 200% 0; }
-        }
-        .skeleton-card {
-            background: white; width: 100%; max-width: 600px; border-radius: 12px; 
-            border: 1px solid #eee; overflow: hidden; margin-bottom: 20px; display: none; /* 기본 숨김 */
-        }
-        .skeleton-header {
-            padding: 15px 20px; border-bottom: 1px solid #eee; display: flex; align-items: center; gap: 10px;
-        }
-        .skeleton-body {
-            padding: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
-        }
-        /* 회색 막대기 (뼈대) 스타일 */
-        .skeleton-box {
-            background: #f0f0f0;
-            background-image: linear-gradient(90deg, #f0f0f0 25%, #fafafa 50%, #f0f0f0 75%);
-            background-size: 200% 100%;
-            animation: shimmer 1.5s infinite;
-            border-radius: 4px;
-        }
+        @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+        .skeleton-card { background: white; width: 100%; max-width: 600px; border-radius: 12px; border: 1px solid #eee; overflow: hidden; margin-bottom: 20px; display: none; }
+        .skeleton-header { padding: 15px 20px; border-bottom: 1px solid #eee; display: flex; align-items: center; gap: 10px; }
+        .skeleton-body { padding: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .skeleton-box { background: #f0f0f0; background-image: linear-gradient(90deg, #f0f0f0 25%, #fafafa 50%, #f0f0f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 4px; }
         .sk-title { width: 100px; height: 24px; }
         .sk-badge { width: 150px; height: 24px; border-radius: 12px; }
         .sk-label { width: 60px; height: 14px; margin-bottom: 8px; margin: 0 auto 8px auto; }
         .sk-value { width: 80px; height: 24px; margin: 0 auto; }
         .sk-item { text-align: center; }
-
-
-
     </style>
 </head>
 <body>
@@ -205,38 +144,30 @@
 
     <nav class="sidebar">
         <div class="sidebar-header">통합 관리 대시보드</div>
-        
         <div class="menu-group" id="group-review">
             <div class="menu-title" onclick="toggleGroup('review')">플레이스 리뷰 <span class="icon">▼</span></div>
             <div class="submenu-container" id="submenu-review"></div>
         </div>
-
         <div class="menu-group" id="group-rank">
             <div class="menu-title" onclick="toggleGroup('rank')">플레이스 순위 <span class="icon">▼</span></div>
             <div class="submenu-container" id="submenu-rank"></div>
         </div>
-
         <div class="menu-group" id="group-power">
             <div class="menu-title" onclick="toggleGroup('power')">파워링크 현황 <span class="icon">▼</span></div>
             <div class="submenu-container" id="submenu-power"></div>
         </div>
-
         <div class="menu-group" id="group-integrated">
             <div class="menu-title" onclick="toggleGroup('integrated')">통합검색 노출 <span class="icon">▼</span></div>
             <div class="submenu-container" id="submenu-integrated"></div>
         </div>
-
         <div class="menu-group" id="group-marketing">
             <div class="menu-title" onclick="toggleGroup('marketing')">마케팅 도구 <span class="icon">▼</span></div>
-            <div class="submenu-container" id="submenu-marketing">
-                </div>
+            <div class="submenu-container" id="submenu-marketing"></div>
         </div>
-
         <div class="menu-group" id="group-bookmark">
             <div class="menu-title" onclick="toggleGroup('bookmark')">즐겨찾기 <span class="icon">▼</span></div>
             <div class="submenu-container" id="submenu-bookmark"></div>
         </div>
-
     </nav>
 
     <main class="main-content">
@@ -275,14 +206,11 @@
         <div id="keyword-container" class="keyword-tabs"></div>
         <div id="table-container"></div>
 
-
-<div id="marketing-search-view" class="search-view-container">
+        <div id="marketing-search-view" class="search-view-container">
             <div class="search-box-wrapper">
                 <input type="text" id="naver-kwd-input" class="search-input" placeholder="조회할 키워드를 입력하세요 (예: 강남맛집)" onkeypress="if(event.key === 'Enter') searchNaverKeyword()">
                 <button class="search-btn-icon" onclick="searchNaverKeyword()">🔍</button>
             </div>
-            
-
             
             <div id="skeleton-ui" class="skeleton-card">
                 <div class="skeleton-header">
@@ -294,16 +222,8 @@
                     <div class="sk-item"><div class="skeleton-box sk-label"></div><div class="skeleton-box sk-value"></div></div>
                     <div class="sk-item"><div class="skeleton-box sk-label"></div><div class="skeleton-box sk-value"></div></div>
                     <div class="sk-item"><div class="skeleton-box sk-label"></div><div class="skeleton-box sk-value"></div></div>
-                    <div class="sk-item"><div class="skeleton-box sk-label"></div><div class="skeleton-box sk-value"></div></div>
-                    <div class="sk-item"><div class="skeleton-box sk-label"></div><div class="skeleton-box sk-value"></div></div>
                 </div>
             </div>
-
-
-
-
-
-
 
             <div id="kwd-result-card" class="result-card">
                 <div class="result-header">
@@ -337,9 +257,11 @@
                         <div class="res-label">평균 클릭률 (Mobile)</div>
                         <div class="res-value" id="res-mo-ctr">-</div>
                     </div>
-                    </div>
+                </div>
+                <div class="chart-container-box">
+                    <canvas id="trendChart"></canvas>
+                </div>
             </div>
-
 
             <div id="related-result-card" class="related-card">
                 <div class="result-header">
@@ -349,27 +271,18 @@
                     <table class="related-table">
                         <thead>
                             <tr>
-<th style="width: 34%">키워드</th>
-        <th style="width: 22%">PC 검색수</th>
-        <th style="width: 22%">Mo 검색수</th>
-        <th style="width: 22%; color: #e74c3c;">Total</th> </tr>
+                                <th style="width: 34%">키워드</th>
+                                <th style="width: 22%">PC 검색수</th>
+                                <th style="width: 22%">Mo 검색수</th>
+                                <th style="width: 22%; color: #e74c3c;">Total</th> 
                             </tr>
                         </thead>
                         <tbody id="related-table-body">
-                            </tbody>
+                        </tbody>
                     </table>
                 </div>
             </div>
         </div>
-
-
-
-
-
-        </div>
-
-
-
 
     </main>
 
@@ -387,33 +300,28 @@
         power: { url: "https://script.google.com/macros/s/AKfycbzJI5NLmLt8uU5dXCoWbZAx9sZCSHh6mGkiECGTfaTXXPFTmCe7c4RxEoDbiJBF2hRM/exec", title: "파워링크 현황" },
         integrated: { url: "https://script.google.com/macros/s/AKfycbyYQDgn2QdOYhDwoCpHHNbUNEK5gcW5hbAZ6nyhIel_n8gQ4r3aM_O9uQEL06LqDX5x/exec", title: "통합검색 노출" },
         marketing: { url: "https://script.google.com/macros/s/AKfycbz1PL3THIbulUe4e6G9NPWMOTs3Cce5xidaC9_PZtLcpTAGjoBs7XP9kBnbNSzEfjsY/exec", title: "마케팅 도구" } 
-
-
     };
 
     const NOTICE_MESSAGES = {
         review: "📢 <b>Notice:</b> 오전(단어 필터링 + AI 검수), 오후(AI 검수) 총 2회 진행(<b>리뷰 목록 2회 업데이트</b>), 부정 리뷰 발견 시 이메일 발송합니다.",
         rank: "📢 <b>Notice:</b> <b>오전, 오후 총 2회 노출 순위 확인</b>, 순위 변동은 ▲ 상승/▼ 하락으로 표시되고, 50위 미만은 기록되지 않습니다.",
         power: "📢 <b>Notice:</b> <b>최근 7일 소진액 및 잔액 기반으로 분석한 광고비 현황입니다.</b>",
-        integrated: "📢 <b>Notice:</b> <b>통합검색 노출 현황</b>입니다. 최근 2일치 노출 순위를 표시합니다.)",
-        marketing: "📢 <b>Notice:</b> <b>네이버 검색광고 API</b>를 기반으로 한 최근 30일 조회수 데이터입니다."
-
+        integrated: "📢 <b>Notice:</b> <b>통합검색 노출 현황</b>입니다. 최근 2일치 노출 순위를 표시합니다.",
+        marketing: "📢 <b>Notice:</b> <b>네이버 검색광고 API</b>와 <b>데이터랩 API</b>를 결합한 추정 데이터입니다. 그래프는 데이터랩 트렌드 지수를 실제 검색량으로 역산한 수치입니다."
     };
 
     const REVIEW_COMPANY_COL_IDX = 0; 
     const RANK_KEYWORD_COL_IDX = 1; 
 
-let dataCache = { 
-    review: {}, 
-    rank: null, 
-    power: null, 
-    bookmark: null, 
-    integrated: null, 
-    marketing: { "네이버 검색량 조회": [] } // 메뉴 생성을 위한 더미 데이터
-};
+    let dataCache = { 
+        review: {}, rank: null, power: null, bookmark: null, integrated: null, 
+        marketing: { "네이버 검색량 조회": [] } 
+    };
 
     let orderCache = { review: [], rank: [], power: [], integrated: [] };
     let loadingStatus = { review: false, rank: false, power: false, bookmark: false, integrated: false, marketing: false };
+    
+    let trendChartInstance = null;
 
     function parseKoreanDate(dateStr) {
         if (!dateStr || typeof dateStr !== 'string') return new Date(0);
@@ -440,22 +348,13 @@ let dataCache = {
 
         showOverlay("데이터 로딩 중...");
         
-        // 1. 즐겨찾기 로딩 시작
         fetchData('bookmark', CONFIG.bookmark.url, userKey);
-        
-        // 2. 리뷰 데이터 우선 로딩 완료 대기
         await loadReviewData(userKey);
-        
-        // 리뷰 데이터 오면 첫 화면 구성하고 스피너 제거
         hideOverlay();
-        
-        // 3. [추가] 플레이스 리뷰 메뉴 자동 펼침
         toggleGroup('review');
 
-        // [★여기 추가] 마케팅 도구 메뉴 버튼 생성 (데이터 로딩 없이 즉시 생성)
         buildSidebar('marketing', dataCache.marketing, orderCache.marketing);
 
-        // 4. 나머지 백그라운드 로딩 시작
         fetchData('rank', CONFIG.rank.url, userKey);
         fetchData('power', CONFIG.power.url, userKey);
         fetchData('integrated', CONFIG.integrated.url, userKey);
@@ -546,7 +445,6 @@ let dataCache = {
             item.className = 'submenu-item';
             item.id = `nav-${mode}-${sheetName}`; 
             
-            // [이름 변경 로직]
             let displayName = sheetName.replace('(파워링크)', '');
             if (mode === 'integrated') {
                 displayName = displayName.replace(' 노출 (통합검색)', '').trim();
@@ -619,19 +517,17 @@ let dataCache = {
         const keywordContainer = document.getElementById('keyword-container');
         const tableContainer = document.getElementById('table-container');
         const powerSummary = document.getElementById('power-summary');
-        const searchView = document.getElementById('marketing-search-view'); // [신규]
+        const searchView = document.getElementById('marketing-search-view');
 
         keywordContainer.innerHTML = "";
         tableContainer.innerHTML = "";
         powerSummary.style.display = "none";
-        if(searchView) searchView.style.display = "none"; // [신규]
+        if(searchView) searchView.style.display = "none";
 
-        // [신규 로직] 마케팅 도구일 경우 검색 화면만 표시하고 종료
         if (mode === 'marketing') {
             if(searchView) searchView.style.display = "flex";
             return;
         }
-
 
         if (!rows || rows.length < 1) {
             tableContainer.innerHTML = "<p>데이터가 없습니다.</p>";
@@ -668,7 +564,6 @@ let dataCache = {
         else if (mode === 'integrated') {
             const header = rows[0];
             const body = rows.slice(1);
-            // 'integrated' 모드로 전달하여 createTable 내부의 전용 스타일(노란색 배경 등)이 적용되도록 함
             tableContainer.innerHTML = createTable([header, ...body], 'integrated', false);
         }
         else if (mode === 'power') {
@@ -720,32 +615,25 @@ let dataCache = {
             }
             tableContainer.innerHTML = createTable(rows, mode, false);
         }
-    } // [수정됨] 이제 여기서 함수가 정상적으로 닫힙니다.
+    }
 
     function createTable(rows, mode, hideKeywordCol) {
-        // mode가 'integrated'여도 여기서 rank-table 클래스가 적용되므로 디자인은 플레이스 순위와 동일
         let html = `<table class="${mode === 'review' ? 'review-table' : (mode === 'power' ? 'power-table' : 'rank-table')}"><thead><tr>`;
         
-        // 1. [헤더] 생성 부분
         for (let j = 0; j < rows[0].length; j++) {
             if (mode === 'review' && j === REVIEW_COMPANY_COL_IDX) continue;
             if (mode === 'rank' && hideKeywordCol && j === RANK_KEYWORD_COL_IDX) continue;
             
             let headVal = rows[0][j] || '';
-
-            // [수정] 통합검색 모드일 때, 헤더(가장 우측 2개 열) 날짜에서 '20' 제거
             if (mode === 'integrated' && j >= rows[0].length - 2) {
                 headVal = String(headVal).trim().replace(/^20/, '');
             }
-
             html += `<th>${headVal}</th>`;
         }
         html += '</tr></thead><tbody>';
 
-        // 2. [바디] 생성 부분
         for (let i = 1; i < rows.length; i++) {
             const isBad = (mode === 'review' && String(rows[i][3]).startsWith("O"));
-            
             html += `<tr${isBad ? ' class="bad-row"' : ''}>`;
             for (let j = 0; j < rows[i].length; j++) {
                 if (mode === 'review' && j === REVIEW_COMPANY_COL_IDX) continue;
@@ -760,15 +648,12 @@ let dataCache = {
                     } else if (j === 5) val = String(val).replace(/^20/, '');
                 } else if (mode === 'rank' && j === 0) val = String(val).replace(/^20/, '');
                 else if (mode === 'power' && j === 0) val = String(val).replace(/^20(\d{2})(\d{2})(\d{2})$/, '$1-$2-$3');
-                
-                // [수정] 통합검색 모드일 때, 바디(가장 우측 2개 열) 날짜 '20' 제거 및 공백 제거
                 else if (mode === 'integrated' && j >= rows[i].length - 2) {
                     val = String(val).trim().replace(/^20/, '');
                 }
 
                 let cls = (mode === 'rank' || mode === 'power') && (String(val).includes('▲') || String(val).includes('▼')) ? (String(val).includes('▲') ? "rank-up" : "rank-down") : "";
                 
-                // [수정] 통합검색 모드이고 D셀(인덱스 3)인 경우 연노랑 배경색
                 let cellStyle = "";
                 if (mode === 'review') {
                      cellStyle = "cursor: pointer;";
@@ -785,14 +670,9 @@ let dataCache = {
         return html + '</tbody></table>';
     }
 
-
     function openModal(content) { document.getElementById('modal-content').innerText = content; document.getElementById('detail-modal').classList.add('visible'); }
     function closeModal() { document.getElementById('detail-modal').classList.remove('visible'); }
 
-
-
-
-// [최적화] 헬퍼 함수들을 밖으로 뺐습니다. (메모리 절약)
     const safeNum = (val) => {
         if (val === undefined || val === null || val === "") return 0;
         const num = Number(val);
@@ -807,27 +687,23 @@ let dataCache = {
         return safeNum(val).toLocaleString();
     };
 
-
-
-// [최종 수정] 네이버 키워드 검색 함수 (합산 검색수 표시 + 불필요 항목 제거)
-async function searchNaverKeyword() {
+    // [핵심] 네이버 검색 + 추이 차트 렌더링
+    async function searchNaverKeyword() {
         const input = document.getElementById('naver-kwd-input');
         const keyword = input.value.trim();
         if (!keyword) { alert("키워드를 입력해주세요."); return; }
 
-        // 요소 캐싱
         const skeleton = document.getElementById('skeleton-ui');
         const mainCard = document.getElementById('kwd-result-card');
         const relatedCard = document.getElementById('related-result-card');
         const btn = document.querySelector('.search-btn-icon');
         const inputField = document.querySelector('.search-input');
-        const tbody = document.getElementById('related-table-body'); // 미리 찾기
+        const tbody = document.getElementById('related-table-body');
 
-        // UI 초기화
+        // 초기화
         mainCard.style.display = "none";
         relatedCard.style.display = "none";
         skeleton.style.display = "block";
-        
         btn.disabled = true;
         inputField.disabled = true;
         inputField.style.opacity = "0.7"; 
@@ -838,8 +714,9 @@ async function searchNaverKeyword() {
             if (res.status === 'success' && res.data) {
                 const d = res.data.main; 
                 const list = res.data.related;
+                // [신규] 이제 백엔드에서 '일별' 데이터가 내려와야 함
+                const trendData = res.data.trend || []; 
 
-                // --- 메인 데이터 바인딩 ---
                 const mainTitle = document.getElementById('main-card-title');
                 if(mainTitle) mainTitle.innerText = d.relKeyword || keyword;
 
@@ -853,46 +730,25 @@ async function searchNaverKeyword() {
                 document.getElementById('res-pc-ctr').innerText = safeNum(d.monthlyAvePcCtr).toFixed(2) + "%";
                 document.getElementById('res-mo-ctr').innerText = safeNum(d.monthlyAveMobileCtr).toFixed(2) + "%";
 
-                // --- [최적화] 연관검색어 테이블 (DocumentFragment 사용) ---
-                tbody.innerHTML = ""; 
-                
-                if (list && list.length > 0) {
-                    // 메모리 상에 가상의 컨테이너 생성 (리플로우 방지)
-                    const fragment = document.createDocumentFragment(); 
+                // --- [수정된 로직] 일별 데이터를 이용한 정확한 역산 ---
+                renderTrendChart(trendData, mainTotal);
 
+                tbody.innerHTML = ""; 
+                if (list && list.length > 0) {
+                    const fragment = document.createDocumentFragment(); 
                     list.forEach(item => {
                         const tr = document.createElement('tr');
-                        
-                        const tdKwd = document.createElement('td');
-                        tdKwd.className = "kwd-col";
-                        tdKwd.innerText = item.relKeyword;
-                        
-                        const tdPc = document.createElement('td');
-                        tdPc.innerText = safeStrNum(item.monthlyPcQcCnt);
-                        
-                        const tdMo = document.createElement('td');
-                        tdMo.innerText = safeStrNum(item.monthlyMobileQcCnt);
-
+                        const tdKwd = document.createElement('td'); tdKwd.className = "kwd-col"; tdKwd.innerText = item.relKeyword;
+                        const tdPc = document.createElement('td'); tdPc.innerText = safeStrNum(item.monthlyPcQcCnt);
+                        const tdMo = document.createElement('td'); tdMo.innerText = safeStrNum(item.monthlyMobileQcCnt);
                         let totalSum = getRealNum(item.monthlyPcQcCnt) + getRealNum(item.monthlyMobileQcCnt);
-                        const tdTotal = document.createElement('td');
-                        tdTotal.innerText = totalSum.toLocaleString();
-                        tdTotal.style.fontWeight = "bold";
-                        tdTotal.style.color = "#333";
-
-                        tr.appendChild(tdKwd);
-                        tr.appendChild(tdPc);
-                        tr.appendChild(tdMo);
-                        tr.appendChild(tdTotal);
-                        
-                        // 실제 DOM이 아닌 메모리 상의 fragment에 추가
+                        const tdTotal = document.createElement('td'); tdTotal.innerText = totalSum.toLocaleString(); tdTotal.style.fontWeight = "bold"; tdTotal.style.color = "#333";
+                        tr.appendChild(tdKwd); tr.appendChild(tdPc); tr.appendChild(tdMo); tr.appendChild(tdTotal);
                         fragment.appendChild(tr); 
                     });
-                    
-                    // 완성된 덩어리를 한 번에 실제 DOM에 붙임 (리플로우 1회 발생)
                     tbody.appendChild(fragment);
                     relatedCard.style.display = "block"; 
                 }
-
                 skeleton.style.display = "none";
                 mainCard.style.display = "block"; 
 
@@ -912,88 +768,157 @@ async function searchNaverKeyword() {
         }
     }
 
+// [수정 완료] 일별 데이터 합산 로직 (정확도 개선 - 뻥튀기 로직 제거)
+    function renderTrendChart(trendList, recentTotalVolume) {
+        const ctx = document.getElementById('trendChart').getContext('2d');
+        
+        if (trendChartInstance) {
+            trendChartInstance.destroy();
+        }
+
+        if (!trendList || trendList.length === 0) {
+            document.querySelector('.chart-container-box').style.display = 'none';
+            return;
+        }
+        document.querySelector('.chart-container-box').style.display = 'block';
+
+        // 1. 기준 기간 설정 (데이터랩과 검색광고 API의 시차 보정)
+        // 보통 검색광고 데이터는 어제까지의 데이터를 반영하므로, 트렌드도 어제 기준 30일치를 가져옵니다.
+        // slice(-31, -1) -> 뒤에서 2번째(어제)부터 31번째(30일 전)까지
+        let recentDays = trendList.slice(-31, -1);
+        
+        // 데이터가 모자란 경우(신규 키워드라 30일치가 안 될 때)는 전체 사용
+        if (recentDays.length < 30) {
+            recentDays = trendList.slice(-30); 
+        }
+
+        // 2. [핵심 수정] 단순 합계 계산 (이상치 제거 로직 삭제)
+        // 검색광고 총 조회수(2,090)는 튀는 값도 포함된 수치이므로, 비율도 똑같이 다 더해야 정확한 N빵이 됩니다.
+        let sumOfRatios = 0;
+        recentDays.forEach(day => {
+            sumOfRatios += Number(day.ratio || 0);
+        });
+
+        // 3. Multiplier (비율 1당 실제 검색수) 계산
+        // 공식: 최근 30일 총 검색수 / 최근 30일 비율의 총합
+        let multiplier = 0;
+        if (sumOfRatios > 0) {
+            multiplier = recentTotalVolume / sumOfRatios;
+        }
+
+        // [삭제됨] calibrationFactor = 1.25 (강제 25% 상승 코드 삭제)
+        
+        // 4. 월별 합산 (Aggregation)
+        // 여기서 2월은 28개, 3월은 31개의 ratio가 더해지므로 '월별 일수 차이'는 자동으로 해결됩니다.
+        let monthlyMap = {};
+        trendList.forEach(item => {
+            let monthKey = item.period.substring(0, 7); // "YYYY-MM"
+            if (!monthlyMap[monthKey]) {
+                monthlyMap[monthKey] = 0;
+            }
+            monthlyMap[monthKey] += Number(item.ratio || 0);
+        });
+
+        // 5. 차트 데이터 생성
+        const labels = [];
+        const estimatedVolumes = [];
+
+        Object.keys(monthlyMap).sort().forEach(key => {
+            labels.push(key.slice(2).replace('-', '.')); // "24.01"
+            // 최종 계산: 해당 월의 총 비율 합 × (비율 1당 검색수)
+            estimatedVolumes.push(Math.round(monthlyMap[key] * multiplier));
+        });
+
+        // 6. 차트 그리기 (기존 디자인 유지)
+        trendChartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: '월별 예상 검색수',
+                    data: estimatedVolumes,
+                    borderColor: '#3498db',
+                    backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                    borderWidth: 2,
+                    pointRadius: 4,
+                    pointBackgroundColor: '#fff',
+                    pointBorderColor: '#3498db',
+                    pointHoverBackgroundColor: '#3498db',
+                    pointHoverBorderColor: '#fff',
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: 'rgba(0,0,0,0.8)',
+                        titleFont: { size: 13 },
+                        bodyFont: { size: 13, weight: 'bold' },
+                        padding: 10,
+                        cornerRadius: 8,
+                        displayColors: false,
+                        callbacks: {
+                            label: function(context) {
+                                return ` 예상: ${context.parsed.y.toLocaleString()}회`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: '#f0f0f0', drawBorder: false },
+                        ticks: {
+                            callback: function(value) {
+                                if(value >= 10000) return (value/10000).toFixed(1) + '만';
+                                return value.toLocaleString();
+                            },
+                            font: { size: 11, family: "'Malgun Gothic', sans-serif" },
+                            padding: 8
+                        }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { 
+                            font: { size: 11, family: "'Malgun Gothic', sans-serif" },
+                            maxRotation: 0
+                        }
+                    }
+                }
+            }
+        });
+    }
 
     initDashboard();
-</script>
 
-
-
-
-
-
-    <script>
-  // 1. 마우스 우클릭 차단
-  document.addEventListener('contextmenu', function(e) {
-      e.preventDefault();
-      alert('우클릭은 사용할 수 없습니다.');
-  });
-
-  // 2. 개발자 도구 관련 단축키 차단 (F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U 등)
-  document.addEventListener('keydown', function(e) {
-      // F12
-      if (e.key === 'F12') {
-          e.preventDefault();
-          e.returnValue = false;
-      }
-
-      // Ctrl + Shift + I (개발자 도구), J (콘솔), C (요소 검사)
-      if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) {
-          e.preventDefault();
-          e.returnValue = false;
-      }
-
-      // Ctrl + U (소스 보기)
-      if (e.ctrlKey && e.key === 'U') {
-          e.preventDefault();
-          e.returnValue = false;
-      }
-  });
-
-
-
-
-
-
-
-
-
-(function() {
-    const threshold = 160; // 디버깅으로 인한 지연 허용 범위 (ms)
-
-
-
-    const main = () => {
-        const start = new Date().getTime();
-        debugger; // 여기서 개발자 도구가 켜져 있으면 브라우저가 멈춤
-        const end = new Date().getTime();
-
-        // 멈춰있던 시간이 threshold보다 길면 개발자 도구가 켜진 것으로 간주
-        if (end - start > threshold) {
-            devtoolsOpen();
+    document.addEventListener('contextmenu', e => { e.preventDefault(); alert('우클릭은 사용할 수 없습니다.'); });
+    document.addEventListener('keydown', e => {
+        if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key)) || (e.ctrlKey && e.key === 'U')) {
+            e.preventDefault(); e.returnValue = false;
         }
-    };
-
-    const devtoolsOpen = () => {
-        // 개발자 도구가 감지되었을 때 실행할 행동
-        document.body.innerHTML = '<h1>개발자 도구 사용이 감지되어 접속이 차단되었습니다.</h1>';
-        document.body.style.backgroundColor = 'white';
-        // window.location.href = "about:blank"; // 아예 빈 페이지로 튕겨내려면 주석 해제
-    };
-
-    setInterval(main, 1000); // 1초마다 감시
-})();
-
-        
-        
-
+    });
+    (function() {
+        const threshold = 160;
+        const main = () => {
+            const start = new Date().getTime();
+            debugger; 
+            const end = new Date().getTime();
+            if (end - start > threshold) devtoolsOpen();
+        };
+        const devtoolsOpen = () => {
+            document.body.innerHTML = '<h1>접속 차단됨</h1>';
+            document.body.style.backgroundColor = 'white';
+        };
+        setInterval(main, 1000);
+    })();
 </script>
-
-
-
-
-
-
-    
-
 </body>
 </html>
