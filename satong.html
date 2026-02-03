@@ -286,6 +286,8 @@
 
     </main>
 
+
+
 <script>
     const CONFIG = {
         bookmark: { url: "https://script.google.com/macros/s/AKfycbzv5mQQERuRuKQPCxT7X-HPTa-dMfkJR6XCFmQCQiXSlVEmFHsShj01PcuAb6csWJB4/exec", title: "즐겨찾기" },
@@ -323,7 +325,6 @@
     
     let trendChartInstance = null;
 
-    // [초기화] 페이지 로드 시 상태 없음으로 설정
     history.replaceState(null, '', location.pathname + location.search);
 
     function parseKoreanDate(dateStr) {
@@ -354,7 +355,8 @@
         fetchData('bookmark', CONFIG.bookmark.url, userKey);
         await loadReviewData(userKey);
         hideOverlay();
-        toggleGroup('review');
+        // 초기 로딩 시에는 강제로 열기 모드(true) 적용
+        toggleGroup('review', true);
 
         buildSidebar('marketing', dataCache.marketing, orderCache.marketing);
 
@@ -382,7 +384,6 @@
             orderCache.review = [...new Set([...mergedOrder, ...Object.keys(mergedData)])];
             buildSidebar('review', dataCache.review, orderCache.review);
             let firstSheet = orderCache.review.find(name => dataCache.review[name]) || Object.keys(dataCache.review)[0];
-            // 초기 로딩 시에는 히스토리를 쌓지 않음 (false, true)
             if (firstSheet) selectClinic('review', firstSheet, true, true);
         } catch (e) { console.error(e); }
         loadingStatus.review = false;
@@ -455,46 +456,51 @@
             }
             item.innerText = displayName;
             
-            // 메뉴 클릭 시 히스토리에 '어떤 메뉴'인지 기록 (isHistorySkip = false)
             item.onclick = () => selectClinic(mode, sheetName, false, false);
             container.appendChild(item);
         });
     }
 
-    function toggleGroup(mode) {
+    // [수정된 함수] forceOpen 파라미터 추가
+    // forceOpen이 true면 토글하지 않고 무조건 엽니다.
+    function toggleGroup(mode, forceOpen = false) {
         const targetGroup = document.getElementById(`group-${mode}`);
         const targetSubmenu = document.getElementById(`submenu-${mode}`);
-        const isAlreadyOpen = targetGroup.classList.contains('active');
-
-        if (!isAlreadyOpen && loadingStatus[mode] && (!dataCache[mode] || Object.keys(dataCache[mode]).length === 0)) {
-            showOverlay(`데이터 로딩 중...`);
-            const checkTimer = setInterval(() => {
-                if (!loadingStatus[mode]) {
-                    clearInterval(checkTimer);
-                    hideOverlay();
-                    if (!targetGroup.classList.contains('active')) toggleGroup(mode);
-                }
-            }, 500);
+        
+        // 데이터 로딩 중 체크
+        if (loadingStatus[mode] && (!dataCache[mode] || Object.keys(dataCache[mode]).length === 0)) {
+            const isAlreadyActive = targetGroup.classList.contains('active');
+            if (!isAlreadyActive) { // 닫혀있을 때만 로딩 표시
+                showOverlay(`데이터 로딩 중...`);
+                const checkTimer = setInterval(() => {
+                    if (!loadingStatus[mode]) {
+                        clearInterval(checkTimer);
+                        hideOverlay();
+                        if (!targetGroup.classList.contains('active')) toggleGroup(mode, forceOpen);
+                    }
+                }, 500);
+            }
             return;
         }
 
+        const isAlreadyOpen = targetGroup.classList.contains('active');
+
+        // 다른 메뉴들은 모두 닫기 (아코디언 효과)
         document.querySelectorAll('.menu-group').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.submenu-container').forEach(el => el.classList.remove('open'));
 
-        if (!isAlreadyOpen) {
+        // [핵심] 강제 열기 모드이거나, 원래 닫혀있었다면 -> 연다.
+        // 원래 열려있었는데 forceOpen이 false(단순 대메뉴 클릭)라면 -> 닫힌 상태 유지(위에서 remove 했으므로).
+        if (forceOpen || !isAlreadyOpen) {
             targetGroup.classList.add('active');
             targetSubmenu.classList.add('open');
         }
     }
 
-    // [핵심 변경] isHistorySkip 파라미터 추가
-    // - 사용자가 클릭해서 들어오면: 히스토리 쌓음 (false)
-    // - 뒤로가기 버튼으로 들어오면: 히스토리 안 쌓음 (true)
     function selectClinic(mode, sheetName, isInitial = false, isHistorySkip = false) {
         if (mode === 'bookmark') return;
         
         if (!isHistorySkip && !isInitial) {
-             // PC에서도 동작하도록 '어떤 메뉴'인지 상세하게 저장
              history.pushState({ mode: mode, sheet: sheetName }, '', '#detail');
         }
 
@@ -513,12 +519,12 @@
     }
 
     function renderContentNow(mode, sheetName, isInitial) {
-        // 사이드바 메뉴 활성화 표시
         document.querySelectorAll('.submenu-item').forEach(el => el.classList.remove('active'));
         const currentItem = document.getElementById(`nav-${mode}-${sheetName}`);
         
-        // PC 사용성을 위해 상위 그룹도 열어줌
-        toggleGroup(mode); 
+        // [수정] 소메뉴 진입 시에는 '무조건 열기(true)' 옵션 사용
+        toggleGroup(mode, true); 
+
         if (currentItem) currentItem.classList.add('active');
 
         document.getElementById('page-title').innerText = `[${CONFIG[mode].title}] ${sheetName.replace('(파워링크)', '')}`;
@@ -535,7 +541,6 @@
     }
 
     function showMobileMenu() {
-        // 모바일 버튼 클릭 시 브라우저 뒤로가기 실행
         history.back();
     }
 
@@ -911,18 +916,13 @@
         }
     });
 
-    // [핵심] 브라우저 뒤로가기 이벤트 핸들러
     window.addEventListener('popstate', function(event) {
         if (!event.state) {
-            // 히스토리가 없으면 목록 상태로 간주
             document.body.classList.remove('show-content');
         } else {
-            // 히스토리에 저장된 정보가 있으면 그 메뉴를 다시 로드 (화면 갱신)
             if (event.state.mode && event.state.sheet) {
-                // 뒤로가기로 인한 실행이므로, 다시 히스토리를 쌓지 않게 true 전달
                 selectClinic(event.state.mode, event.state.sheet, false, true);
             }
-            // 모바일일 경우 상세화면 클래스 제어
             document.body.classList.add('show-content');
         }
     });
@@ -942,6 +942,6 @@
         setInterval(main, 1000);
     })();
 </script>
+
 </body>
 </html>
-
