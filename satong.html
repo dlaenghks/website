@@ -323,8 +323,8 @@
     
     let trendChartInstance = null;
 
-    // [변경 1] 페이지 로드 시 초기 히스토리 상태(목록 화면) 저장
-    history.replaceState({ page: 'list' }, 'list', '');
+    // [초기화] 페이지 로드 시 상태 없음으로 설정
+    history.replaceState(null, '', location.pathname + location.search);
 
     function parseKoreanDate(dateStr) {
         if (!dateStr || typeof dateStr !== 'string') return new Date(0);
@@ -382,7 +382,8 @@
             orderCache.review = [...new Set([...mergedOrder, ...Object.keys(mergedData)])];
             buildSidebar('review', dataCache.review, orderCache.review);
             let firstSheet = orderCache.review.find(name => dataCache.review[name]) || Object.keys(dataCache.review)[0];
-            if (firstSheet) selectClinic('review', firstSheet, true);
+            // 초기 로딩 시에는 히스토리를 쌓지 않음 (false, true)
+            if (firstSheet) selectClinic('review', firstSheet, true, true);
         } catch (e) { console.error(e); }
         loadingStatus.review = false;
     }
@@ -454,7 +455,8 @@
             }
             item.innerText = displayName;
             
-            item.onclick = () => selectClinic(mode, sheetName, false);
+            // 메뉴 클릭 시 히스토리에 '어떤 메뉴'인지 기록 (isHistorySkip = false)
+            item.onclick = () => selectClinic(mode, sheetName, false, false);
             container.appendChild(item);
         });
     }
@@ -485,8 +487,17 @@
         }
     }
 
-    function selectClinic(mode, sheetName, isInitial = false) {
+    // [핵심 변경] isHistorySkip 파라미터 추가
+    // - 사용자가 클릭해서 들어오면: 히스토리 쌓음 (false)
+    // - 뒤로가기 버튼으로 들어오면: 히스토리 안 쌓음 (true)
+    function selectClinic(mode, sheetName, isInitial = false, isHistorySkip = false) {
         if (mode === 'bookmark') return;
+        
+        if (!isHistorySkip && !isInitial) {
+             // PC에서도 동작하도록 '어떤 메뉴'인지 상세하게 저장
+             history.pushState({ mode: mode, sheet: sheetName }, '', '#detail');
+        }
+
         if (loadingStatus[mode]) {
             showOverlay(`데이터 로딩 중...`);
             const checkDataTimer = setInterval(() => {
@@ -502,29 +513,29 @@
     }
 
     function renderContentNow(mode, sheetName, isInitial) {
+        // 사이드바 메뉴 활성화 표시
         document.querySelectorAll('.submenu-item').forEach(el => el.classList.remove('active'));
         const currentItem = document.getElementById(`nav-${mode}-${sheetName}`);
+        
+        // PC 사용성을 위해 상위 그룹도 열어줌
+        toggleGroup(mode); 
         if (currentItem) currentItem.classList.add('active');
+
         document.getElementById('page-title').innerText = `[${CONFIG[mode].title}] ${sheetName.replace('(파워링크)', '')}`;
         const noticeBox = document.getElementById('notice-box');
         noticeBox.innerHTML = NOTICE_MESSAGES[mode] || "";
         noticeBox.style.display = 'block';
         renderContent(mode, dataCache[mode][sheetName]);
+        
         if (!isInitial) showMobileContent();
     }
 
-    // [변경 2] 메뉴 클릭 시 히스토리 스택 추가 (브라우저가 '페이지 이동했다'고 인식하게 함)
     function showMobileContent() {
-        if (!document.body.classList.contains('show-content')) {
-            // 현재 상세 페이지가 아닐 경우에만 히스토리에 추가하여 중복 방지
-            history.pushState({ page: 'detail' }, '', '#detail');
-        }
         document.body.classList.add('show-content');
     }
 
-    // [변경 3] UI 뒤로가기 버튼 클릭 시 'history.back()' 호출
-    // 이렇게 하면 브라우저 뒤로가기 버튼과 동일한 동작(popstate 이벤트)을 유도함
     function showMobileMenu() {
+        // 모바일 버튼 클릭 시 브라우저 뒤로가기 실행
         history.back();
     }
 
@@ -900,12 +911,18 @@
         }
     });
 
-    // [변경 4] 브라우저 뒤로가기(popstate) 이벤트 리스너 추가
-    // 브라우저 뒤로가기 버튼을 눌렀을 때, 상태에 따라 사이드바를 제어함
+    // [핵심] 브라우저 뒤로가기 이벤트 핸들러
     window.addEventListener('popstate', function(event) {
-        if (!event.state || event.state.page === 'list') {
+        if (!event.state) {
+            // 히스토리가 없으면 목록 상태로 간주
             document.body.classList.remove('show-content');
-        } else if (event.state && event.state.page === 'detail') {
+        } else {
+            // 히스토리에 저장된 정보가 있으면 그 메뉴를 다시 로드 (화면 갱신)
+            if (event.state.mode && event.state.sheet) {
+                // 뒤로가기로 인한 실행이므로, 다시 히스토리를 쌓지 않게 true 전달
+                selectClinic(event.state.mode, event.state.sheet, false, true);
+            }
+            // 모바일일 경우 상세화면 클래스 제어
             document.body.classList.add('show-content');
         }
     });
