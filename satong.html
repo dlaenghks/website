@@ -1339,6 +1339,39 @@ async function checkNoticeBadgeOnStart() {
     initDashboard();
 
 
+        document.addEventListener('contextmenu', e => { e.preventDefault(); alert('우클릭은 사용할 수 없습니다.'); });
+    document.addEventListener('keydown', e => {
+        if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key)) || (e.ctrlKey && e.key === 'U')) {
+            e.preventDefault(); e.returnValue = false;
+        }
+    });
+
+    window.addEventListener('popstate', function(event) {
+        if (!event.state) {
+            document.body.classList.remove('show-content');
+        } else {
+            if (event.state.mode && event.state.sheet) {
+                selectClinic(event.state.mode, event.state.sheet, false, true);
+            }
+            document.body.classList.add('show-content');
+        }
+    });
+
+    (function() {
+        const threshold = 160;
+        const main = () => {
+            const start = new Date().getTime();
+            debugger; 
+            const end = new Date().getTime();
+            if (end - start > threshold) devtoolsOpen();
+        };
+        const devtoolsOpen = () => {
+            document.body.innerHTML = '<h1>접속 차단됨</h1>';
+            document.body.style.backgroundColor = 'white';
+        };
+        setInterval(main, 1000);
+    })();
+
 
 
 
