@@ -1281,7 +1281,7 @@ async function loadNaverNotices() {
                 // [신규] 날짜 체크 및 N 뱃지 추가
                 let dateBadge = "";
                 const daysDiff = getDaysDiff(item.date); // 7일 이내 체크
-                if (daysDiff <= 3) {
+                if (daysDiff <= 5) {
                     dateBadge = ` <span class="new-badge">N</span>`;
                     hasNewPost = true; // 하나라도 있으면 전체 메뉴에 뱃지 표시
                 }
@@ -1320,7 +1320,7 @@ async function checkNoticeBadgeOnStart() {
         
         if (res.status === 'success' && res.data && res.data.length > 0) {
             // 7일 이내 글이 하나라도 있는지 확인
-            const hasNew = res.data.some(item => getDaysDiff(item.date) <= 3);
+            const hasNew = res.data.some(item => getDaysDiff(item.date) <= 5);
             
             if (hasNew) {
                 // 사이드바가 다 그려질 때까지 아주 잠깐 대기 후 뱃지 달기
