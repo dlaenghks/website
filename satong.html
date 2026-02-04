@@ -13,7 +13,24 @@
         .sidebar::-webkit-scrollbar-thumb { background-color: #ccc; border-radius: 10px; }
         .sidebar-header { padding: 15px; font-weight: bold; font-size: 1.1rem; border-bottom: 1px solid #eee; color: #ffffff; position: sticky; top: 0; background: #3498db; z-index: 10; }
         .menu-group { border-bottom: 1px solid #f0f0f0; }
-        .menu-title { padding: 12px 15px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: bold; color: #555; transition: 0.2s; }
+        .menu-title {
+    padding: 12px 15px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between; /* 양쪽 끝 정렬 (텍스트그룹 <-> 화살표) */
+    align-items: center;
+    font-weight: bold;
+    color: #555;
+    transition: 0.2s;
+}
+
+.menu-text-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 6px; /* 텍스트와 뱃지 사이 간격 */
+}
+
+
         .menu-title:hover { background-color: #f8f9fa; color: #3498db; }
         .menu-title .icon { font-size: 10px; transition: transform 0.3s; }
         .submenu-container { display: none; background-color: #fcfcfc; padding-bottom: 5px; }
@@ -121,6 +138,197 @@
         .sk-label { width: 60px; height: 14px; margin-bottom: 8px; margin: 0 auto 8px auto; }
         .sk-value { width: 80px; height: 24px; margin: 0 auto; }
         .sk-item { text-align: center; }
+
+        /* [추가된 CSS] 공지사항 카드 스타일 */
+        .notice-container {
+            display: none; /* 기본 숨김 */
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            width: 100%;
+            max-width: 900px;
+            margin-top: 20px;
+            animation: fadeIn 0.4s ease-out;
+        }
+        .notice-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+            border: 1px solid #eee;
+            transition: transform 0.2s;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+        }
+        .notice-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+        }
+
+
+/* 공지사항 이미지 스타일 (수정됨) */
+.notice-img {
+    width: 100%;
+    height: 140px;
+    object-fit: cover;
+    background-color: #f0f0f0;
+    display: block; /* 이미지가 있을 때만 보임 */
+}
+
+/* 이미지가 없을 때 보여줄 박스 스타일 (신규 추가) */
+.no-image-placeholder {
+    width: 100%;
+    height: 140px;
+    background-color: #e9ecef; /* 회색 배경 */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #adb5bd;
+    font-weight: bold;
+    font-size: 14px;
+    border-bottom: 1px solid #eee;
+}
+.no-image-icon {
+    font-size: 24px;
+    margin-bottom: 5px;
+}
+
+        .notice-content {
+            padding: 15px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+/* [수정] 제목: 무조건 한 줄! 넘치면 '...' 처리 (가장 깔끔한 방식) */
+.notice-title {
+    font-size: 15px;
+    font-weight: bold;
+    color: #333;
+    
+    /* 한 줄 강제 설정 */
+    white-space: nowrap; 
+    overflow: hidden; 
+    text-overflow: ellipsis; 
+    
+    /* 높이 설정 (폰트크기 15px + 여유분) */
+    height: 20px; 
+    line-height: 1.2;
+    
+    /* 디자인 요소 */
+    padding-bottom: 10px;       
+    border-bottom: 1px solid #eee; 
+    margin-bottom: 10px;        
+}
+
+/* [수정] 본문: 3줄 고정, 넘치는 텍스트 숨김 */
+.notice-body {
+    font-size: 13px;
+    color: #666;
+    
+    /* 높이 계산: 13px * 1.5(줄간격) * 3줄 = 약 58.5px */
+    line-height: 1.5;
+    height: 59px; 
+    
+    /* 3줄 넘어가면 칼같이 자름 */
+    overflow: hidden; 
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    
+    flex-grow: 0;
+    
+    /* 디자인 요소 */
+    padding-bottom: 10px;       
+    border-bottom: 1px solid #eee; 
+    margin-bottom: 10px;        
+}
+
+        .notice-date {
+            font-size: 12px;
+            color: #999;
+            text-align: right;
+            margin-top: auto;
+        }
+
+
+
+
+/* [신규] New 뱃지 스타일 */
+.new-badge {
+    display: inline-block;
+    background-color: #e74c3c;
+    color: white;
+    font-size: 10px;
+    font-weight: bold;
+    padding: 2px 5px;
+    border-radius: 10px;
+    /* margin-left: 6px;  <- 삭제 (gap으로 대체) */
+    vertical-align: middle;
+    line-height: 1;
+    animation: pulse 2s infinite;
+}
+
+
+@keyframes pulse {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.1); opacity: 0.9; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+
+
+/* [추가] 공지사항 스켈레톤 UI 스타일 */
+.skeleton-notice-wrapper {
+    display: contents; /* 그리드 레이아웃 유지 */
+}
+.skeleton-notice-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #eee;
+    display: flex;
+    flex-direction: column;
+    height: 300px; /* 카드 대략적인 높이 */
+}
+.sk-notice-img {
+    width: 100%;
+    height: 140px;
+}
+.sk-notice-content {
+    padding: 15px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.sk-line {
+    border-radius: 4px;
+}
+.sk-title-line { width: 80%; height: 20px; }
+.sk-body-line { width: 100%; height: 14px; }
+.sk-body-line.short { width: 60%; }
+.sk-date-line { width: 30%; height: 12px; margin-top: auto; align-self: flex-end; }
+
+/* 기존 애니메이션(shimmer) 재사용 */
+.skeleton-anim {
+    background: #f0f0f0;
+    background-image: linear-gradient(90deg, #f0f0f0 25%, #fafafa 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+
+
+
+
+
+
+
+
+
+
+
+
     </style>
 </head>
 <body>
@@ -284,9 +492,9 @@
             </div>
         </div>
 
+        <div id="notice-card-view" class="notice-container"></div>
+
     </main>
-
-
 
 <script>
     const CONFIG = {
@@ -304,6 +512,9 @@
         marketing: { url: "https://script.google.com/macros/s/AKfycbz1PL3THIbulUe4e6G9NPWMOTs3Cce5xidaC9_PZtLcpTAGjoBs7XP9kBnbNSzEfjsY/exec", title: "마케팅 도구" } 
     };
 
+    // [신규] 공지사항용 앱스크립트 주소 (아까 만든 스크립트의 배포 주소로 확인되었습니다)
+    const NOTICE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyb8B7jg2HEmMY8-s_FL0OygWDkm91ISPI9yMpYzo_faplmeyAqwDlHAgG9yM0J8MCu/exec";
+
     const NOTICE_MESSAGES = {
         review: "📢 <b>Notice:</b> 오전(단어 필터링 + AI 검수), 오후(AI 검수) 총 2회 진행(<b>리뷰 목록 2회 업데이트</b>), 부정 리뷰 발견 시 이메일 발송합니다.",
         rank: "📢 <b>Notice:</b> <b>오전, 오후 총 2회 노출 순위 확인</b>, 순위 변동은 ▲ 상승/▼ 하락으로 표시되고, 50위 미만은 기록되지 않습니다.",
@@ -315,17 +526,102 @@
     const REVIEW_COMPANY_COL_IDX = 0; 
     const RANK_KEYWORD_COL_IDX = 1; 
 
+    // [수정됨] 마케팅 도구 메뉴에 공지사항 탭 추가
     let dataCache = { 
         review: {}, rank: null, power: null, bookmark: null, integrated: null, 
-        marketing: { "네이버 검색량 조회": [] } 
+        marketing: { "네이버 검색량 조회": [], "네이버 공지사항": [] } 
     };
 
     let orderCache = { review: [], rank: [], power: [], integrated: [] };
     let loadingStatus = { review: false, rank: false, power: false, bookmark: false, integrated: false, marketing: false };
-    
     let trendChartInstance = null;
 
     history.replaceState(null, '', location.pathname + location.search);
+
+
+
+// 날짜 차이 계산 함수 (일 단위)
+function getDaysDiff(dateString) {
+    // dateString 포맷: "2026.01.30"
+    if (!dateString) return 999;
+    
+    const parts = dateString.split('.');
+    if (parts.length !== 3) return 999;
+    
+    const postDate = new Date(parts[0], parts[1] - 1, parts[2]);
+    const today = new Date();
+    
+    // 시간 정보 제거 (날짜만 비교)
+    postDate.setHours(0,0,0,0);
+    today.setHours(0,0,0,0);
+    
+    const diffTime = Math.abs(today - postDate);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+    
+    return diffDays;
+}
+
+
+function showNewBadgeOnMenu() {
+    // 1. 마케팅 도구 (대메뉴) - 구조 변경 적용
+    const marketingTitle = document.querySelector('#group-marketing .menu-title');
+    
+    // 이미 뱃지가 있는지 확인
+    if (marketingTitle && !marketingTitle.querySelector('.new-badge')) {
+        // 기존 내용(텍스트 + 아이콘) 중 텍스트만 분리하기 위해 구조 변경
+        // 현재: <div class="menu-title">마케팅 도구 <span class="icon">▼</span></div>
+        // 목표: <div class="menu-title">
+        //          <span class="menu-text-wrapper">마케팅 도구 <span class="badge">N</span></span>
+        //          <span class="icon">▼</span>
+        //       </div>
+        
+        const icon = marketingTitle.querySelector('.icon');
+        const text = marketingTitle.childNodes[0]; // "마케팅 도구 " 텍스트 노드
+
+        // 래퍼 생성
+        const wrapper = document.createElement('span');
+        wrapper.className = 'menu-text-wrapper';
+        wrapper.innerText = text.textContent.trim(); // 텍스트 이동
+        
+        // 뱃지 생성
+        const badge = document.createElement('span');
+        badge.className = 'new-badge';
+        badge.innerText = 'N';
+        
+        wrapper.appendChild(badge); // 래퍼에 뱃지 추가
+
+        // 기존 텍스트 노드 제거하고 래퍼 삽입 (아이콘 앞에)
+        text.remove();
+        marketingTitle.insertBefore(wrapper, icon);
+    }
+
+    // 2. 네이버 공지사항 (소메뉴)
+    const noticeItem = document.getElementById('nav-marketing-네이버 공지사항');
+    if (noticeItem && !noticeItem.querySelector('.new-badge')) {
+        // 소메뉴는 flex justify-content가 없으므로 그냥 append 해도 됨 (단, 정렬을 위해 flex 적용 추천)
+        noticeItem.style.display = 'flex';
+        noticeItem.style.alignItems = 'center';
+        noticeItem.style.justifyContent = 'space-between'; // 양쪽 정렬 (선택사항)
+        
+        // 텍스트 래퍼가 없으면 생성 (기존 텍스트 감싸기)
+        if (!noticeItem.querySelector('.menu-text-wrapper')) {
+             const text = noticeItem.innerText;
+             noticeItem.innerText = '';
+             
+             const wrapper = document.createElement('span');
+             wrapper.innerText = text;
+             noticeItem.appendChild(wrapper);
+             
+             const badge = document.createElement('span');
+             badge.className = 'new-badge';
+             badge.innerText = 'N';
+             badge.style.marginLeft = 'auto'; // 우측 끝으로 밀기 (선택사항)
+             noticeItem.appendChild(badge);
+        }
+    }
+}
+
+
 
     function parseKoreanDate(dateStr) {
         if (!dateStr || typeof dateStr !== 'string') return new Date(0);
@@ -363,7 +659,12 @@
         fetchData('rank', CONFIG.rank.url, userKey);
         fetchData('power', CONFIG.power.url, userKey);
         fetchData('integrated', CONFIG.integrated.url, userKey);
+
+        // [추가됨] 페이지 로딩이 끝나면 공지사항 배지 체크 시작!
+        checkNoticeBadgeOnStart();
     }
+
+
 
     async function loadReviewData(userKey) {
         loadingStatus.review = true;
@@ -461,16 +762,13 @@
         });
     }
 
-    // [수정된 함수] forceOpen 파라미터 추가
-    // forceOpen이 true면 토글하지 않고 무조건 엽니다.
     function toggleGroup(mode, forceOpen = false) {
         const targetGroup = document.getElementById(`group-${mode}`);
         const targetSubmenu = document.getElementById(`submenu-${mode}`);
         
-        // 데이터 로딩 중 체크
         if (loadingStatus[mode] && (!dataCache[mode] || Object.keys(dataCache[mode]).length === 0)) {
             const isAlreadyActive = targetGroup.classList.contains('active');
-            if (!isAlreadyActive) { // 닫혀있을 때만 로딩 표시
+            if (!isAlreadyActive) {
                 showOverlay(`데이터 로딩 중...`);
                 const checkTimer = setInterval(() => {
                     if (!loadingStatus[mode]) {
@@ -485,12 +783,9 @@
 
         const isAlreadyOpen = targetGroup.classList.contains('active');
 
-        // 다른 메뉴들은 모두 닫기 (아코디언 효과)
         document.querySelectorAll('.menu-group').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.submenu-container').forEach(el => el.classList.remove('open'));
 
-        // [핵심] 강제 열기 모드이거나, 원래 닫혀있었다면 -> 연다.
-        // 원래 열려있었는데 forceOpen이 false(단순 대메뉴 클릭)라면 -> 닫힌 상태 유지(위에서 remove 했으므로).
         if (forceOpen || !isAlreadyOpen) {
             targetGroup.classList.add('active');
             targetSubmenu.classList.add('open');
@@ -522,7 +817,6 @@
         document.querySelectorAll('.submenu-item').forEach(el => el.classList.remove('active'));
         const currentItem = document.getElementById(`nav-${mode}-${sheetName}`);
         
-        // [수정] 소메뉴 진입 시에는 '무조건 열기(true)' 옵션 사용
         toggleGroup(mode, true); 
 
         if (currentItem) currentItem.classList.add('active');
@@ -531,7 +825,9 @@
         const noticeBox = document.getElementById('notice-box');
         noticeBox.innerHTML = NOTICE_MESSAGES[mode] || "";
         noticeBox.style.display = 'block';
-        renderContent(mode, dataCache[mode][sheetName]);
+        
+        // rows 데이터를 전달하지만, 마케팅 도구의 경우 키값만 확인
+        renderContent(mode, dataCache[mode][sheetName], sheetName);
         
         if (!isInitial) showMobileContent();
     }
@@ -544,21 +840,41 @@
         history.back();
     }
 
-    function renderContent(mode, rows) {
+    function renderContent(mode, rows, sheetName) {
         const keywordContainer = document.getElementById('keyword-container');
         const tableContainer = document.getElementById('table-container');
         const powerSummary = document.getElementById('power-summary');
-        const searchView = document.getElementById('marketing-search-view');
-
+        
+        // 초기화
         keywordContainer.innerHTML = "";
         tableContainer.innerHTML = "";
         powerSummary.style.display = "none";
-        if(searchView) searchView.style.display = "none";
 
+        // [수정됨] 마케팅 도구 (검색량 조회 vs 공지사항) 처리 로직
         if (mode === 'marketing') {
-            if(searchView) searchView.style.display = "flex";
-            return;
+            const searchView = document.getElementById('marketing-search-view');
+            const noticeView = document.getElementById('notice-card-view');
+            
+            // 둘 다 일단 숨김
+            if (searchView) searchView.style.display = "none";
+            if (noticeView) noticeView.style.display = "none";
+
+            if (sheetName === '네이버 검색량 조회') {
+                if(searchView) searchView.style.display = "flex";
+            } else if (sheetName === '네이버 공지사항') {
+                if(noticeView) {
+                    noticeView.style.display = "grid";
+                    loadNaverNotices(); // 공지사항 로딩 함수 호출
+                }
+            }
+            return; // 마케팅 도구는 여기서 로직 종료
         }
+
+        // 마케팅 도구가 아닌 다른 탭들의 공통 로직
+        const searchView = document.getElementById('marketing-search-view');
+        const noticeView = document.getElementById('notice-card-view');
+        if (searchView) searchView.style.display = "none";
+        if (noticeView) noticeView.style.display = "none";
 
         if (!rows || rows.length < 1) {
             tableContainer.innerHTML = "<p>데이터가 없습니다.</p>";
@@ -907,40 +1223,131 @@
         });
     }
 
+async function loadNaverNotices() {
+    const container = document.getElementById('notice-card-view');
+    
+    // 이미 로딩된 데이터가 있으면 뱃지 로직만 다시 수행하고 리턴
+    if (container.innerHTML.trim() !== "" && !container.querySelector('.loading-box')) {
+        return;
+    }
+
+    // 스켈레톤 UI (유지)
+    let skeletonHtml = '<div class="skeleton-notice-wrapper">';
+    for(let i=0; i<6; i++) {
+        skeletonHtml += `
+            <div class="skeleton-notice-card">
+                <div class="sk-notice-img skeleton-anim"></div>
+                <div class="sk-notice-content">
+                    <div class="sk-line sk-title-line skeleton-anim"></div>
+                    <div class="sk-line sk-body-line skeleton-anim"></div>
+                    <div class="sk-line sk-body-line skeleton-anim"></div>
+                    <div class="sk-line sk-body-line short skeleton-anim"></div>
+                    <div class="sk-line sk-date-line skeleton-anim"></div>
+                </div>
+            </div>`;
+    }
+    skeletonHtml += '</div>';
+    container.innerHTML = skeletonHtml;
+    
+    try {
+        const res = await fetch(NOTICE_SCRIPT_URL).then(r => r.json());
+
+        if (res.status === 'success' && res.data && res.data.length > 0) {
+            container.innerHTML = ""; // 스켈레톤 제거
+            
+            let hasNewPost = false; // 7일 이내 새 글 존재 여부
+
+            res.data.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'notice-card';
+                card.onclick = () => window.open(item.link, '_blank');
+
+                // [1] 제목 길이 자르기
+                let cleanTitle = item.title;
+                if (cleanTitle.length > 35) cleanTitle = cleanTitle.substring(0, 35) + "...";
+
+                // [2] 본문 길이 자르기
+                let cleanBody = item.content;
+                if (cleanBody.length > 65) cleanBody = cleanBody.substring(0, 65) + "...";
+
+                // [3] 이미지 처리
+                let imgHtml = '';
+                if (item.image && item.image.trim() !== "") {
+                    imgHtml = `<img src="${item.image}" class="notice-img" alt="공지 이미지">`;
+                } else {
+                    imgHtml = `<div class="no-image-placeholder"><span class="no-image-icon">🖼️</span><span>NO IMAGE</span></div>`;
+                }
+
+                // [신규] 날짜 체크 및 N 뱃지 추가
+                let dateBadge = "";
+                const daysDiff = getDaysDiff(item.date); // 7일 이내 체크
+                if (daysDiff <= 7) {
+                    dateBadge = ` <span class="new-badge">N</span>`;
+                    hasNewPost = true; // 하나라도 있으면 전체 메뉴에 뱃지 표시
+                }
+
+                card.innerHTML = `
+                    ${imgHtml}
+                    <div class="notice-content">
+                        <div class="notice-title">${cleanTitle}</div>
+                        <div class="notice-body">${cleanBody}</div>
+                        <div class="notice-date">${item.date}${dateBadge}</div> </div>
+                `;
+                container.appendChild(card);
+            });
+
+            // [신규] 새 글이 하나라도 있으면 메뉴에도 뱃지 달기
+            if (hasNewPost) {
+                showNewBadgeOnMenu();
+            }
+
+        } else {
+            container.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding:40px 0; color:#888; font-size:14px;">표시할 공지사항이 없습니다.</div>';
+        }
+    } catch (e) {
+        console.error(e);
+        container.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding:20px; color:red;">데이터 통신 오류 발생</div>';
+    }
+}
+
+
+
+// [신규] 최초 접속 시 백그라운드에서 배지 체크하는 함수
+async function checkNoticeBadgeOnStart() {
+    try {
+        // 데이터만 조용히 가져옴
+        const res = await fetch(NOTICE_SCRIPT_URL).then(r => r.json());
+        
+        if (res.status === 'success' && res.data && res.data.length > 0) {
+            // 7일 이내 글이 하나라도 있는지 확인
+            const hasNew = res.data.some(item => getDaysDiff(item.date) <= 7);
+            
+            if (hasNew) {
+                // 사이드바가 다 그려질 때까지 아주 잠깐 대기 후 뱃지 달기
+                setTimeout(() => {
+                    showNewBadgeOnMenu();
+                }, 1000);
+            }
+        }
+    } catch (e) {
+        console.log("배지 체크 중 오류(무시):", e);
+    }
+}
+
+
+
     initDashboard();
 
-    document.addEventListener('contextmenu', e => { e.preventDefault(); alert('우클릭은 사용할 수 없습니다.'); });
-    document.addEventListener('keydown', e => {
-        if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key)) || (e.ctrlKey && e.key === 'U')) {
-            e.preventDefault(); e.returnValue = false;
-        }
-    });
 
-    window.addEventListener('popstate', function(event) {
-        if (!event.state) {
-            document.body.classList.remove('show-content');
-        } else {
-            if (event.state.mode && event.state.sheet) {
-                selectClinic(event.state.mode, event.state.sheet, false, true);
-            }
-            document.body.classList.add('show-content');
-        }
-    });
 
-    (function() {
-        const threshold = 160;
-        const main = () => {
-            const start = new Date().getTime();
-            debugger; 
-            const end = new Date().getTime();
-            if (end - start > threshold) devtoolsOpen();
-        };
-        const devtoolsOpen = () => {
-            document.body.innerHTML = '<h1>접속 차단됨</h1>';
-            document.body.style.backgroundColor = 'white';
-        };
-        setInterval(main, 1000);
-    })();
+
+
+
+
+
+
+
+
 </script>
 
 </body>
