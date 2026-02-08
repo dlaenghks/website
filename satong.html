@@ -254,6 +254,50 @@
 
 
 
+/* 플랫폼 뱃지 컨테이너 */
+.platform-badges {
+    display: inline-flex;
+    gap: 4px;
+    margin-left: auto; /* 우측 정렬 */
+}
+
+/* 공통 뱃지 스타일 */
+.badge-btn {
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    cursor: pointer;
+    font-weight: bold;
+    color: #555;
+    transition: 0.2s;
+}
+
+/* 활성화 되었을 때 스타일 */
+.badge-btn.active {
+    border-color: transparent;
+    color: white;
+}
+
+/* 네이버 (N) 색상 */
+.badge-n.active { background-color: #03C75A; }
+/* 다음 (D) 색상 */
+.badge-d.active { background-color: #F7E600; color: #3b1e1e; }
+/* 구글 (G) 색상 */
+.badge-g.active { background-color: #4285F4; }
+
+/* 메뉴 아이템 레이아웃 수정 */
+.submenu-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* 이름과 뱃지 양쪽 정렬 */
+    padding-right: 10px; /* 우측 여백 확보 */
+}
+
+
+
+
 /* [신규] New 뱃지 스타일 */
 .new-badge {
     display: inline-block;
@@ -708,7 +752,11 @@ function showNewBadgeOnMenu() {
         buildSidebar(mode, dataCache[mode], orderCache[mode]);
     }
 
-    function buildSidebar(mode, data, order) {
+
+
+
+
+function buildSidebar(mode, data, order) {
         const container = document.getElementById(`submenu-${mode}`);
         if (!container) return;
         container.innerHTML = ""; 
@@ -718,6 +766,7 @@ function showNewBadgeOnMenu() {
             return;
         }
 
+        // [즐겨찾기 로직은 기존 유지]
         if (mode === 'bookmark') {
             if (!data || data.length === 0) {
                 if (!loadingStatus.bookmark) container.innerHTML = "<div style='padding:10px; font-size:12px; color:#999'>데이터 없음</div>";
@@ -743,6 +792,92 @@ function showNewBadgeOnMenu() {
             return;
         }
 
+        // ==========================================
+        // [수정] 리뷰 탭일 경우 그룹화 로직 적용
+        // ==========================================
+        if (mode === 'review') {
+            let grouped = {};
+            // 1. 데이터 그룹화 (업체명 기준)
+            keys.forEach(sheetName => {
+                let baseName = sheetName.replace(' (다음)', '').replace(' (구글)', '').trim();
+                if (!grouped[baseName]) grouped[baseName] = {};
+                
+                if (sheetName.includes('(다음)')) grouped[baseName].daum = sheetName;
+                else if (sheetName.includes('(구글)')) grouped[baseName].google = sheetName;
+                else grouped[baseName].naver = sheetName; // 아무것도 없으면 네이버로 간주
+            });
+
+            // 2. 그룹별 렌더링
+            Object.keys(grouped).forEach(baseName => {
+                const group = grouped[baseName];
+                
+                // 메뉴 아이템 컨테이너
+                const item = document.createElement('div');
+                item.className = 'submenu-item';
+                // ID는 기본 네이버 시트 기준 (없으면 다음/구글 순)
+                const mainSheet = group.naver || group.daum || group.google;
+                item.id = `nav-group-${baseName}`; // 그룹 ID 부여
+                
+                // 텍스트 (업체명)
+                const textSpan = document.createElement('span');
+                textSpan.innerText = baseName;
+                item.appendChild(textSpan);
+
+                // 뱃지 컨테이너
+                const badgeContainer = document.createElement('div');
+                badgeContainer.className = 'platform-badges';
+
+                // N (네이버) 뱃지
+                if (group.naver) {
+                    const badgeN = document.createElement('span');
+                    badgeN.className = 'badge-btn badge-n';
+                    badgeN.innerText = 'N';
+                    badgeN.id = `nav-review-${group.naver}`; // 개별 활성화를 위한 ID
+                    badgeN.onclick = (e) => {
+                        e.stopPropagation(); // 부모 클릭 방지
+                        selectClinic(mode, group.naver, false, false);
+                    };
+                    badgeContainer.appendChild(badgeN);
+                }
+
+                // D (다음) 뱃지
+                if (group.daum) {
+                    const badgeD = document.createElement('span');
+                    badgeD.className = 'badge-btn badge-d';
+                    badgeD.innerText = 'D';
+                    badgeD.id = `nav-review-${group.daum}`;
+                    badgeD.onclick = (e) => {
+                        e.stopPropagation();
+                        selectClinic(mode, group.daum, false, false);
+                    };
+                    badgeContainer.appendChild(badgeD);
+                }
+
+                // G (구글) 뱃지
+                if (group.google) {
+                    const badgeG = document.createElement('span');
+                    badgeG.className = 'badge-btn badge-g';
+                    badgeG.innerText = 'G';
+                    badgeG.id = `nav-review-${group.google}`;
+                    badgeG.onclick = (e) => {
+                        e.stopPropagation();
+                        selectClinic(mode, group.google, false, false);
+                    };
+                    badgeContainer.appendChild(badgeG);
+                }
+
+                item.appendChild(badgeContainer);
+                
+                // 행 자체를 클릭하면 가장 첫 번째 플랫폼(N > D > G) 선택
+                item.onclick = () => selectClinic(mode, mainSheet, false, false);
+                
+                container.appendChild(item);
+            });
+            return;
+        }
+        // ==========================================
+
+        // 나머지 모드(순위, 파워링크 등)는 기존 로직 유지
         keys.forEach(function(sheetName) {
             if (mode === 'power' && !sheetName.includes("(파워링크)")) return;
             if (mode !== 'power' && sheetName.includes("(파워링크)")) return;
@@ -762,6 +897,8 @@ function showNewBadgeOnMenu() {
             container.appendChild(item);
         });
     }
+
+
 
     function toggleGroup(mode, forceOpen = false) {
         const targetGroup = document.getElementById(`group-${mode}`);
@@ -814,15 +951,36 @@ function showNewBadgeOnMenu() {
         renderContentNow(mode, sheetName, isInitial);
     }
 
-    function renderContentNow(mode, sheetName, isInitial) {
+
+
+
+
+function renderContentNow(mode, sheetName, isInitial) {
+        // 모든 활성화 상태 초기화
         document.querySelectorAll('.submenu-item').forEach(el => el.classList.remove('active'));
-        const currentItem = document.getElementById(`nav-${mode}-${sheetName}`);
-        
-        toggleGroup(mode, true); 
+        document.querySelectorAll('.badge-btn').forEach(el => el.classList.remove('active')); // 뱃지 초기화 추가
 
-        if (currentItem) currentItem.classList.add('active');
+        // 1. 리뷰 모드일 때: 뱃지와 부모 행 처리
+        if (mode === 'review') {
+            // 현재 선택된 뱃지 찾기
+            const currentBadge = document.getElementById(`nav-review-${sheetName}`);
+            if (currentBadge) {
+                currentBadge.classList.add('active'); // 뱃지 활성화 (색상 변경)
+                // 뱃지의 부모(행)도 약간 강조하고 싶다면:
+                const parentRow = currentBadge.closest('.submenu-item');
+                if (parentRow) parentRow.classList.add('active'); 
+            }
+        } 
+        // 2. 다른 모드일 때: 기존 방식대로 행 전체 활성화
+        else {
+            const currentItem = document.getElementById(`nav-${mode}-${sheetName}`);
+            toggleGroup(mode, true); 
+            if (currentItem) currentItem.classList.add('active');
+        }
 
+        // [이하 기존 코드 동일]
         document.getElementById('page-title').innerText = `[${CONFIG[mode].title}] ${sheetName.replace('(파워링크)', '')}`;
+
         const noticeBox = document.getElementById('notice-box');
         noticeBox.innerHTML = NOTICE_MESSAGES[mode] || "";
         noticeBox.style.display = 'block';
@@ -1340,25 +1498,55 @@ async function checkNoticeBadgeOnStart() {
     initDashboard();
 
 
+    // 1. 우클릭 방지
+    document.addEventListener('contextmenu', e => { e.preventDefault(); alert('우클릭은 사용할 수 없습니다.'); });
 
-    
+    // 2. 개발자 도구(F12) 방지
+    document.addEventListener('keydown', e => {
+        if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key)) || (e.ctrlKey && e.key === 'U')) {
+            e.preventDefault(); e.returnValue = false;
+        }
+    });
 
+    // 3. [핵심] 뒤로가기 버튼 감지 및 처리 (이게 없어서 뒤로가기가 안 된 겁니다)
+    window.addEventListener('popstate', function(event) {
+        if (!event.state) {
+            // 초기 상태(목록)로 돌아감
+            document.body.classList.remove('show-content');
+        } else {
+            // 상세 내용 상태로 복구
+            if (event.state.mode && event.state.sheet) {
+                // historySkip=true로 설정하여 무한 루프 방지
+                selectClinic(event.state.mode, event.state.sheet, false, true);
+            }
+            document.body.classList.add('show-content');
+        }
+    });
 
+    // 4. 소스 보기 방지 및 디버거 (선택 사항)
+    (function() {
+        const threshold = 160;
+        const main = () => {
+            const start = new Date().getTime();
+            debugger; 
+            const end = new Date().getTime();
+            if (end - start > threshold) devtoolsOpen();
+        };
+        const devtoolsOpen = () => {
+            document.body.innerHTML = '<h1>접속 차단됨</h1>';
+            document.body.style.backgroundColor = 'white';
+        };
+        setInterval(main, 1000);
+    })();
 
-
-
-
-
-
-
-
-
-
-
-
-
-    
-</script>
-
-</body>
+</script> </body>
 </html>
+
+
+
+
+
+
+
+
+
