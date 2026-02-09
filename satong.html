@@ -85,12 +85,6 @@
         th, td { border: 1px solid #eee; padding: 10px; text-align: left; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         th { background-color: #f8f9fa; font-weight: bold; color: #555; position: sticky; top: 58px; z-index: 10; box-shadow: 0 2px 2px -1px rgba(0,0,0,0.1); }
         tr:hover { background-color: #f9f9f9; }
-        .review-table th:nth-child(1) { width: 75px; }
-        .review-table th:nth-child(2) { width: 75px; }
-        .review-table th:nth-child(3), .review-table td:nth-child(3) { width: 50px; text-align: center; }
-        .review-table th:nth-child(4) { width: 250px; }
-        .review-table th:nth-child(5) { width: 75px; }
-        .review-table th:nth-child(6), .review-table td:nth-child(6) { width: 50px; text-align: center; }
         .rank-table th:nth-child(1) { width: 130px; } 
         .rank-table th:nth-child(2) { width: 90px; } 
         .power-table th:nth-child(2), .power-table td:nth-child(2), .power-table th:nth-child(6), .power-table td:nth-child(6), .power-table th:nth-child(7), .power-table td:nth-child(7) { display: none; }
@@ -107,6 +101,24 @@
         .modal-header { padding: 15px; border-bottom: 1px solid #eee; font-weight: bold; display: flex; justify-content: space-between; background: #f8f9fa; }
         .close-btn { cursor: pointer; font-size: 20px; color: #888; }
         .modal-body { padding: 20px; overflow-y: auto; line-height: 1.6; font-size: 14px; word-break: break-all; white-space: pre-wrap; }
+
+
+
+
+
+/* 테이블 첫번째 열(출처) 너비 조정 */
+.review-table th:nth-child(1) { width: 30px; } /* 출처 */
+.review-table th:nth-child(2) { width: 60px } /* 작성일 */
+.review-table th:nth-child(3) { width: 60px } /* 작성자 */
+.review-table th:nth-child(4) { width: 50px; text-align: center; } /* 부정체크 */
+.review-table th:nth-child(5) { width: 150px } /* 리뷰내용 */
+.review-table th:nth-child(6) { width: 60px } /* 작성일 */
+.review-table th:nth-child(7) { width: 50px; } /* AI 검수 */
+.review-table td:nth-child(1) { text-align: center; }
+
+
+
+
         @media (max-width: 768px) {
             .sidebar { width: 100%; height: 100dvh; position: absolute; z-index: 100; border-right: none; }
             .main-content { display: none; width: 100%; height: 100dvh; }
@@ -114,10 +126,11 @@
             body.show-content .main-content { display: flex; }
             .mobile-back-btn { display: inline-block; }
             .content-header h2 { font-size: 1rem; }
-            .review-table th:nth-child(1), .review-table th:nth-child(5) { width: 50px; }
-            .review-table th:nth-child(3), .review-table th:nth-child(6) { width: 20px; }
-            .review-table th:nth-child(2) { width: 30px; }
-            .review-table th:nth-child(4) { width: 100px; }
+            .review-table th:nth-child(1) { width: 30px; }
+            .review-table th:nth-child(2), .review-table th:nth-child(6) { width: 30px; }
+            .review-table th:nth-child(4), .review-table th:nth-child(7) { width: 20px; }
+            .review-table th:nth-child(3) { width: 30px; }
+            .review-table th:nth-child(5) { width: 70px; }
             .rank-table th:nth-child(1) { width: 55px; }
             .rank-table th:nth-child(2) { width: 25px; }
         }
@@ -364,6 +377,29 @@
 
 
 
+
+
+
+
+/* [B안] 통합 리스트용 출처 아이콘 스타일 */
+.source-icon {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    font-weight: 900;
+    font-size: 13px;
+    color: white;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.icon-naver { background-color: #03C75A; border: 1px solid #03C75A; }
+.icon-daum { background-color: #FEE500; color: #3b1e1e; border: 1px solid #FEE500; } /* 카카오는 글자색 진하게 */
+.icon-google { background: white; color: #ea4335; border: 1px solid #eee; }
+/* 구글은 G 로고 색상(4색) 대신 깔끔하게 흰배경+빨강 or 파랑 글씨 추천 */
+/* 여기서는 구글 로고 느낌을 위해 G 텍스트로 처리 */
 
 
 
@@ -711,7 +747,7 @@ function showNewBadgeOnMenu() {
 
 
 
-    async function loadReviewData(userKey) {
+ async function loadReviewData(userKey) {
         loadingStatus.review = true;
         buildSidebar('review', null, null);
         try {
@@ -728,9 +764,33 @@ function showNewBadgeOnMenu() {
             });
             dataCache.review = mergedData;
             orderCache.review = [...new Set([...mergedOrder, ...Object.keys(mergedData)])];
+            
             buildSidebar('review', dataCache.review, orderCache.review);
-            let firstSheet = orderCache.review.find(name => dataCache.review[name]) || Object.keys(dataCache.review)[0];
-            if (firstSheet) selectClinic('review', firstSheet, true, true);
+
+            // [수정] 초기 로딩 시에도 '통합 로직'을 타도록 변경
+            // 1. 순서대로 키를 가져와서 그룹화 진행
+            let keys = (orderCache.review && orderCache.review.length > 0) ? orderCache.review : Object.keys(dataCache.review);
+            let firstBaseName = null;
+            let firstSheetGroup = [];
+
+            // 첫 번째 그룹 찾기
+            for (let sheetName of keys) {
+                if (!dataCache.review[sheetName]) continue;
+                let base = sheetName.replace(' (다음)', '').replace(' (구글)', '').trim();
+                firstBaseName = base;
+                
+                // 해당 그룹의 모든 시트 찾기
+                keys.forEach(s => {
+                    if (s.includes(base)) firstSheetGroup.push(s);
+                });
+                break; // 첫 번째 그룹만 찾으면 종료
+            }
+
+            // 통합 뷰 실행 (초기화=true)
+            if (firstBaseName) {
+                selectIntegratedClinic(firstBaseName, firstSheetGroup);
+            }
+
         } catch (e) { console.error(e); }
         loadingStatus.review = false;
     }
@@ -766,7 +826,7 @@ function buildSidebar(mode, data, order) {
             return;
         }
 
-        // [즐겨찾기 로직은 기존 유지]
+        // [즐겨찾기 로직 - 기존 동일]
         if (mode === 'bookmark') {
             if (!data || data.length === 0) {
                 if (!loadingStatus.bookmark) container.innerHTML = "<div style='padding:10px; font-size:12px; color:#999'>데이터 없음</div>";
@@ -793,83 +853,26 @@ function buildSidebar(mode, data, order) {
         }
 
         // ==========================================
-        // [수정] 리뷰 탭일 경우 그룹화 로직 적용
+        // [수정 B안] 리뷰 탭: 병원명으로 통합 (뱃지 없음)
         // ==========================================
         if (mode === 'review') {
             let grouped = {};
-            // 1. 데이터 그룹화 (업체명 기준)
+            // 1. 데이터 그룹화
             keys.forEach(sheetName => {
                 let baseName = sheetName.replace(' (다음)', '').replace(' (구글)', '').trim();
-                if (!grouped[baseName]) grouped[baseName] = {};
-                
-                if (sheetName.includes('(다음)')) grouped[baseName].daum = sheetName;
-                else if (sheetName.includes('(구글)')) grouped[baseName].google = sheetName;
-                else grouped[baseName].naver = sheetName; // 아무것도 없으면 네이버로 간주
+                if (!grouped[baseName]) grouped[baseName] = [];
+                grouped[baseName].push(sheetName);
             });
 
-            // 2. 그룹별 렌더링
+            // 2. 통합 메뉴 생성
             Object.keys(grouped).forEach(baseName => {
-                const group = grouped[baseName];
-                
-                // 메뉴 아이템 컨테이너
                 const item = document.createElement('div');
                 item.className = 'submenu-item';
-                // ID는 기본 네이버 시트 기준 (없으면 다음/구글 순)
-                const mainSheet = group.naver || group.daum || group.google;
-                item.id = `nav-group-${baseName}`; // 그룹 ID 부여
+                item.id = `nav-group-${baseName}`; 
+                item.innerText = baseName; // 깔끔하게 이름만 표시
                 
-                // 텍스트 (업체명)
-                const textSpan = document.createElement('span');
-                textSpan.innerText = baseName;
-                item.appendChild(textSpan);
-
-                // 뱃지 컨테이너
-                const badgeContainer = document.createElement('div');
-                badgeContainer.className = 'platform-badges';
-
-                // N (네이버) 뱃지
-                if (group.naver) {
-                    const badgeN = document.createElement('span');
-                    badgeN.className = 'badge-btn badge-n';
-                    badgeN.innerText = 'N';
-                    badgeN.id = `nav-review-${group.naver}`; // 개별 활성화를 위한 ID
-                    badgeN.onclick = (e) => {
-                        e.stopPropagation(); // 부모 클릭 방지
-                        selectClinic(mode, group.naver, false, false);
-                    };
-                    badgeContainer.appendChild(badgeN);
-                }
-
-                // D (다음) 뱃지
-                if (group.daum) {
-                    const badgeD = document.createElement('span');
-                    badgeD.className = 'badge-btn badge-d';
-                    badgeD.innerText = 'D';
-                    badgeD.id = `nav-review-${group.daum}`;
-                    badgeD.onclick = (e) => {
-                        e.stopPropagation();
-                        selectClinic(mode, group.daum, false, false);
-                    };
-                    badgeContainer.appendChild(badgeD);
-                }
-
-                // G (구글) 뱃지
-                if (group.google) {
-                    const badgeG = document.createElement('span');
-                    badgeG.className = 'badge-btn badge-g';
-                    badgeG.innerText = 'G';
-                    badgeG.id = `nav-review-${group.google}`;
-                    badgeG.onclick = (e) => {
-                        e.stopPropagation();
-                        selectClinic(mode, group.google, false, false);
-                    };
-                    badgeContainer.appendChild(badgeG);
-                }
-
-                item.appendChild(badgeContainer);
-                
-                // 행 자체를 클릭하면 가장 첫 번째 플랫폼(N > D > G) 선택
-                item.onclick = () => selectClinic(mode, mainSheet, false, false);
+                // 클릭 시 통합 데이터 로드 함수 호출
+                item.onclick = () => selectIntegratedClinic(baseName, grouped[baseName]);
                 
                 container.appendChild(item);
             });
@@ -877,7 +880,7 @@ function buildSidebar(mode, data, order) {
         }
         // ==========================================
 
-        // 나머지 모드(순위, 파워링크 등)는 기존 로직 유지
+        // [나머지 모드(순위 등) 기존 유지]
         keys.forEach(function(sheetName) {
             if (mode === 'power' && !sheetName.includes("(파워링크)")) return;
             if (mode !== 'power' && sheetName.includes("(파워링크)")) return;
@@ -896,6 +899,141 @@ function buildSidebar(mode, data, order) {
             item.onclick = () => selectClinic(mode, sheetName, false, false);
             container.appendChild(item);
         });
+    }
+
+
+
+// [신규 B안] 통합 데이터 처리 함수
+// [수정] 통합 데이터 처리 함수 (개수 제한 + 정렬 순서 적용)
+// [최종 수정] 통합 데이터 처리 함수 (정렬 및 날짜 파싱 강화)
+// [최종 수정] 통합 데이터 처리 함수 (플랫폼 그룹화 + 최신순 정렬 + 상대시간 계산)
+// [최종 수정] 통합 데이터 처리 함수 (날짜 포맷 통일 + 정렬 + 필터링)
+// [최종 수정] 통합 데이터 처리 함수 (날짜 정렬 오류 수정)
+// [최종 수정] 통합 데이터 처리 함수 (오름차순 정렬: 최신글이 맨 아래로)
+// [최종 수정] 통합 데이터 처리 함수 (초기 로딩 버그 수정 + 정렬 로직 완벽 적용)
+    function selectIntegratedClinic(baseName, sheetNames) {
+        // 1. UI 활성화
+        document.querySelectorAll('.submenu-item').forEach(el => el.classList.remove('active'));
+        const currentItem = document.getElementById(`nav-group-${baseName}`);
+        if (currentItem) currentItem.classList.add('active');
+        toggleGroup('review', true);
+
+        // 2. 타이틀 설정
+        document.getElementById('page-title').innerText = `[통합 리뷰] ${baseName}`;
+        const noticeBox = document.getElementById('notice-box');
+        noticeBox.innerHTML = NOTICE_MESSAGES['review'];
+        noticeBox.style.display = 'block';
+
+        // 3. 데이터 준비
+        const LIMIT = 30; // 플랫폼별 최대 노출 개수
+        let header = [];
+        let groups = { 'N': [], 'D': [], 'G': [] }; 
+
+        if (sheetNames.length > 0 && dataCache.review[sheetNames[0]]) {
+            header = [...dataCache.review[sheetNames[0]][0]];
+            header[0] = "출처"; 
+        }
+
+        // 4. 날짜 파싱 및 포맷 통일 함수
+        const getTimestampAndFormat = (row) => {
+            let dateStr = String(row[1]).trim();
+            const now = new Date();
+            let timestamp = 0;
+            let formattedDate = dateStr; 
+
+            // [구글] 상대 시간 처리
+            if (dateStr.includes('전')) {
+                const num = parseInt(dateStr.replace(/[^0-9]/g, '')) || 1;
+                if (dateStr.includes('초')) timestamp = now.getTime() - (num * 1000);
+                else if (dateStr.includes('분')) timestamp = now.getTime() - (num * 60 * 1000);
+                else if (dateStr.includes('시간')) timestamp = now.getTime() - (num * 60 * 60 * 1000);
+                else if (dateStr.includes('일')) timestamp = now.setDate(now.getDate() - num);
+                else if (dateStr.includes('주')) timestamp = now.setDate(now.getDate() - (num * 7));
+                else if (dateStr.includes('달') || dateStr.includes('개월')) timestamp = now.setMonth(now.getMonth() - num);
+                else if (dateStr.includes('년')) timestamp = now.setFullYear(now.getFullYear() - num);
+                
+                if (timestamp > 0) {
+                    const d = new Date(timestamp);
+                    const yy = String(d.getFullYear()).slice(2);
+                    const mm = String(d.getMonth() + 1).padStart(2, '0');
+                    const dd = String(d.getDate()).padStart(2, '0');
+                    formattedDate = `${yy}-${mm}-${dd}`;
+                }
+            }
+            // [다음] 2026.02.04.
+            else if (dateStr.match(/^\d{4}\.\d{2}\.\d{2}\.?$/)) {
+                const parts = dateStr.split('.');
+                const yy = parts[0].slice(2);
+                formattedDate = `${yy}-${parts[1]}-${parts[2]}`;
+                timestamp = new Date(parts[0], parts[1]-1, parts[2]).getTime();
+            }
+            // [네이버] 2026년 2월 2일
+            else if (dateStr.match(/^\d{4}년\s*\d{1,2}월\s*\d{1,2}일/)) {
+                const m = dateStr.match(/(\d{4})년\s*(\d{1,2})월\s*(\d{1,2})일/);
+                const yy = m[1].slice(2);
+                const mm = m[2].padStart(2,'0');
+                const dd = m[3].padStart(2,'0');
+                formattedDate = `${yy}-${mm}-${dd}`;
+                timestamp = new Date(m[1], m[2]-1, m[3]).getTime();
+            }
+            // [기타] YY-MM-DD
+            else if (dateStr.match(/^\d{2}-\d{2}-\d{2}$/)) {
+                formattedDate = dateStr;
+                timestamp = new Date('20' + dateStr).getTime();
+            }
+
+            row[1] = formattedDate; 
+            return timestamp;
+        };
+
+        // 5. 전체 데이터 수집
+        sheetNames.forEach(sheetName => {
+            const rows = dataCache.review[sheetName];
+            if (!rows || rows.length < 2) return;
+
+            let platformCode = 'N'; 
+            if (sheetName.includes('(다음)')) platformCode = 'D';
+            else if (sheetName.includes('(구글)')) platformCode = 'G';
+
+            for (let i = 1; i < rows.length; i++) {
+                let row = [...rows[i]];
+                row[0] = platformCode; 
+                row._timestamp = getTimestampAndFormat(row); 
+                groups[platformCode].push(row);
+            }
+        });
+
+        // 6. 플랫폼별 정렬 및 자르기 (핵심 로직)
+        ['N', 'D', 'G'].forEach(code => {
+            // (1) 먼저 '내림차순(최신순)'으로 정렬하여 가장 최신 글들을 위로 올림
+            groups[code].sort((a, b) => b._timestamp - a._timestamp);
+            
+            // (2) 위에서부터 30개(가장 최신글 30개)만 남기고 자름
+            if (groups[code].length > LIMIT) {
+                groups[code] = groups[code].slice(0, LIMIT);
+            }
+
+            // (3) 잘라낸 최신 글 30개를 다시 '오름차순(과거->최신)'으로 정렬 (화면 표시용)
+            //     요청하신 대로 최신 날짜가 맨 아래로 가게 됨
+            groups[code].sort((a, b) => a._timestamp - b._timestamp);
+        });
+
+        // 7. 최종 병합 (순서: 네이버 -> 다음 -> 구글)
+        const finalRows = [
+            header,
+            ...groups['N'],
+            ...groups['D'],
+            ...groups['G']
+        ];
+
+        // 8. 렌더링
+        if (finalRows.length <= 1) { 
+            document.getElementById('table-container').innerHTML = "<p>데이터가 없습니다.</p>";
+        } else {
+            renderContent('review', finalRows, baseName);
+        }
+        
+        showMobileContent();
     }
 
 
@@ -1123,11 +1261,14 @@ function renderContentNow(mode, sheetName, isInitial) {
         }
     }
 
-    function createTable(rows, mode, hideKeywordCol) {
+function createTable(rows, mode, hideKeywordCol) {
         let html = `<table class="${mode === 'review' ? 'review-table' : (mode === 'power' ? 'power-table' : 'rank-table')}"><thead><tr>`;
         
         for (let j = 0; j < rows[0].length; j++) {
-            if (mode === 'review' && j === REVIEW_COMPANY_COL_IDX) continue;
+            if (mode === 'review' && j === REVIEW_COMPANY_COL_IDX) {
+                html += `<th>출처</th>`; 
+                continue;
+            }
             if (mode === 'rank' && hideKeywordCol && j === RANK_KEYWORD_COL_IDX) continue;
             
             let headVal = rows[0][j] || '';
@@ -1142,17 +1283,29 @@ function renderContentNow(mode, sheetName, isInitial) {
             const isBad = (mode === 'review' && String(rows[i][3]).startsWith("O"));
             html += `<tr${isBad ? ' class="bad-row"' : ''}>`;
             for (let j = 0; j < rows[i].length; j++) {
-                if (mode === 'review' && j === REVIEW_COMPANY_COL_IDX) continue;
+                
+                // 출처 아이콘 처리
+                if (mode === 'review' && j === REVIEW_COMPANY_COL_IDX) {
+                    let source = rows[i][j];
+                    let iconHtml = '';
+                    if (source === 'N') iconHtml = `<span class="source-icon icon-naver">N</span>`;
+                    else if (source === 'D') iconHtml = `<span class="source-icon icon-daum">D</span>`;
+                    else if (source === 'G') iconHtml = `<span class="source-icon icon-google">G</span>`;
+                    else iconHtml = source;
+                    html += `<td>${iconHtml}</td>`;
+                    continue;
+                }
+
                 if (mode === 'rank' && hideKeywordCol && j === RANK_KEYWORD_COL_IDX) continue;
                 
                 let val = rows[i][j] !== null ? rows[i][j] : '';
 
+                // [수정됨] 리뷰 모드 날짜 변환 로직 제거 (이미 selectIntegratedClinic에서 처리함)
                 if (mode === 'review') {
-                    if (j === 1) {
-                        const m = String(val).match(/(\d{4})년\s*(\d{1,2})월\s*(\d{1,2})일/);
-                        if (m) val = `${m[1].replace(/^20/,'')}-${m[2].padStart(2,'0')}-${m[3].padStart(2,'0')}`;
-                    } else if (j === 5) val = String(val).replace(/^20/, '');
-                } else if (mode === 'rank' && j === 0) val = String(val).replace(/^20/, '');
+                    // 수집일시(5번 인덱스)만 '20' 빼기 처리
+                    if (j === 5) val = String(val).replace(/^20/, '');
+                } 
+                else if (mode === 'rank' && j === 0) val = String(val).replace(/^20/, '');
                 else if (mode === 'power' && j === 0) val = String(val).replace(/^20(\d{2})(\d{2})(\d{2})$/, '$1-$2-$3');
                 else if (mode === 'integrated' && j >= rows[i].length - 2) {
                     val = String(val).trim().replace(/^20/, '');
@@ -1175,6 +1328,9 @@ function renderContentNow(mode, sheetName, isInitial) {
         }
         return html + '</tbody></table>';
     }
+
+
+
 
     function openModal(content) { document.getElementById('modal-content').innerText = content; document.getElementById('detail-modal').classList.add('visible'); }
     function closeModal() { document.getElementById('detail-modal').classList.remove('visible'); }
@@ -1498,6 +1654,8 @@ async function checkNoticeBadgeOnStart() {
     initDashboard();
 
 
+
+
     // 1. 우클릭 방지
     document.addEventListener('contextmenu', e => { e.preventDefault(); alert('우클릭은 사용할 수 없습니다.'); });
 
@@ -1539,14 +1697,8 @@ async function checkNoticeBadgeOnStart() {
         setInterval(main, 1000);
     })();
 
+
+
+
 </script> </body>
 </html>
-
-
-
-
-
-
-
-
-
