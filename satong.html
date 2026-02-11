@@ -1,3 +1,64 @@
+모바일 환경에서 처음 접속했을 때 리뷰 테이블(메인 컨텐츠)이 아닌, 사이드바(메뉴 목록)를 먼저 보여주기 위한 수정 사항입니다.
+PC에서는 기존처럼 테이블이 바로 보이지만, 모바일에서는 메뉴가 먼저 보이고 메뉴를 클릭해야 테이블로 화면이 전환되도록 로직을 분기 처리했습니다.
+수정 가이드
+총 2개의 함수(loadReviewData, selectIntegratedClinic)를 수정해야 합니다.
+1. loadReviewData 함수 수정
+초기 로딩 시 실행되는 이 함수에서 selectIntegratedClinic을 호출할 때, 이것이 "초기 자동 로딩"임을 알리는 값을 전달합니다.
+수정 전 (약 695라인 부근)
+            // 통합 뷰 실행 (초기화=true)
+            if (firstBaseName) {
+                selectIntegratedClinic(firstBaseName, firstSheetGroup);
+            }
+
+        } catch (e) { console.error(e); }
+
+수정 후
+            // 통합 뷰 실행 (초기화=true)
+            if (firstBaseName) {
+                // [수정] 3번째 인자로 true(초기 로딩임)를 전달
+                selectIntegratedClinic(firstBaseName, firstSheetGroup, true);
+            }
+
+        } catch (e) { console.error(e); }
+
+2. selectIntegratedClinic 함수 수정
+함수가 "초기 로딩" 상태인지 파악하고, 모바일 환경이면서 초기 로딩일 경우 화면 전환(showMobileContent)을 막습니다.
+수정 전 (약 770라인, 876라인 부근)
+    // [최종 수정] 통합 데이터 처리 함수 (초기 로딩 버그 수정 + 정렬 로직 완벽 적용)
+    function selectIntegratedClinic(baseName, sheetNames) {
+        // ... (중략) ...
+
+        // 8. 렌더링
+        if (finalRows.length <= 1) { 
+            document.getElementById('table-container').innerHTML = "<p>데이터가 없습니다.</p>";
+        } else {
+            renderContent('review', finalRows, baseName);
+        }
+        
+        showMobileContent();
+    }
+
+수정 후
+    // [최종 수정] 통합 데이터 처리 함수 (초기 로딩 버그 수정 + 정렬 로직 완벽 적용)
+    // [수정] 3번째 인자 isInitialLoad 추가 (기본값 false)
+    function selectIntegratedClinic(baseName, sheetNames, isInitialLoad = false) {
+        // ... (중략) ...
+
+        // 8. 렌더링
+        if (finalRows.length <= 1) { 
+            document.getElementById('table-container').innerHTML = "<p>데이터가 없습니다.</p>";
+        } else {
+            renderContent('review', finalRows, baseName);
+        }
+        
+        // [수정] 초기 로딩이면서 모바일 화면(폭 768px 이하)인 경우에는 화면을 전환하지 않음
+        if (!isInitialLoad || window.innerWidth > 768) {
+            showMobileContent();
+        }
+    }
+
+전체 수정된 코드
+위의 변경 사항이 적용된 전체 코드입니다. 바로 복사해서 사용하시면 됩니다.
 <!DOCTYPE html>
 <html>
 <head>
@@ -788,7 +849,8 @@ function showNewBadgeOnMenu() {
 
             // 통합 뷰 실행 (초기화=true)
             if (firstBaseName) {
-                selectIntegratedClinic(firstBaseName, firstSheetGroup);
+                // [수정] 3번째 인자로 true(초기 로딩임)를 전달
+                selectIntegratedClinic(firstBaseName, firstSheetGroup, true);
             }
 
         } catch (e) { console.error(e); }
@@ -911,7 +973,8 @@ function buildSidebar(mode, data, order) {
 // [최종 수정] 통합 데이터 처리 함수 (날짜 정렬 오류 수정)
 // [최종 수정] 통합 데이터 처리 함수 (오름차순 정렬: 최신글이 맨 아래로)
 // [최종 수정] 통합 데이터 처리 함수 (초기 로딩 버그 수정 + 정렬 로직 완벽 적용)
-    function selectIntegratedClinic(baseName, sheetNames) {
+    // [수정] 3번째 인자 isInitialLoad 추가 (기본값 false)
+    function selectIntegratedClinic(baseName, sheetNames, isInitialLoad = false) {
         // 1. UI 활성화
         document.querySelectorAll('.submenu-item').forEach(el => el.classList.remove('active'));
         const currentItem = document.getElementById(`nav-group-${baseName}`);
@@ -1033,7 +1096,10 @@ function buildSidebar(mode, data, order) {
             renderContent('review', finalRows, baseName);
         }
         
-        showMobileContent();
+        // [수정] 초기 로딩이면서 모바일 화면(폭 768px 이하)인 경우에는 화면을 전환하지 않음
+        if (!isInitialLoad || window.innerWidth > 768) {
+            showMobileContent();
+        }
     }
 
 
@@ -1702,3 +1768,4 @@ async function checkNoticeBadgeOnStart() {
 
 </script> </body>
 </html>
+
