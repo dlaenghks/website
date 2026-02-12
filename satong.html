@@ -1662,8 +1662,6 @@ async function checkNoticeBadgeOnStart() {
 
 
     // 1. 우클릭 방지
-    document.addEventListener('contextmenu', e => { e.preventDefault(); alert('우클릭은 사용할 수 없습니다.'); });
-
     // 2. 개발자 도구(F12) 방지
     document.addEventListener('keydown', e => {
         if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key)) || (e.ctrlKey && e.key === 'U')) {
