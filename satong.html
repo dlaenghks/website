@@ -85,8 +85,16 @@
         th, td { border: 1px solid #eee; padding: 10px; text-align: left; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         th { background-color: #f8f9fa; font-weight: bold; color: #555; position: sticky; top: 58px; z-index: 10; box-shadow: 0 2px 2px -1px rgba(0,0,0,0.1); }
         tr:hover { background-color: #f9f9f9; }
+
         .rank-table th:nth-child(1) { width: 130px; } 
         .rank-table th:nth-child(2) { width: 90px; } 
+
+
+.integrated-table th:nth-child(1) { width: 130px; } /* 예: 키워드 열 너비 */
+.integrated-table th:nth-child(2) { width: 90px; }  /* 예: PC/Mo 구분 등 */
+
+
+
         .power-table th:nth-child(2), .power-table td:nth-child(2), .power-table th:nth-child(6), .power-table td:nth-child(6), .power-table th:nth-child(7), .power-table td:nth-child(7) { display: none; }
         .bad-row { background-color: #ffebee !important; }
         .rank-up { color: #e74c3c; font-weight: bold; }
@@ -131,8 +139,15 @@
             .review-table th:nth-child(4), .review-table th:nth-child(7) { width: 20px; }
             .review-table th:nth-child(3) { width: 30px; }
             .review-table th:nth-child(5) { width: 70px; }
+
             .rank-table th:nth-child(1) { width: 55px; }
             .rank-table th:nth-child(2) { width: 25px; }
+
+
+            .integrated-table th:nth-child(1) { width: 55px; }
+            .integrated-table th:nth-child(2) { width: 25px; }
+
+
         }
         .related-card { margin-top: 20px; background: white; width: 100%; max-width: 600px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #eee; overflow: hidden; display: none; }
         .related-table { width: 100%; border-collapse: collapse; font-size: 13px; }
@@ -1267,73 +1282,88 @@ function renderContentNow(mode, sheetName, isInitial) {
     }
 
 function createTable(rows, mode, hideKeywordCol) {
-        let html = `<table class="${mode === 'review' ? 'review-table' : (mode === 'power' ? 'power-table' : 'rank-table')}"><thead><tr>`;
-        
-        for (let j = 0; j < rows[0].length; j++) {
-            if (mode === 'review' && j === REVIEW_COMPANY_COL_IDX) {
-                html += `<th>출처</th>`; 
-                continue;
-            }
-            if (mode === 'rank' && hideKeywordCol && j === RANK_KEYWORD_COL_IDX) continue;
-            
-            let headVal = rows[0][j] || '';
-            if (mode === 'integrated' && j >= rows[0].length - 2) {
-                headVal = String(headVal).trim().replace(/^20/, '');
-            }
-            html += `<th>${headVal}</th>`;
-        }
-        html += '</tr></thead><tbody>';
-
-        for (let i = 1; i < rows.length; i++) {
-            const isBad = (mode === 'review' && String(rows[i][3]).startsWith("O"));
-            html += `<tr${isBad ? ' class="bad-row"' : ''}>`;
-            for (let j = 0; j < rows[i].length; j++) {
-                
-                // 출처 아이콘 처리
-                if (mode === 'review' && j === REVIEW_COMPANY_COL_IDX) {
-                    let source = rows[i][j];
-                    let iconHtml = '';
-                    if (source === 'N') iconHtml = `<span class="source-icon icon-naver">N</span>`;
-                    else if (source === 'D') iconHtml = `<span class="source-icon icon-daum">D</span>`;
-                    else if (source === 'G') iconHtml = `<span class="source-icon icon-google">G</span>`;
-                    else iconHtml = source;
-                    html += `<td>${iconHtml}</td>`;
-                    continue;
-                }
-
-                if (mode === 'rank' && hideKeywordCol && j === RANK_KEYWORD_COL_IDX) continue;
-                
-                let val = rows[i][j] !== null ? rows[i][j] : '';
-
-                // [수정됨] 리뷰 모드 날짜 변환 로직 제거 (이미 selectIntegratedClinic에서 처리함)
-                if (mode === 'review') {
-                    // 수집일시(5번 인덱스)만 '20' 빼기 처리
-                    if (j === 5) val = String(val).replace(/^20/, '');
-                } 
-                else if (mode === 'rank' && j === 0) val = String(val).replace(/^20/, '');
-                else if (mode === 'power' && j === 0) val = String(val).replace(/^20(\d{2})(\d{2})(\d{2})$/, '$1-$2-$3');
-                else if (mode === 'integrated' && j >= rows[i].length - 2) {
-                    val = String(val).trim().replace(/^20/, '');
-                }
-
-                let cls = (mode === 'rank' || mode === 'power') && (String(val).includes('▲') || String(val).includes('▼')) ? (String(val).includes('▲') ? "rank-up" : "rank-down") : "";
-                
-                let cellStyle = "";
-                if (mode === 'review') {
-                     cellStyle = "cursor: pointer;";
-                } else if (mode === 'integrated' && j === 3) {
-                     cellStyle = "background-color: #fff9c4;"; 
-                }
-
-                let evt = mode === 'review' ? ` onclick="openModal('${String(val).replace(/"/g, '&quot;').replace(/'/g, "\\'").replace(/\n/g, '\\n')}')"` : "";
-                
-                html += `<td class="${cls}"${evt} style="${cellStyle}">${val}</td>`;
-            }
-            html += '</tr>';
-        }
-        return html + '</tbody></table>';
+    // [수정] 테이블 클래스 명확하게 분리 (통합검색 노출은 'integrated-table' 사용)
+    let tableClass = 'rank-table'; // 기본값 (순위)
+    
+    if (mode === 'review') {
+        tableClass = 'review-table';
+    } else if (mode === 'power') {
+        tableClass = 'power-table';
+    } else if (mode === 'integrated') {
+        tableClass = 'integrated-table'; // [신규] 여기서 분리됨!
     }
 
+    let html = `<table class="${tableClass}"><thead><tr>`;
+    
+    // [이하 로직은 기존과 100% 동일]
+    for (let j = 0; j < rows[0].length; j++) {
+        if (mode === 'review' && j === REVIEW_COMPANY_COL_IDX) {
+            html += `<th>출처</th>`; 
+            continue;
+        }
+        if (mode === 'rank' && hideKeywordCol && j === RANK_KEYWORD_COL_IDX) continue;
+        
+        let headVal = rows[0][j] || '';
+        // 통합검색 노출 헤더 날짜 처리 ('20' 제거)
+        if (mode === 'integrated' && j >= rows[0].length - 2) {
+            headVal = String(headVal).trim().replace(/^20/, '');
+        }
+        html += `<th>${headVal}</th>`;
+    }
+    html += '</tr></thead><tbody>';
+
+    for (let i = 1; i < rows.length; i++) {
+        const isBad = (mode === 'review' && String(rows[i][3]).startsWith("O"));
+        html += `<tr${isBad ? ' class="bad-row"' : ''}>`;
+        for (let j = 0; j < rows[i].length; j++) {
+            
+            // [리뷰] 출처 아이콘 처리
+            if (mode === 'review' && j === REVIEW_COMPANY_COL_IDX) {
+                let source = rows[i][j];
+                let iconHtml = '';
+                if (source === 'N') iconHtml = `<span class="source-icon icon-naver">N</span>`;
+                else if (source === 'D') iconHtml = `<span class="source-icon icon-daum">D</span>`;
+                else if (source === 'G') iconHtml = `<span class="source-icon icon-google">G</span>`;
+                else iconHtml = source;
+                html += `<td>${iconHtml}</td>`;
+                continue;
+            }
+
+            // [순위] 키워드 숨김 처리
+            if (mode === 'rank' && hideKeywordCol && j === RANK_KEYWORD_COL_IDX) continue;
+            
+            let val = rows[i][j] !== null ? rows[i][j] : '';
+
+            // 데이터 가공 (날짜 포맷 등)
+            if (mode === 'review') {
+                if (j === 5) val = String(val).replace(/^20/, '');
+            } 
+            else if (mode === 'rank' && j === 0) val = String(val).replace(/^20/, '');
+            else if (mode === 'power' && j === 0) val = String(val).replace(/^20(\d{2})(\d{2})(\d{2})$/, '$1-$2-$3');
+            else if (mode === 'integrated' && j >= rows[i].length - 2) {
+                val = String(val).trim().replace(/^20/, '');
+            }
+
+            // 순위 변동 화살표 색상 처리 (순위, 파워링크)
+            let cls = (mode === 'rank' || mode === 'power') && (String(val).includes('▲') || String(val).includes('▼')) ? (String(val).includes('▲') ? "rank-up" : "rank-down") : "";
+            
+            // 셀 스타일 지정
+            let cellStyle = "";
+            if (mode === 'review') {
+                 cellStyle = "cursor: pointer;";
+            } else if (mode === 'integrated' && j === 3) {
+                 cellStyle = "background-color: #fff9c4;"; // 통합검색 노출 특정 열 강조
+            }
+
+            // 모달 이벤트 (리뷰만)
+            let evt = mode === 'review' ? ` onclick="openModal('${String(val).replace(/"/g, '&quot;').replace(/'/g, "\\'").replace(/\n/g, '\\n')}')"` : "";
+            
+            html += `<td class="${cls}"${evt} style="${cellStyle}">${val}</td>`;
+        }
+        html += '</tr>';
+    }
+    return html + '</tbody></table>';
+}
 
 
 
