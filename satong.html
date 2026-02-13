@@ -14,22 +14,21 @@
         .sidebar-header { padding: 15px; font-weight: bold; font-size: 1.1rem; border-bottom: 1px solid #eee; color: #ffffff; position: sticky; top: 0; background: #3498db; z-index: 10; }
         .menu-group { border-bottom: 1px solid #f0f0f0; }
         .menu-title {
-    padding: 12px 15px;
-    cursor: pointer;
-    display: flex;
-    justify-content: space-between; /* 양쪽 끝 정렬 (텍스트그룹 <-> 화살표) */
-    align-items: center;
-    font-weight: bold;
-    color: #555;
-    transition: 0.2s;
-}
+            padding: 12px 15px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between; /* 양쪽 끝 정렬 (텍스트그룹 <-> 화살표) */
+            align-items: center;
+            font-weight: bold;
+            color: #555;
+            transition: 0.2s;
+        }
 
-.menu-text-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 6px; /* 텍스트와 뱃지 사이 간격 */
-}
-
+        .menu-text-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 6px; /* 텍스트와 뱃지 사이 간격 */
+        }
 
         .menu-title:hover { background-color: #f8f9fa; color: #3498db; }
         .menu-title .icon { font-size: 10px; transition: transform 0.3s; }
@@ -90,10 +89,27 @@
         .rank-table th:nth-child(2) { width: 90px; } 
 
 
-.integrated-table th:nth-child(1) { width: 130px; } /* 예: 키워드 열 너비 */
-.integrated-table th:nth-child(2) { width: 90px; }  /* 예: PC/Mo 구분 등 */
+        .integrated-table th {     border: 1px solid #5d5d5d;}
+        .integrated-table td {     border: 1px solid #5d5d5d;}
 
 
+        .integrated-table th:nth-child(1) { width: 150px; text-align: center;}
+        .integrated-table td:nth-child(1) { text-align: center; font-weight: 700;}
+
+        .integrated-table th:nth-child(2) { width: 90px; text-align: center;}  /* 예: PC/Mo 구분 등 */
+        .integrated-table td:nth-child(2) { text-align: center;}
+
+        .integrated-table th:nth-child(3) { width: 90px; text-align: center;}  /* 예: PC/Mo 구분 등 */
+        .integrated-table td:nth-child(3) { text-align: center;}
+
+        .integrated-table th:nth-child(4) { width: 80px; text-align: center; }  /* 예: PC/Mo 구분 등 */
+        .integrated-table td:nth-child(4) { text-align: center; font-weight: 700;}
+
+        .integrated-table th:nth-child(5) { width: 80px; text-align: center;}  /* 예: PC/Mo 구분 등 */
+        .integrated-table td:nth-child(5) { text-align: center; font-weight: 700; color: #ff0000;}
+
+        .integrated-table th:nth-child(6) { width: 80px; text-align: center;}  /* 예: PC/Mo 구분 등 */
+        .integrated-table td:nth-child(6) { text-align: center; font-weight: 700; color: #ff0000;}
 
         .power-table th:nth-child(2), .power-table td:nth-child(2), .power-table th:nth-child(6), .power-table td:nth-child(6), .power-table th:nth-child(7), .power-table td:nth-child(7) { display: none; }
         .bad-row { background-color: #ffebee !important; }
@@ -110,22 +126,15 @@
         .close-btn { cursor: pointer; font-size: 20px; color: #888; }
         .modal-body { padding: 20px; overflow-y: auto; line-height: 1.6; font-size: 14px; word-break: break-all; white-space: pre-wrap; }
 
-
-
-
-
-/* 테이블 첫번째 열(출처) 너비 조정 */
-.review-table th:nth-child(1) { width: 30px; } /* 출처 */
-.review-table th:nth-child(2) { width: 60px } /* 작성일 */
-.review-table th:nth-child(3) { width: 60px } /* 작성자 */
-.review-table th:nth-child(4) { width: 50px; text-align: center; } /* 부정체크 */
-.review-table th:nth-child(5) { width: 150px } /* 리뷰내용 */
-.review-table th:nth-child(6) { width: 60px } /* 작성일 */
-.review-table th:nth-child(7) { width: 50px; } /* AI 검수 */
-.review-table td:nth-child(1) { text-align: center; }
-
-
-
+        /* 테이블 첫번째 열(출처) 너비 조정 */
+        .review-table th:nth-child(1) { width: 30px; } /* 출처 */
+        .review-table th:nth-child(2) { width: 60px } /* 작성일 */
+        .review-table th:nth-child(3) { width: 60px } /* 작성자 */
+        .review-table th:nth-child(4) { width: 50px; text-align: center; } /* 부정체크 */
+        .review-table th:nth-child(5) { width: 150px } /* 리뷰내용 */
+        .review-table th:nth-child(6) { width: 60px } /* 작성일 */
+        .review-table th:nth-child(7) { width: 50px; } /* AI 검수 */
+        .review-table td:nth-child(1) { text-align: center; }
 
         @media (max-width: 768px) {
             .sidebar { width: 100%; height: 100dvh; position: absolute; z-index: 100; border-right: none; }
@@ -134,7 +143,8 @@
             body.show-content .main-content { display: flex; }
             .mobile-back-btn { display: inline-block; }
             .content-header h2 { font-size: 1rem; }
-            .review-table th:nth-child(1) { width: 30px; }
+            .review-table th:nth-child(1) { width: 30px; text-align: center;}
+            .review-table td:nth-child(1) { text-align: center;}
             .review-table th:nth-child(2), .review-table th:nth-child(6) { width: 30px; }
             .review-table th:nth-child(4), .review-table th:nth-child(7) { width: 20px; }
             .review-table th:nth-child(3) { width: 30px; }
@@ -143,11 +153,23 @@
             .rank-table th:nth-child(1) { width: 55px; }
             .rank-table th:nth-child(2) { width: 25px; }
 
+            .integrated-table th:nth-child(1) { width: 80px; text-align: center;}
+            .integrated-table td:nth-child(1) { text-align: center;}
 
-            .integrated-table th:nth-child(1) { width: 55px; }
-            .integrated-table th:nth-child(2) { width: 25px; }
+            .integrated-table th:nth-child(2) { width: 25px; text-align: center;}
+            .integrated-table td:nth-child(2) { text-align: center;}
 
+            .integrated-table th:nth-child(3) { width: 25px; text-align: center;}
+            .integrated-table td:nth-child(3) { text-align: center;}
 
+            .integrated-table th:nth-child(4) { width: 30px; text-align: center;}
+            .integrated-table td:nth-child(4) { text-align: center;}
+
+            .integrated-table th:nth-child(5) { width: 25px; text-align: center;}
+            .integrated-table td:nth-child(5) { text-align: center;}
+
+            .integrated-table th:nth-child(6) { width: 25px; text-align: center;}
+            .integrated-table td:nth-child(6) { text-align: center;}
         }
         .related-card { margin-top: 20px; background: white; width: 100%; max-width: 600px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #eee; overflow: hidden; display: none; }
         .related-table { width: 100%; border-collapse: collapse; font-size: 13px; }
@@ -193,34 +215,33 @@
             box-shadow: 0 8px 20px rgba(0,0,0,0.12);
         }
 
+        /* 공지사항 이미지 스타일 (수정됨) */
+        .notice-img {
+            width: 100%;
+            height: 140px;
+            object-fit: cover;
+            background-color: #f0f0f0;
+            display: block; /* 이미지가 있을 때만 보임 */
+        }
 
-/* 공지사항 이미지 스타일 (수정됨) */
-.notice-img {
-    width: 100%;
-    height: 140px;
-    object-fit: cover;
-    background-color: #f0f0f0;
-    display: block; /* 이미지가 있을 때만 보임 */
-}
-
-/* 이미지가 없을 때 보여줄 박스 스타일 (신규 추가) */
-.no-image-placeholder {
-    width: 100%;
-    height: 140px;
-    background-color: #e9ecef; /* 회색 배경 */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    color: #adb5bd;
-    font-weight: bold;
-    font-size: 14px;
-    border-bottom: 1px solid #eee;
-}
-.no-image-icon {
-    font-size: 24px;
-    margin-bottom: 5px;
-}
+        /* 이미지가 없을 때 보여줄 박스 스타일 (신규 추가) */
+        .no-image-placeholder {
+            width: 100%;
+            height: 140px;
+            background-color: #e9ecef; /* 회색 배경 */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #adb5bd;
+            font-weight: bold;
+            font-size: 14px;
+            border-bottom: 1px solid #eee;
+        }
+        .no-image-icon {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
 
         .notice-content {
             padding: 15px;
@@ -228,49 +249,49 @@
             display: flex;
             flex-direction: column;
         }
-/* [수정] 제목: 무조건 한 줄! 넘치면 '...' 처리 (가장 깔끔한 방식) */
-.notice-title {
-    font-size: 15px;
-    font-weight: bold;
-    color: #333;
-    
-    /* 한 줄 강제 설정 */
-    white-space: nowrap; 
-    overflow: hidden; 
-    text-overflow: ellipsis; 
-    
-    /* 높이 설정 (폰트크기 15px + 여유분) */
-    height: 20px; 
-    line-height: 1.2;
-    
-    /* 디자인 요소 */
-    padding-bottom: 10px;       
-    border-bottom: 1px solid #eee; 
-    margin-bottom: 10px;        
-}
+        /* [수정] 제목: 무조건 한 줄! 넘치면 '...' 처리 (가장 깔끔한 방식) */
+        .notice-title {
+            font-size: 15px;
+            font-weight: bold;
+            color: #333;
+            
+            /* 한 줄 강제 설정 */
+            white-space: nowrap; 
+            overflow: hidden; 
+            text-overflow: ellipsis; 
+            
+            /* 높이 설정 (폰트크기 15px + 여유분) */
+            height: 20px; 
+            line-height: 1.2;
+            
+            /* 디자인 요소 */
+            padding-bottom: 10px;        
+            border-bottom: 1px solid #eee; 
+            margin-bottom: 10px;         
+        }
 
-/* [수정] 본문: 3줄 고정, 넘치는 텍스트 숨김 */
-.notice-body {
-    font-size: 13px;
-    color: #666;
-    
-    /* 높이 계산: 13px * 1.5(줄간격) * 3줄 = 약 58.5px */
-    line-height: 1.5;
-    height: 59px; 
-    
-    /* 3줄 넘어가면 칼같이 자름 */
-    overflow: hidden; 
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    
-    flex-grow: 0;
-    
-    /* 디자인 요소 */
-    padding-bottom: 10px;       
-    border-bottom: 1px solid #eee; 
-    margin-bottom: 10px;        
-}
+        /* [수정] 본문: 3줄 고정, 넘치는 텍스트 숨김 */
+        .notice-body {
+            font-size: 13px;
+            color: #666;
+            
+            /* 높이 계산: 13px * 1.5(줄간격) * 3줄 = 약 58.5px */
+            line-height: 1.5;
+            height: 59px; 
+            
+            /* 3줄 넘어가면 칼같이 자름 */
+            overflow: hidden; 
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            
+            flex-grow: 0;
+            
+            /* 디자인 요소 */
+            padding-bottom: 10px;        
+            border-bottom: 1px solid #eee; 
+            margin-bottom: 10px;         
+        }
 
         .notice-date {
             font-size: 12px;
@@ -279,151 +300,126 @@
             margin-top: auto;
         }
 
+        /* 플랫폼 뱃지 컨테이너 */
+        .platform-badges {
+            display: inline-flex;
+            gap: 4px;
+            margin-left: auto; /* 우측 정렬 */
+        }
+
+        /* 공통 뱃지 스타일 */
+        .badge-btn {
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            background-color: #fff;
+            cursor: pointer;
+            font-weight: bold;
+            color: #555;
+            transition: 0.2s;
+        }
+
+        /* 활성화 되었을 때 스타일 */
+        .badge-btn.active {
+            border-color: transparent;
+            color: white;
+        }
+
+        /* 네이버 (N) 색상 */
+        .badge-n.active { background-color: #03C75A; }
+        /* 다음 (D) 색상 */
+        .badge-d.active { background-color: #F7E600; color: #3b1e1e; }
+        /* 구글 (G) 색상 */
+        .badge-g.active { background-color: #4285F4; }
+
+        /* 메뉴 아이템 레이아웃 수정 */
+        .submenu-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between; /* 이름과 뱃지 양쪽 정렬 */
+            padding-right: 10px; /* 우측 여백 확보 */
+        }
+
+        /* [신규] New 뱃지 스타일 */
+        .new-badge {
+            display: inline-block;
+            background-color: #e74c3c;
+            color: white;
+            font-size: 10px;
+            font-weight: bold;
+            padding: 2px 5px;
+            border-radius: 10px;
+            /* margin-left: 6px;  <- 삭제 (gap으로 대체) */
+            vertical-align: middle;
+            line-height: 1;
+            animation: pulse 2s infinite;
+        }
 
 
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.9; }
+            100% { transform: scale(1); opacity: 1; }
+        }
 
-/* 플랫폼 뱃지 컨테이너 */
-.platform-badges {
-    display: inline-flex;
-    gap: 4px;
-    margin-left: auto; /* 우측 정렬 */
-}
+        /* [추가] 공지사항 스켈레톤 UI 스타일 */
+        .skeleton-notice-wrapper {
+            display: contents; /* 그리드 레이아웃 유지 */
+        }
+        .skeleton-notice-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #eee;
+            display: flex;
+            flex-direction: column;
+            height: 300px; /* 카드 대략적인 높이 */
+        }
+        .sk-notice-img {
+            width: 100%;
+            height: 140px;
+        }
+        .sk-notice-content {
+            padding: 15px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .sk-line {
+            border-radius: 4px;
+        }
+        .sk-title-line { width: 80%; height: 20px; }
+        .sk-body-line { width: 100%; height: 14px; }
+        .sk-body-line.short { width: 60%; }
+        .sk-date-line { width: 30%; height: 12px; margin-top: auto; align-self: flex-end; }
 
-/* 공통 뱃지 스타일 */
-.badge-btn {
-    font-size: 10px;
-    padding: 2px 6px;
-    border-radius: 4px;
-    border: 1px solid #ccc;
-    background-color: #fff;
-    cursor: pointer;
-    font-weight: bold;
-    color: #555;
-    transition: 0.2s;
-}
+        /* 기존 애니메이션(shimmer) 재사용 */
+        .skeleton-anim {
+            background: #f0f0f0;
+            background-image: linear-gradient(90deg, #f0f0f0 25%, #fafafa 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+        }
 
-/* 활성화 되었을 때 스타일 */
-.badge-btn.active {
-    border-color: transparent;
-    color: white;
-}
+        /* [B안] 통합 리스트용 출처 아이콘 스타일 */
+        .source-icon {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            font-weight: 900;
+            font-size: 13px;
+            color: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
 
-/* 네이버 (N) 색상 */
-.badge-n.active { background-color: #03C75A; }
-/* 다음 (D) 색상 */
-.badge-d.active { background-color: #F7E600; color: #3b1e1e; }
-/* 구글 (G) 색상 */
-.badge-g.active { background-color: #4285F4; }
-
-/* 메뉴 아이템 레이아웃 수정 */
-.submenu-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between; /* 이름과 뱃지 양쪽 정렬 */
-    padding-right: 10px; /* 우측 여백 확보 */
-}
-
-
-
-
-/* [신규] New 뱃지 스타일 */
-.new-badge {
-    display: inline-block;
-    background-color: #e74c3c;
-    color: white;
-    font-size: 10px;
-    font-weight: bold;
-    padding: 2px 5px;
-    border-radius: 10px;
-    /* margin-left: 6px;  <- 삭제 (gap으로 대체) */
-    vertical-align: middle;
-    line-height: 1;
-    animation: pulse 2s infinite;
-}
-
-
-@keyframes pulse {
-    0% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(1.1); opacity: 0.9; }
-    100% { transform: scale(1); opacity: 1; }
-}
-
-
-
-/* [추가] 공지사항 스켈레톤 UI 스타일 */
-.skeleton-notice-wrapper {
-    display: contents; /* 그리드 레이아웃 유지 */
-}
-.skeleton-notice-card {
-    background: white;
-    border-radius: 12px;
-    overflow: hidden;
-    border: 1px solid #eee;
-    display: flex;
-    flex-direction: column;
-    height: 300px; /* 카드 대략적인 높이 */
-}
-.sk-notice-img {
-    width: 100%;
-    height: 140px;
-}
-.sk-notice-content {
-    padding: 15px;
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-.sk-line {
-    border-radius: 4px;
-}
-.sk-title-line { width: 80%; height: 20px; }
-.sk-body-line { width: 100%; height: 14px; }
-.sk-body-line.short { width: 60%; }
-.sk-date-line { width: 30%; height: 12px; margin-top: auto; align-self: flex-end; }
-
-/* 기존 애니메이션(shimmer) 재사용 */
-.skeleton-anim {
-    background: #f0f0f0;
-    background-image: linear-gradient(90deg, #f0f0f0 25%, #fafafa 50%, #f0f0f0 75%);
-    background-size: 200% 100%;
-    animation: shimmer 1.5s infinite;
-}
-
-
-
-
-
-
-
-/* [B안] 통합 리스트용 출처 아이콘 스타일 */
-.source-icon {
-    display: inline-flex;
-    justify-content: center;
-    align-items: center;
-    width: 24px;
-    height: 24px;
-    border-radius: 4px;
-    font-weight: 900;
-    font-size: 13px;
-    color: white;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-}
-
-.icon-naver { background-color: #03C75A; border: 1px solid #03C75A; }
-.icon-daum { background-color: #FEE500; color: #3b1e1e; border: 1px solid #FEE500; } /* 카카오는 글자색 진하게 */
-.icon-google { background: white; color: #ea4335; border: 1px solid #eee; }
-/* 구글은 G 로고 색상(4색) 대신 깔끔하게 흰배경+빨강 or 파랑 글씨 추천 */
-/* 여기서는 구글 로고 느낌을 위해 G 텍스트로 처리 */
-
-
-
-
-
-
-
-
-
+        .icon-naver { background-color: #03C75A; border: 1px solid #03C75A; }
+        .icon-daum { background-color: #FEE500; color: #3b1e1e; border: 1px solid #FEE500; } /* 카카오는 글자색 진하게 */
+        .icon-google { background: white; color: #ea4335; border: 1px solid #eee; }
     </style>
 </head>
 <body>
@@ -1031,7 +1027,7 @@ function buildSidebar(mode, data, order) {
             }
 
             // (3) 잘라낸 최신 글 30개를 다시 '오름차순(과거->최신)'으로 정렬 (화면 표시용)
-            //     요청하신 대로 최신 날짜가 맨 아래로 가게 됨
+            //      요청하신 대로 최신 날짜가 맨 아래로 가게 됨
             groups[code].sort((a, b) => a._timestamp - b._timestamp);
         });
 
@@ -1689,9 +1685,8 @@ async function checkNoticeBadgeOnStart() {
     initDashboard();
 
 
-
-
     // 1. 우클릭 방지
+
     // 2. 개발자 도구(F12) 방지
     document.addEventListener('keydown', e => {
         if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key)) || (e.ctrlKey && e.key === 'U')) {
@@ -1715,6 +1710,7 @@ async function checkNoticeBadgeOnStart() {
     });
 
     // 4. 소스 보기 방지 및 디버거 (선택 사항)
+    /*
     (function() {
         const threshold = 160;
         const main = () => {
@@ -1729,9 +1725,7 @@ async function checkNoticeBadgeOnStart() {
         };
         setInterval(main, 1000);
     })();
-
-
-
+    */
 
 </script> </body>
 </html>
