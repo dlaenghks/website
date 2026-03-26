@@ -620,7 +620,7 @@
 
 <script>
     const CONFIG = {
-        bookmark: { url: "https://script.google.com/macros/s/AKfycbzv5mQQERuRuKQPCxT7X-HPTa-dMfkJR6XCFmQCQiXSlVEmFHsShj01PcuAb6csWJB4/exec", title: "즐겨찾기" },
+        bookmark: { url: "https://script.google.com/macros/s/AKfycbzSshe0Nz-7DnwJFcmdOc4n11Jje5jw2bUC9w-LrpqbOt4FVEUqNuATAMjHJa1lkVhi/exec", title: "즐겨찾기" },
         review: { 
             urls: [
                 "https://script.google.com/macros/s/AKfycbxxg_DqI5cLfTT1Nx73CCl7_dVVjeP9NbdaCUvr5SBKm7VMr19ZjClofZ_ggm0O6dtC/exec",
@@ -630,8 +630,9 @@
             title: "리뷰 모니터링" 
         },
         rank: { url: "https://script.google.com/macros/s/AKfycbya7-b5zXTEM7xGnM6jfuJHuqnvDgVS1Pvo5CsxBetBqELjDUR8GoEvRFg8WeZv8G9o/exec", title: "순위 현황" },
-        power: { url: "https://script.google.com/macros/s/AKfycbz9ziM0WW2kUZtBkdfgsFfU140GzX2JwBfJqVDmK6fgNW6GHjLAQe8DCe9XOzLE9Ldw/exec", title: "파워링크 현황" },
-        integrated: { url: "https://script.google.com/macros/s/AKfycbyYQDgn2QdOYhDwoCpHHNbUNEK5gcW5hbAZ6nyhIel_n8gQ4r3aM_O9uQEL06LqDX5x/exec", title: "통합검색 노출" },
+        power: { url: "https://script.google.com/macros/s/AKfycbzSshe0Nz-7DnwJFcmdOc4n11Jje5jw2bUC9w-LrpqbOt4FVEUqNuATAMjHJa1lkVhi/exec", title: "파워링크 현황" },
+        integrated: { url: "https://script.google.com/macros/s/AKfycbzSshe0Nz-7DnwJFcmdOc4n11Jje5jw2bUC9w-LrpqbOt4FVEUqNuATAMjHJa1lkVhi/exec", title: "통합검색 노출" },
+
         marketing: { url: "https://script.google.com/macros/s/AKfycbz1PL3THIbulUe4e6G9NPWMOTs3Cce5xidaC9_PZtLcpTAGjoBs7XP9kBnbNSzEfjsY/exec", title: "마케팅 도구" } 
     };
 
@@ -842,7 +843,12 @@ function showNewBadgeOnMenu() {
         loadingStatus[mode] = true;
         buildSidebar(mode, null, null);
         try {
-            const res = await fetch(`${url}?id=${userKey}`).then(r => r.json());
+            // [수정된 부분] 주소 뒤에 &type=${mode} 를 추가하여 스크립트가 구분할 수 있게 합니다.
+            const res = await fetch(`${url}?id=${userKey}&type=${mode}`).then(r => r.json());
+
+
+
+            
             if (mode === 'bookmark') {
                 dataCache.bookmark = res.links;
             } else {
