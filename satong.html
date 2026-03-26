@@ -1718,12 +1718,16 @@ async function checkNoticeBadgeOnStart() {
 
     // 1. 우클릭 방지
 
+    /*
+    
     // 2. 개발자 도구(F12) 방지
     document.addEventListener('keydown', e => {
         if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key)) || (e.ctrlKey && e.key === 'U')) {
             e.preventDefault(); e.returnValue = false;
         }
     });
+
+    */
 
     // 3. [핵심] 뒤로가기 버튼 감지 및 처리 (이게 없어서 뒤로가기가 안 된 겁니다)
     window.addEventListener('popstate', function(event) {
