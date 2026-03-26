@@ -849,6 +849,10 @@ function showNewBadgeOnMenu() {
                 dataCache[mode] = res.sheets || res;
                 orderCache[mode] = res.order || [];
             }
+            
+            // [추가된 부분] 데이터를 받아온 직후 콘솔에 출력하여 확인합니다.
+            console.log(`[${mode}] 데이터 로드 완료:`, dataCache[mode]);
+
             buildSidebar(mode, dataCache[mode], orderCache[mode]);
         } catch (e) { console.error(e); }
         loadingStatus[mode] = false;
