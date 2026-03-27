@@ -1350,7 +1350,7 @@ function createTable(rows, mode, hideKeywordCol) {
     html += '</tr></thead><tbody>';
 
     for (let i = 1; i < rows.length; i++) {
-        const isBad = (mode === 'review' && String(rows[i][3]).startsWith("O"));
+        const isBad = (mode === 'review' && String(rows[i][4]).startsWith("O"));
         html += `<tr${isBad ? ' class="bad-row"' : ''}>`;
         for (let j = 0; j < rows[i].length; j++) {
             
