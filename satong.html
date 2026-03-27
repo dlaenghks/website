@@ -466,6 +466,48 @@
         .icon-naver { background-color: #03C75A; border: 1px solid #03C75A; }
         .icon-daum { background-color: #FEE500; color: #3b1e1e; border: 1px solid #FEE500; } /* 카카오는 글자색 진하게 */
         .icon-google { background: white; color: #ea4335; border: 1px solid #eee; }
+
+
+
+
+
+/* [추가] 공지사항 섹션 헤더 스타일 */
+.notice-section-header {
+    grid-column: 1 / -1; /* 그리드 전체 너비 차지 */
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 4px;
+    margin-top: 10px;
+}
+.notice-section-title {
+    font-size: 16px;
+    font-weight: 800;
+    color: #2c3e50;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.notice-section-title::before {
+    content: '';
+    display: inline-block;
+    width: 4px;
+    height: 16px;
+    background-color: #03C75A; /* 네이버 초록 */
+    border-radius: 2px;
+}
+.notice-section-divider {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, #ccc, transparent);
+}
+
+
+
+
+
+
     </style>
 </head>
 <body>
@@ -1657,6 +1699,18 @@ async function loadNaverNotices() {
         if (res.status === 'success' && res.data && res.data.length > 0) {
             container.innerHTML = ""; // 스켈레톤 제거
             
+
+            // ↓↓↓ 이 부분 추가 ↓↓↓
+            const sectionHeader = document.createElement('div');
+            sectionHeader.className = 'notice-section-header';
+            sectionHeader.innerHTML = `
+                <div class="notice-section-title">네이버 플레이스 공지사항</div>
+                <div class="notice-section-divider"></div>
+            `;
+            container.appendChild(sectionHeader);
+            // ↑↑↑ 여기까지 ↑↑↑
+
+
             let hasNewPost = false; // 7일 이내 새 글 존재 여부
 
             res.data.forEach(item => {
