@@ -127,13 +127,13 @@
         .modal-body { padding: 20px; overflow-y: auto; line-height: 1.6; font-size: 14px; word-break: break-all; white-space: pre-wrap; }
 
         /* 테이블 첫번째 열(출처) 너비 조정 */
-        .review-table th:nth-child(1) { width: 30px; } /* 출처 */
-        .review-table th:nth-child(2) { width: 60px } /* 작성일 */
-        .review-table th:nth-child(3) { width: 60px } /* 작성자 */
+        .review-table th:nth-child(1) { width: 30px; text-align: center; } /* 출처 */
+        .review-table th:nth-child(2) { width: 60px; text-align: center; } /* 작성일 */
+        .review-table th:nth-child(3) { width: 60px; text-align: center;} /* 작성자 */
         .review-table th:nth-child(5) { width: 50px; text-align: center; } /* 부정체크 */
         .review-table th:nth-child(4) { width: 150px } /* 리뷰내용 */
-        .review-table th:nth-child(6) { width: 60px } /* 작성일 */
-        .review-table th:nth-child(7) { width: 50px; } /* AI 검수 */
+        .review-table th:nth-child(6) { width: 60px; text-align: center; } /* 작성일 */
+        .review-table th:nth-child(7) { width: 50px; text-align: center; } /* AI 검수 */
         .review-table td:nth-child(1) { text-align: center; }
 
         @media (max-width: 768px) {
@@ -146,15 +146,13 @@
             .review-table th:nth-child(1) { width: 6px; text-align: center; font-size: 12px;}
             .review-table td:nth-child(1) { text-align: center;}
 
-            .review-table th:nth-child(2) { width: 20px; text-align: center; font-size: 12px;}
-            .review-table th:nth-child(6) { display: none; font-size: 12px;}
-            .review-table td:nth-child(6) { display: none;}
+            .review-table th:nth-child(2) { width: 20px; text-align: center; font-size: 12px; text-align: center;}
+            .review-table th:nth-child(7) { display: none; font-size: 12px;}
 
-            .review-table th:nth-child(5), .review-table th:nth-child(7) { width: 1px; text-align: center; font-size: 12px;}
-            .review-table td:nth-child(5), .review-table td:nth-child(7) { text-align: center;}
+            .review-table th:nth-child(5), .review-table th:nth-child(7) { width: 1px; text-align: center; font-size: 12px; text-align: center;}
 
-            .review-table th:nth-child(3) { width: 1px; text-align: center; font-size: 12px;}
-            .review-table th:nth-child(4) { width: 70px; text-align: center; font-size: 12px;}
+            .review-table th:nth-child(3) { width: 1px; text-align: center; font-size: 12px; text-align: center;}
+            .review-table th:nth-child(4) { width: 70px; text-align: center; font-size: 12px; text-align: center;}
 
             .rank-table th:nth-child(1) { width: 55px; text-align: center;}
             .rank-table td:nth-child(1) { text-align: center;}
