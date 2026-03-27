@@ -503,6 +503,12 @@
     background: linear-gradient(to right, #ccc, transparent);
 }
 
+        /* 기존 .notice-section-title::before 아래에 추가 */
+.notice-section-title[style*="--section-color"]::before {
+    background-color: #ff6b35; /* 블로그 섹션은 주황색 */
+}
+        
+
 
 
 
@@ -1670,14 +1676,13 @@ function createTable(rows, mode, hideKeywordCol) {
 async function loadNaverNotices() {
     const container = document.getElementById('notice-card-view');
     
-    // 이미 로딩된 데이터가 있으면 뱃지 로직만 다시 수행하고 리턴
-    if (container.innerHTML.trim() !== "" && !container.querySelector('.loading-box')) {
+    if (container.innerHTML.trim() !== "" && !container.querySelector('.skeleton-notice-card')) {
         return;
     }
 
-    // 스켈레톤 UI (유지)
+    // 스켈레톤 UI (12개로 늘림 - 두 섹션 대비)
     let skeletonHtml = '<div class="skeleton-notice-wrapper">';
-    for(let i=0; i<6; i++) {
+    for(let i=0; i<12; i++) {
         skeletonHtml += `
             <div class="skeleton-notice-card">
                 <div class="sk-notice-img skeleton-anim"></div>
@@ -1696,63 +1701,79 @@ async function loadNaverNotices() {
     try {
         const res = await fetch(NOTICE_SCRIPT_URL).then(r => r.json());
 
-        if (res.status === 'success' && res.data && res.data.length > 0) {
-            container.innerHTML = ""; // 스켈레톤 제거
-            
+        if (res.status === 'success') {
+            container.innerHTML = "";
+            let hasNewPost = false;
 
-            // ↓↓↓ 이 부분 추가 ↓↓↓
-            const sectionHeader = document.createElement('div');
-            sectionHeader.className = 'notice-section-header';
-            sectionHeader.innerHTML = `
-                <div class="notice-section-title">네이버 플레이스 공지사항</div>
-                <div class="notice-section-divider"></div>
-            `;
-            container.appendChild(sectionHeader);
-            // ↑↑↑ 여기까지 ↑↑↑
+            // ===== 공통 카드 생성 함수 =====
+            const buildCards = (dataList) => {
+                dataList.forEach(item => {
+                    const card = document.createElement('div');
+                    card.className = 'notice-card';
+                    card.onclick = () => window.open(item.link, '_blank');
 
+                    let cleanTitle = item.title || '';
+                    if (cleanTitle.length > 35) cleanTitle = cleanTitle.substring(0, 35) + "...";
 
-            let hasNewPost = false; // 7일 이내 새 글 존재 여부
+                    let cleanBody = item.content || '';
+                    if (cleanBody.length > 65) cleanBody = cleanBody.substring(0, 65) + "...";
 
-            res.data.forEach(item => {
-                const card = document.createElement('div');
-                card.className = 'notice-card';
-                card.onclick = () => window.open(item.link, '_blank');
+                    let imgHtml = '';
+                    if (item.image && item.image.trim() !== "") {
+                        imgHtml = `<img src="${item.image}" class="notice-img" alt="공지 이미지">`;
+                    } else {
+                        imgHtml = `<div class="no-image-placeholder"><span class="no-image-icon">🖼️</span><span>NO IMAGE</span></div>`;
+                    }
 
-                // [1] 제목 길이 자르기
-                let cleanTitle = item.title;
-                if (cleanTitle.length > 35) cleanTitle = cleanTitle.substring(0, 35) + "...";
+                    let dateBadge = "";
+                    const daysDiff = getDaysDiff(item.date);
+                    if (daysDiff <= 5) {
+                        dateBadge = ` <span class="new-badge">N</span>`;
+                        hasNewPost = true;
+                    }
 
-                // [2] 본문 길이 자르기
-                let cleanBody = item.content;
-                if (cleanBody.length > 65) cleanBody = cleanBody.substring(0, 65) + "...";
+                    card.innerHTML = `
+                        ${imgHtml}
+                        <div class="notice-content">
+                            <div class="notice-title">${cleanTitle}</div>
+                            <div class="notice-body">${cleanBody}</div>
+                            <div class="notice-date">${item.date}${dateBadge}</div>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+            };
 
-                // [3] 이미지 처리
-                let imgHtml = '';
-                if (item.image && item.image.trim() !== "") {
-                    imgHtml = `<img src="${item.image}" class="notice-img" alt="공지 이미지">`;
-                } else {
-                    imgHtml = `<div class="no-image-placeholder"><span class="no-image-icon">🖼️</span><span>NO IMAGE</span></div>`;
-                }
-
-                // [신규] 날짜 체크 및 N 뱃지 추가
-                let dateBadge = "";
-                const daysDiff = getDaysDiff(item.date); // 7일 이내 체크
-                if (daysDiff <= 5) {
-                    dateBadge = ` <span class="new-badge">N</span>`;
-                    hasNewPost = true; // 하나라도 있으면 전체 메뉴에 뱃지 표시
-                }
-
-                card.innerHTML = `
-                    ${imgHtml}
-                    <div class="notice-content">
-                        <div class="notice-title">${cleanTitle}</div>
-                        <div class="notice-body">${cleanBody}</div>
-                        <div class="notice-date">${item.date}${dateBadge}</div> </div>
+            // ===== 1. 네이버 플레이스 공지사항 섹션 =====
+            if (res.data && res.data.length > 0) {
+                const placeHeader = document.createElement('div');
+                placeHeader.className = 'notice-section-header';
+                placeHeader.innerHTML = `
+                    <div class="notice-section-title">네이버 플레이스 공지사항</div>
+                    <div class="notice-section-divider"></div>
                 `;
-                container.appendChild(card);
-            });
+                container.appendChild(placeHeader);
+                buildCards(res.data);
+            }
 
-            // [신규] 새 글이 하나라도 있으면 메뉴에도 뱃지 달기
+            // ===== 2. 네이버 블로그 공지사항 섹션 =====
+            if (res.blogData && res.blogData.length > 0) {
+                const blogHeader = document.createElement('div');
+                blogHeader.className = 'notice-section-header';
+                blogHeader.style.marginTop = '30px'; // 섹션 간 여백
+                blogHeader.innerHTML = `
+                    <div class="notice-section-title" style="--section-color: #ff6b35;">네이버 블로그 공지사항</div>
+                    <div class="notice-section-divider"></div>
+                `;
+                container.appendChild(blogHeader);
+                buildCards(res.blogData);
+            }
+
+            // 둘 다 비어있을 때
+            if ((!res.data || res.data.length === 0) && (!res.blogData || res.blogData.length === 0)) {
+                container.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding:40px 0; color:#888; font-size:14px;">표시할 공지사항이 없습니다.</div>';
+            }
+
             if (hasNewPost) {
                 showNewBadgeOnMenu();
             }
@@ -1765,7 +1786,6 @@ async function loadNaverNotices() {
         container.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding:20px; color:red;">데이터 통신 오류 발생</div>';
     }
 }
-
 
 
 // [신규] 최초 접속 시 백그라운드에서 배지 체크하는 함수
