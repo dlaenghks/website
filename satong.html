@@ -88,28 +88,58 @@
         .rank-table th:nth-child(1) { width: 130px; } 
         .rank-table th:nth-child(2) { width: 90px; } 
 
-
         .integrated-table th {     border: 1px solid #5d5d5d;}
         .integrated-table td {     border: 1px solid #5d5d5d;}
 
-
         .integrated-table th:nth-child(1) { width: 150px; text-align: center;}
         .integrated-table td:nth-child(1) { text-align: center; font-weight: 700; font-size: 16px;}
-
-        .integrated-table th:nth-child(2) { width: 90px; text-align: center;}  /* 예: PC/Mo 구분 등 */
+        .integrated-table th:nth-child(2) { width: 90px; text-align: center;}
         .integrated-table td:nth-child(2) { text-align: center; font-size: 16px;}
-
-        .integrated-table th:nth-child(3) { width: 90px; text-align: center;}  /* 예: PC/Mo 구분 등 */
+        .integrated-table th:nth-child(3) { width: 90px; text-align: center;}
         .integrated-table td:nth-child(3) { text-align: center; font-size: 16px;}
-
-        .integrated-table th:nth-child(4) { width: 80px; text-align: center; }  /* 예: PC/Mo 구분 등 */
+        .integrated-table th:nth-child(4) { width: 80px; text-align: center; }
         .integrated-table td:nth-child(4) { text-align: center; font-weight: 700; font-size: 16px;}
-
-        .integrated-table th:nth-child(5) { width: 80px; text-align: center;}  /* 예: PC/Mo 구분 등 */
+        .integrated-table th:nth-child(5) { width: 80px; text-align: center;}
         .integrated-table td:nth-child(5) { text-align: center; font-weight: 700; color: #ff0000; font-size: 16px;}
-
-        .integrated-table th:nth-child(6) { width: 80px; text-align: center;}  /* 예: PC/Mo 구분 등 */
+        .integrated-table th:nth-child(6) { width: 80px; text-align: center;}
         .integrated-table td:nth-child(6) { text-align: center; font-weight: 700; color: #ff0000; font-size: 16px;}
+
+        /* ▼▼▼ [수정된 부분] 통합 (블로그) 테이블 전용 스타일 ▼▼▼ */
+        .integrated-blog-table th {     border: 1px solid #5d5d5d;}
+        .integrated-blog-table td {     border: 1px solid #5d5d5d;}
+
+        /* B셀(인덱스1), C셀(인덱스2)이 빠지므로 1번부터 차례대로 맞춥니다 */
+        .integrated-blog-table th:nth-child(1), .integrated-blog-table td:nth-child(1) { width: 150px; text-align: center; font-size: 13px;} /* 키워드 */
+        .integrated-blog-table th:nth-child(2), .integrated-blog-table td:nth-child(2) { width: 80px; text-align: center; font-size: 13px;} /* 순위1 */
+        .integrated-blog-table th:nth-child(3), .integrated-blog-table td:nth-child(3) { width: 80px; text-align: center; color: #155724; font-size: 13px;} /*  */
+        .integrated-blog-table th:nth-child(4), .integrated-blog-table td:nth-child(4) { width: 80px; text-align: center; font-weight: 700; color: #155724; font-size: 13px;} /* 총 검색량*/
+        .integrated-blog-table th:nth-child(5), .integrated-blog-table td:nth-child(5) { width: 80px; text-align: center; font-weight: 700; color: #155724; font-size: 13px;} /* 현재 순위*/
+
+        .integrated-blog-table td:nth-child(5) {font-weight: 700; color: #ff0000;} /* 현재 순위*/
+
+        
+        /* H, I, J열 (작성일, 상태, 작성버튼) */
+        .integrated-blog-table th:nth-child(6), .integrated-blog-table td:nth-child(6) { width: 100px; text-align: center; font-size: 14px;} /* H열 (작성일) */
+        .integrated-blog-table th:nth-child(7) { width: 60px; text-align: center; font-size: 13px;} /* I열 (상태) */
+        .integrated-blog-table td:nth-child(7) { width: 60px; text-align: center; font-weight: bold; font-size: 16px;} /* I열 (상태) */
+
+        .integrated-blog-table th:nth-child(8), .integrated-blog-table td:nth-child(8) { width: 70px; text-align: center; font-size: 13px; } /* 버튼 */
+
+        /* 작성 버튼 디자인 */
+        .write-action-btn {
+            padding: 5px 12px;
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 12px;
+            transition: 0.2s;
+        }
+        .write-action-btn:hover { background-color: #2ecc71; }
+        .write-action-btn:disabled { background-color: #95a5a6; cursor: not-allowed; }
+        /* ▲▲▲ 수정 끝 ▲▲▲ */
 
         .power-table th:nth-child(2), .power-table td:nth-child(2), .power-table th:nth-child(6), .power-table td:nth-child(6), .power-table th:nth-child(7), .power-table td:nth-child(7) { display: none; }
         .bad-row { background-color: #ffebee !important; }
@@ -126,18 +156,17 @@
         .close-btn { cursor: pointer; font-size: 20px; color: #888; }
         .modal-body { padding: 20px; overflow-y: auto; line-height: 1.6; font-size: 14px; word-break: break-all; white-space: pre-wrap; }
 
-        /* 테이블 첫번째 열(출처) 너비 조정 */
-        .review-table th:nth-child(1) { width: 30px; text-align: center; } /* 출처 */
-        .review-table th:nth-child(2) { width: 60px; text-align: center; } /* 작성일 */
-        .review-table td:nth-child(2) { text-align: center; } /* 작성일 */
-        .review-table th:nth-child(3) { width: 60px; text-align: center;} /* 작성자 */
-        .review-table td:nth-child(3) { text-align: center; } /* 작성일 */
-        .review-table th:nth-child(4) { width: 150px } /* 리뷰내용 */
-        .review-table th:nth-child(5) { width: 50px; text-align: center; } /* 부정체크 */
+        .review-table th:nth-child(1) { width: 30px; text-align: center; }
+        .review-table th:nth-child(2) { width: 60px; text-align: center; }
+        .review-table td:nth-child(2) { text-align: center; }
+        .review-table th:nth-child(3) { width: 60px; text-align: center;}
+        .review-table td:nth-child(3) { text-align: center; }
+        .review-table th:nth-child(4) { width: 150px }
+        .review-table th:nth-child(5) { width: 50px; text-align: center; }
         .review-table td:nth-child(5) { text-align: center; }
-        .review-table th:nth-child(6) { width: 60px; text-align: center; } /* 작성일 */
+        .review-table th:nth-child(6) { width: 60px; text-align: center; }
         .review-table td:nth-child(6) { text-align: center; }
-        .review-table th:nth-child(7) { width: 50px; text-align: center; } /* AI 검수 */
+        .review-table th:nth-child(7) { width: 50px; text-align: center; }
         .review-table td:nth-child(1) { text-align: center; }
 
         @media (max-width: 768px) {
@@ -149,74 +178,59 @@
             .content-header h2 { font-size: 1rem; }
             .review-table th:nth-child(1) { width: 6px; text-align: center; font-size: 12px;}
             .review-table td:nth-child(1) { text-align: center;}
-
             .review-table th:nth-child(2) { width: 20px; text-align: center; font-size: 12px; text-align: center;}
             .review-table td:nth-child(2) { text-align: center;}
-
             .review-table th:nth-child(7) { display: none; font-size: 12px;}
             .review-table td:nth-child(7) { display: none; font-size: 12px;}
-
             .review-table td:nth-child(3) { display: none;}
             .review-table th:nth-child(3) { display: none;}
-
-
             .review-table th:nth-child(5), .review-table th:nth-child(6) { width: 1px; text-align: center; font-size: 12px; text-align: center;}
-
             .review-table th:nth-child(3) { width: 1px; text-align: center; font-size: 12px; text-align: center;}
             .review-table td:nth-child(3) { text-align: center;}
             .review-table td:nth-child(5) { text-align: center;}
             .review-table td:nth-child(6) { text-align: center;}
-
-
-
             .review-table th:nth-child(4) { width: 70px; text-align: center; font-size: 12px; text-align: center;}
 
             .rank-table th:nth-child(1) { width: 55px; text-align: center;}
             .rank-table td:nth-child(1) { text-align: center;}
-
             .rank-table th:nth-child(2) { width: 30px; text-align: center;}
             .rank-table td:nth-child(2) { text-align: center;}
-
-
             .rank-table th:nth-child(3) { width: 30px; text-align: center;}
             .rank-table td:nth-child(3) { text-align: center;}
-
             .rank-table th:nth-child(4) { width: 30px; text-align: center;}
             .rank-table td:nth-child(4) { text-align: center;}
-
             .rank-table th:nth-child(5) { width: 30px; text-align: center;}
             .rank-table td:nth-child(5) { text-align: center;}
-
             .rank-table th:nth-child(6) { width: 30px; text-align: center;}
             .rank-table td:nth-child(6) { text-align: center;}
-
             .rank-table th:nth-child(7) { width: 30px; text-align: center;}
             .rank-table td:nth-child(7) { text-align: center;}
 
-
-
-
-
-
-
             .integrated-table th:nth-child(1) { width: 80px; text-align: center;}
             .integrated-table td:nth-child(1) { text-align: center;}
-
             .integrated-table th:nth-child(2) { width: 25px; text-align: center;}
             .integrated-table td:nth-child(2) { text-align: center;}
-
             .integrated-table th:nth-child(3) { width: 25px; text-align: center;}
             .integrated-table td:nth-child(3) { text-align: center;}
-
             .integrated-table th:nth-child(4) { width: 30px; text-align: center;}
             .integrated-table td:nth-child(4) { text-align: center;}
-
             .integrated-table th:nth-child(5) { width: 25px; text-align: center;}
             .integrated-table td:nth-child(5) { text-align: center;}
-
             .integrated-table th:nth-child(6) { width: 25px; text-align: center;}
             .integrated-table td:nth-child(6) { text-align: center;}
+
+            /* ▼▼▼ [수정된 부분] 통합 (블로그) 모바일 테이블 전용 스타일 ▼▼▼ */
+            .integrated-blog-table th:nth-child(1), .integrated-blog-table td:nth-child(1) { width: 80px; text-align: center;}
+            .integrated-blog-table th:nth-child(2), .integrated-blog-table td:nth-child(2) { width: 30px; text-align: center;}
+            .integrated-blog-table th:nth-child(3), .integrated-blog-table td:nth-child(3) { width: 25px; text-align: center;}
+            .integrated-blog-table th:nth-child(4), .integrated-blog-table td:nth-child(4) { width: 25px; text-align: center;}
+            .integrated-blog-table th:nth-child(5), .integrated-blog-table td:nth-child(5) { width: 25px; text-align: center;}
+            .integrated-blog-table th:nth-child(6), .integrated-blog-table td:nth-child(6) { width: 40px; text-align: center; font-size: 11px;} /* 작성일 */
+            .integrated-blog-table th:nth-child(7), .integrated-blog-table td:nth-child(7) { width: 30px; text-align: center; font-size: 12px;} /* 상태 */
+            .integrated-blog-table th:nth-child(8), .integrated-blog-table td:nth-child(8) { width: 40px; text-align: center;} /* 버튼 */
+            /* ▲▲▲ 신규 추가 끝 ▲▲▲ */
         }
+
         .related-card { margin-top: 20px; background: white; width: 100%; max-width: 600px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #eee; overflow: hidden; display: none; }
         .related-table { width: 100%; border-collapse: collapse; font-size: 13px; }
         .related-table th { background: #f1f3f5; padding: 10px; font-weight: bold; color: #555; text-align: center; border-bottom: 1px solid #ddd; position: sticky; top: 0; }
@@ -261,7 +275,7 @@
             box-shadow: 0 8px 20px rgba(0,0,0,0.12);
         }
 
-        /* 공지사항 이미지 스타일 (수정됨) */
+        /* 공지사항 이미지 스타일 */
         .notice-img {
             width: 100%;
             height: 140px;
@@ -270,7 +284,7 @@
             display: block; /* 이미지가 있을 때만 보임 */
         }
 
-        /* 이미지가 없을 때 보여줄 박스 스타일 (신규 추가) */
+        /* 이미지가 없을 때 보여줄 박스 스타일 */
         .no-image-placeholder {
             width: 100%;
             height: 140px;
@@ -295,45 +309,31 @@
             display: flex;
             flex-direction: column;
         }
-        /* [수정] 제목: 무조건 한 줄! 넘치면 '...' 처리 (가장 깔끔한 방식) */
+        
         .notice-title {
             font-size: 15px;
             font-weight: bold;
             color: #333;
-            
-            /* 한 줄 강제 설정 */
             white-space: nowrap; 
             overflow: hidden; 
             text-overflow: ellipsis; 
-            
-            /* 높이 설정 (폰트크기 15px + 여유분) */
             height: 20px; 
             line-height: 1.2;
-            
-            /* 디자인 요소 */
             padding-bottom: 10px;        
             border-bottom: 1px solid #eee; 
             margin-bottom: 10px;         
         }
 
-        /* [수정] 본문: 3줄 고정, 넘치는 텍스트 숨김 */
         .notice-body {
             font-size: 13px;
             color: #666;
-            
-            /* 높이 계산: 13px * 1.5(줄간격) * 3줄 = 약 58.5px */
             line-height: 1.5;
             height: 59px; 
-            
-            /* 3줄 넘어가면 칼같이 자름 */
             overflow: hidden; 
             display: -webkit-box;
             -webkit-line-clamp: 3;
             -webkit-box-orient: vertical;
-            
             flex-grow: 0;
-            
-            /* 디자인 요소 */
             padding-bottom: 10px;        
             border-bottom: 1px solid #eee; 
             margin-bottom: 10px;         
@@ -346,14 +346,12 @@
             margin-top: auto;
         }
 
-        /* 플랫폼 뱃지 컨테이너 */
         .platform-badges {
             display: inline-flex;
             gap: 4px;
-            margin-left: auto; /* 우측 정렬 */
+            margin-left: auto;
         }
 
-        /* 공통 뱃지 스타일 */
         .badge-btn {
             font-size: 10px;
             padding: 2px 6px;
@@ -366,28 +364,22 @@
             transition: 0.2s;
         }
 
-        /* 활성화 되었을 때 스타일 */
         .badge-btn.active {
             border-color: transparent;
             color: white;
         }
 
-        /* 네이버 (N) 색상 */
         .badge-n.active { background-color: #03C75A; }
-        /* 다음 (D) 색상 */
         .badge-d.active { background-color: #F7E600; color: #3b1e1e; }
-        /* 구글 (G) 색상 */
         .badge-g.active { background-color: #4285F4; }
 
-        /* 메뉴 아이템 레이아웃 수정 */
         .submenu-item {
             display: flex;
             align-items: center;
-            justify-content: space-between; /* 이름과 뱃지 양쪽 정렬 */
-            padding-right: 10px; /* 우측 여백 확보 */
+            justify-content: space-between;
+            padding-right: 10px;
         }
 
-        /* [신규] New 뱃지 스타일 */
         .new-badge {
             display: inline-block;
             background-color: #e74c3c;
@@ -396,12 +388,10 @@
             font-weight: bold;
             padding: 2px 5px;
             border-radius: 10px;
-            /* margin-left: 6px;  <- 삭제 (gap으로 대체) */
             vertical-align: middle;
             line-height: 1;
             animation: pulse 2s infinite;
         }
-
 
         @keyframes pulse {
             0% { transform: scale(1); opacity: 1; }
@@ -409,9 +399,8 @@
             100% { transform: scale(1); opacity: 1; }
         }
 
-        /* [추가] 공지사항 스켈레톤 UI 스타일 */
         .skeleton-notice-wrapper {
-            display: contents; /* 그리드 레이아웃 유지 */
+            display: contents;
         }
         .skeleton-notice-card {
             background: white;
@@ -420,7 +409,7 @@
             border: 1px solid #eee;
             display: flex;
             flex-direction: column;
-            height: 300px; /* 카드 대략적인 높이 */
+            height: 300px;
         }
         .sk-notice-img {
             width: 100%;
@@ -441,7 +430,6 @@
         .sk-body-line.short { width: 60%; }
         .sk-date-line { width: 30%; height: 12px; margin-top: auto; align-self: flex-end; }
 
-        /* 기존 애니메이션(shimmer) 재사용 */
         .skeleton-anim {
             background: #f0f0f0;
             background-image: linear-gradient(90deg, #f0f0f0 25%, #fafafa 50%, #f0f0f0 75%);
@@ -449,7 +437,6 @@
             animation: shimmer 1.5s infinite;
         }
 
-        /* [B안] 통합 리스트용 출처 아이콘 스타일 */
         .source-icon {
             display: inline-flex;
             justify-content: center;
@@ -464,56 +451,43 @@
         }
 
         .icon-naver { background-color: #03C75A; border: 1px solid #03C75A; }
-        .icon-daum { background-color: #FEE500; color: #3b1e1e; border: 1px solid #FEE500; } /* 카카오는 글자색 진하게 */
+        .icon-daum { background-color: #FEE500; color: #3b1e1e; border: 1px solid #FEE500; }
         .icon-google { background: white; color: #ea4335; border: 1px solid #eee; }
 
+        .notice-section-header {
+            grid-column: 1 / -1;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 4px;
+            margin-top: 10px;
+        }
+        .notice-section-title {
+            font-size: 16px;
+            font-weight: 800;
+            color: #2c3e50;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .notice-section-title::before {
+            content: '';
+            display: inline-block;
+            width: 4px;
+            height: 16px;
+            background-color: #03C75A;
+            border-radius: 2px;
+        }
+        .notice-section-divider {
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(to right, #ccc, transparent);
+        }
 
-
-
-
-/* [추가] 공지사항 섹션 헤더 스타일 */
-.notice-section-header {
-    grid-column: 1 / -1; /* 그리드 전체 너비 차지 */
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    margin-bottom: 4px;
-    margin-top: 10px;
-}
-.notice-section-title {
-    font-size: 16px;
-    font-weight: 800;
-    color: #2c3e50;
-    white-space: nowrap;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-.notice-section-title::before {
-    content: '';
-    display: inline-block;
-    width: 4px;
-    height: 16px;
-    background-color: #03C75A; /* 네이버 초록 */
-    border-radius: 2px;
-}
-.notice-section-divider {
-    flex: 1;
-    height: 1px;
-    background: linear-gradient(to right, #ccc, transparent);
-}
-
-        /* 기존 .notice-section-title::before 아래에 추가 */
-.notice-section-title[style*="--section-color"]::before {
-    background-color: #03C75A; /* 블로그 섹션은 주황색 */
-}
-        
-
-
-
-
-
-
+        .notice-section-title[style*="--section-color"]::before {
+            background-color: #03C75A;
+        }
     </style>
 </head>
 <body>
@@ -699,7 +673,6 @@
         marketing: { url: "https://script.google.com/macros/s/AKfycbz1PL3THIbulUe4e6G9NPWMOTs3Cce5xidaC9_PZtLcpTAGjoBs7XP9kBnbNSzEfjsY/exec", title: "마케팅 도구" } 
     };
 
-    // [신규] 공지사항용 앱스크립트 주소 (아까 만든 스크립트의 배포 주소로 확인되었습니다)
     const NOTICE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyb8B7jg2HEmMY8-s_FL0OygWDkm91ISPI9yMpYzo_faplmeyAqwDlHAgG9yM0J8MCu/exec";
 
     const NOTICE_MESSAGES = {
@@ -713,7 +686,6 @@
     const REVIEW_COMPANY_COL_IDX = 0; 
     const RANK_KEYWORD_COL_IDX = 1; 
 
-    // [수정됨] 마케팅 도구 메뉴에 공지사항 탭 추가
     let dataCache = { 
         review: {}, rank: null, power: null, bookmark: null, integrated: null, 
         marketing: { "네이버 검색량 조회": [], "네이버 공지사항": [] } 
@@ -725,11 +697,7 @@
 
     history.replaceState(null, '', location.pathname + location.search);
 
-
-
-// 날짜 차이 계산 함수 (일 단위)
 function getDaysDiff(dateString) {
-    // dateString 포맷: "2026.01.30"
     if (!dateString) return 999;
     
     const parts = dateString.split('.');
@@ -738,7 +706,6 @@ function getDaysDiff(dateString) {
     const postDate = new Date(parts[0], parts[1] - 1, parts[2]);
     const today = new Date();
     
-    // 시간 정보 제거 (날짜만 비교)
     postDate.setHours(0,0,0,0);
     today.setHours(0,0,0,0);
     
@@ -748,49 +715,33 @@ function getDaysDiff(dateString) {
     return diffDays;
 }
 
-
 function showNewBadgeOnMenu() {
-    // 1. 마케팅 도구 (대메뉴) - 구조 변경 적용
     const marketingTitle = document.querySelector('#group-marketing .menu-title');
     
-    // 이미 뱃지가 있는지 확인
     if (marketingTitle && !marketingTitle.querySelector('.new-badge')) {
-        // 기존 내용(텍스트 + 아이콘) 중 텍스트만 분리하기 위해 구조 변경
-        // 현재: <div class="menu-title">마케팅 도구 <span class="icon">▼</span></div>
-        // 목표: <div class="menu-title">
-        //          <span class="menu-text-wrapper">마케팅 도구 <span class="badge">N</span></span>
-        //          <span class="icon">▼</span>
-        //       </div>
-        
         const icon = marketingTitle.querySelector('.icon');
-        const text = marketingTitle.childNodes[0]; // "마케팅 도구 " 텍스트 노드
+        const text = marketingTitle.childNodes[0];
 
-        // 래퍼 생성
         const wrapper = document.createElement('span');
         wrapper.className = 'menu-text-wrapper';
-        wrapper.innerText = text.textContent.trim(); // 텍스트 이동
+        wrapper.innerText = text.textContent.trim();
         
-        // 뱃지 생성
         const badge = document.createElement('span');
         badge.className = 'new-badge';
         badge.innerText = 'N';
         
-        wrapper.appendChild(badge); // 래퍼에 뱃지 추가
+        wrapper.appendChild(badge);
 
-        // 기존 텍스트 노드 제거하고 래퍼 삽입 (아이콘 앞에)
         text.remove();
         marketingTitle.insertBefore(wrapper, icon);
     }
 
-    // 2. 네이버 공지사항 (소메뉴)
     const noticeItem = document.getElementById('nav-marketing-네이버 공지사항');
     if (noticeItem && !noticeItem.querySelector('.new-badge')) {
-        // 소메뉴는 flex justify-content가 없으므로 그냥 append 해도 됨 (단, 정렬을 위해 flex 적용 추천)
         noticeItem.style.display = 'flex';
         noticeItem.style.alignItems = 'center';
-        noticeItem.style.justifyContent = 'space-between'; // 양쪽 정렬 (선택사항)
+        noticeItem.style.justifyContent = 'space-between';
         
-        // 텍스트 래퍼가 없으면 생성 (기존 텍스트 감싸기)
         if (!noticeItem.querySelector('.menu-text-wrapper')) {
              const text = noticeItem.innerText;
              noticeItem.innerText = '';
@@ -802,13 +753,11 @@ function showNewBadgeOnMenu() {
              const badge = document.createElement('span');
              badge.className = 'new-badge';
              badge.innerText = 'N';
-             badge.style.marginLeft = 'auto'; // 우측 끝으로 밀기 (선택사항)
+             badge.style.marginLeft = 'auto';
              noticeItem.appendChild(badge);
         }
     }
 }
-
-
 
     function parseKoreanDate(dateStr) {
         if (!dateStr || typeof dateStr !== 'string') return new Date(0);
@@ -838,7 +787,6 @@ function showNewBadgeOnMenu() {
         fetchData('bookmark', CONFIG.bookmark.url, userKey);
         await loadReviewData(userKey);
         hideOverlay();
-        // 초기 로딩 시에는 강제로 열기 모드(true) 적용
         toggleGroup('review', true);
 
         buildSidebar('marketing', dataCache.marketing, orderCache.marketing);
@@ -847,11 +795,8 @@ function showNewBadgeOnMenu() {
         fetchData('power', CONFIG.power.url, userKey);
         fetchData('integrated', CONFIG.integrated.url, userKey);
 
-        // [추가됨] 페이지 로딩이 끝나면 공지사항 배지 체크 시작!
         checkNoticeBadgeOnStart();
     }
-
-
 
  async function loadReviewData(userKey) {
         loadingStatus.review = true;
@@ -873,28 +818,22 @@ function showNewBadgeOnMenu() {
             
             buildSidebar('review', dataCache.review, orderCache.review);
 
-            // [수정] 초기 로딩 시에도 '통합 로직'을 타도록 변경
-            // 1. 순서대로 키를 가져와서 그룹화 진행
             let keys = (orderCache.review && orderCache.review.length > 0) ? orderCache.review : Object.keys(dataCache.review);
             let firstBaseName = null;
             let firstSheetGroup = [];
 
-            // 첫 번째 그룹 찾기
             for (let sheetName of keys) {
                 if (!dataCache.review[sheetName]) continue;
                 let base = sheetName.replace(' (다음)', '').replace(' (구글)', '').trim();
                 firstBaseName = base;
                 
-                // 해당 그룹의 모든 시트 찾기
                 keys.forEach(s => {
                     if (s.includes(base)) firstSheetGroup.push(s);
                 });
-                break; // 첫 번째 그룹만 찾으면 종료
+                break;
             }
 
-            // 통합 뷰 실행 (초기화=true)
             if (firstBaseName) {
-                // [수정] 3번째 인자로 true(초기 로딩임)를 전달
                 selectIntegratedClinic(firstBaseName, firstSheetGroup, true);
             }
 
@@ -906,12 +845,8 @@ function showNewBadgeOnMenu() {
         loadingStatus[mode] = true;
         buildSidebar(mode, null, null);
         try {
-            // [수정된 부분] 주소 뒤에 &type=${mode} 를 추가하여 스크립트가 구분할 수 있게 합니다.
             const res = await fetch(`${url}?id=${userKey}&type=${mode}`).then(r => r.json());
 
-
-
-            
             if (mode === 'bookmark') {
                 dataCache.bookmark = res.links;
             } else {
@@ -919,7 +854,6 @@ function showNewBadgeOnMenu() {
                 orderCache[mode] = res.order || [];
             }
             
-            // [추가된 부분] 데이터를 받아온 직후 콘솔에 출력하여 확인합니다.
             console.log(`[${mode}] 데이터 로드 완료:`, dataCache[mode]);
 
             buildSidebar(mode, dataCache[mode], orderCache[mode]);
@@ -927,10 +861,6 @@ function showNewBadgeOnMenu() {
         loadingStatus[mode] = false;
         buildSidebar(mode, dataCache[mode], orderCache[mode]);
     }
-
-
-
-
 
 function buildSidebar(mode, data, order) {
         const container = document.getElementById(`submenu-${mode}`);
@@ -942,7 +872,6 @@ function buildSidebar(mode, data, order) {
             return;
         }
 
-        // [즐겨찾기 로직 - 기존 동일]
         if (mode === 'bookmark') {
             if (!data || data.length === 0) {
                 if (!loadingStatus.bookmark) container.innerHTML = "<div style='padding:10px; font-size:12px; color:#999'>데이터 없음</div>";
@@ -968,35 +897,27 @@ function buildSidebar(mode, data, order) {
             return;
         }
 
-        // ==========================================
-        // [수정 B안] 리뷰 탭: 병원명으로 통합 (뱃지 없음)
-        // ==========================================
         if (mode === 'review') {
             let grouped = {};
-            // 1. 데이터 그룹화
             keys.forEach(sheetName => {
                 let baseName = sheetName.replace(' (다음)', '').replace(' (구글)', '').trim();
                 if (!grouped[baseName]) grouped[baseName] = [];
                 grouped[baseName].push(sheetName);
             });
 
-            // 2. 통합 메뉴 생성
             Object.keys(grouped).forEach(baseName => {
                 const item = document.createElement('div');
                 item.className = 'submenu-item';
                 item.id = `nav-group-${baseName}`; 
-                item.innerText = baseName; // 깔끔하게 이름만 표시
+                item.innerText = baseName;
                 
-                // 클릭 시 통합 데이터 로드 함수 호출
                 item.onclick = () => selectIntegratedClinic(baseName, grouped[baseName]);
                 
                 container.appendChild(item);
             });
             return;
         }
-        // ==========================================
 
-        // [나머지 모드(순위 등) 기존 유지]
         keys.forEach(function(sheetName) {
             if (mode === 'power' && !sheetName.includes("(파워링크)")) return;
             if (mode !== 'power' && sheetName.includes("(파워링크)")) return;
@@ -1017,32 +938,18 @@ function buildSidebar(mode, data, order) {
         });
     }
 
-
-
-// [신규 B안] 통합 데이터 처리 함수
-// [수정] 통합 데이터 처리 함수 (개수 제한 + 정렬 순서 적용)
-// [최종 수정] 통합 데이터 처리 함수 (정렬 및 날짜 파싱 강화)
-// [최종 수정] 통합 데이터 처리 함수 (플랫폼 그룹화 + 최신순 정렬 + 상대시간 계산)
-// [최종 수정] 통합 데이터 처리 함수 (날짜 포맷 통일 + 정렬 + 필터링)
-// [최종 수정] 통합 데이터 처리 함수 (날짜 정렬 오류 수정)
-// [최종 수정] 통합 데이터 처리 함수 (오름차순 정렬: 최신글이 맨 아래로)
-// [최종 수정] 통합 데이터 처리 함수 (초기 로딩 버그 수정 + 정렬 로직 완벽 적용)
-    // [수정] 3번째 인자 isInitialLoad 추가 (기본값 false)
     function selectIntegratedClinic(baseName, sheetNames, isInitialLoad = false) {
-        // 1. UI 활성화
         document.querySelectorAll('.submenu-item').forEach(el => el.classList.remove('active'));
         const currentItem = document.getElementById(`nav-group-${baseName}`);
         if (currentItem) currentItem.classList.add('active');
         toggleGroup('review', true);
 
-        // 2. 타이틀 설정
         document.getElementById('page-title').innerText = `[통합 리뷰] ${baseName}`;
         const noticeBox = document.getElementById('notice-box');
         noticeBox.innerHTML = NOTICE_MESSAGES['review'];
         noticeBox.style.display = 'block';
 
-        // 3. 데이터 준비
-        const LIMIT = 20; // 플랫폼별 최대 노출 개수
+        const LIMIT = 20; 
         let header = [];
         let groups = { 'N': [], 'D': [], 'G': [] }; 
 
@@ -1051,14 +958,12 @@ function buildSidebar(mode, data, order) {
             header[0] = "출처"; 
         }
 
-        // 4. 날짜 파싱 및 포맷 통일 함수
         const getTimestampAndFormat = (row) => {
             let dateStr = String(row[1]).trim();
             const now = new Date();
             let timestamp = 0;
             let formattedDate = dateStr; 
 
-            // [구글] 상대 시간 처리
             if (dateStr.includes('전')) {
                 const num = parseInt(dateStr.replace(/[^0-9]/g, '')) || 1;
                 if (dateStr.includes('초')) timestamp = now.getTime() - (num * 1000);
@@ -1077,14 +982,12 @@ function buildSidebar(mode, data, order) {
                     formattedDate = `${yy}-${mm}-${dd}`;
                 }
             }
-            // [다음] 2026.02.04.
             else if (dateStr.match(/^\d{4}\.\d{2}\.\d{2}\.?$/)) {
                 const parts = dateStr.split('.');
                 const yy = parts[0].slice(2);
                 formattedDate = `${yy}-${parts[1]}-${parts[2]}`;
                 timestamp = new Date(parts[0], parts[1]-1, parts[2]).getTime();
             }
-            // [네이버] 2026년 2월 2일
             else if (dateStr.match(/^\d{4}년\s*\d{1,2}월\s*\d{1,2}일/)) {
                 const m = dateStr.match(/(\d{4})년\s*(\d{1,2})월\s*(\d{1,2})일/);
                 const yy = m[1].slice(2);
@@ -1093,7 +996,6 @@ function buildSidebar(mode, data, order) {
                 formattedDate = `${yy}-${mm}-${dd}`;
                 timestamp = new Date(m[1], m[2]-1, m[3]).getTime();
             }
-            // [기타] YY-MM-DD
             else if (dateStr.match(/^\d{2}-\d{2}-\d{2}$/)) {
                 formattedDate = dateStr;
                 timestamp = new Date('20' + dateStr).getTime();
@@ -1103,7 +1005,6 @@ function buildSidebar(mode, data, order) {
             return timestamp;
         };
 
-        // 5. 전체 데이터 수집
         sheetNames.forEach(sheetName => {
             const rows = dataCache.review[sheetName];
             if (!rows || rows.length < 2) return;
@@ -1120,22 +1021,14 @@ function buildSidebar(mode, data, order) {
             }
         });
 
-        // 6. 플랫폼별 정렬 및 자르기 (핵심 로직)
         ['N', 'D', 'G'].forEach(code => {
-            // (1) 먼저 '내림차순(최신순)'으로 정렬하여 가장 최신 글들을 위로 올림
             groups[code].sort((a, b) => b._timestamp - a._timestamp);
-            
-            // (2) 위에서부터 30개(가장 최신글 30개)만 남기고 자름
             if (groups[code].length > LIMIT) {
                 groups[code] = groups[code].slice(0, LIMIT);
             }
-
-            // (3) 잘라낸 최신 글 30개를 다시 '오름차순(과거->최신)'으로 정렬 (화면 표시용)
-            //      요청하신 대로 최신 날짜가 맨 아래로 가게 됨
             groups[code].sort((a, b) => a._timestamp - b._timestamp);
         });
 
-        // 7. 최종 병합 (순서: 네이버 -> 다음 -> 구글)
         const finalRows = [
             header,
             ...groups['N'],
@@ -1143,20 +1036,16 @@ function buildSidebar(mode, data, order) {
             ...groups['G']
         ];
 
-        // 8. 렌더링
         if (finalRows.length <= 1) { 
             document.getElementById('table-container').innerHTML = "<p>데이터가 없습니다.</p>";
         } else {
             renderContent('review', finalRows, baseName);
         }
         
-        // [수정] 초기 로딩이면서 모바일 화면(폭 768px 이하)인 경우에는 화면을 전환하지 않음
         if (!isInitialLoad || window.innerWidth > 768) {
             showMobileContent();
         }
     }
-
-
 
     function toggleGroup(mode, forceOpen = false) {
         const targetGroup = document.getElementById(`group-${mode}`);
@@ -1206,73 +1095,63 @@ function buildSidebar(mode, data, order) {
             }, 500);
             return;
         }
+
         renderContentNow(mode, sheetName, isInitial);
     }
 
-
-
-
-
-function renderContentNow(mode, sheetName, isInitial) {
-        // 모든 활성화 상태 초기화
+    function renderContentNow(mode, sheetName, isInitial) {
         document.querySelectorAll('.submenu-item').forEach(el => el.classList.remove('active'));
-        document.querySelectorAll('.badge-btn').forEach(el => el.classList.remove('active')); // 뱃지 초기화 추가
+        document.querySelectorAll('.badge-btn').forEach(el => el.classList.remove('active'));
 
-        // 1. 리뷰 모드일 때: 뱃지와 부모 행 처리
         if (mode === 'review') {
-            // 현재 선택된 뱃지 찾기
             const currentBadge = document.getElementById(`nav-review-${sheetName}`);
             if (currentBadge) {
-                currentBadge.classList.add('active'); // 뱃지 활성화 (색상 변경)
-                // 뱃지의 부모(행)도 약간 강조하고 싶다면:
+                currentBadge.classList.add('active');
                 const parentRow = currentBadge.closest('.submenu-item');
                 if (parentRow) parentRow.classList.add('active'); 
             }
         } 
-        // 2. 다른 모드일 때: 기존 방식대로 행 전체 활성화
         else {
             const currentItem = document.getElementById(`nav-${mode}-${sheetName}`);
             toggleGroup(mode, true); 
             if (currentItem) currentItem.classList.add('active');
         }
 
-        // [이하 기존 코드 동일]
         document.getElementById('page-title').innerText = `[${CONFIG[mode].title}] ${sheetName.replace('(파워링크)', '')}`;
 
         const noticeBox = document.getElementById('notice-box');
         noticeBox.innerHTML = NOTICE_MESSAGES[mode] || "";
         noticeBox.style.display = 'block';
         
-        // rows 데이터를 전달하지만, 마케팅 도구의 경우 키값만 확인
         renderContent(mode, dataCache[mode][sheetName], sheetName);
         
         if (!isInitial) showMobileContent();
     }
 
-    function showMobileContent() {
-        document.body.classList.add('show-content');
-    }
 
-    function showMobileMenu() {
-        history.back();
-    }
+
+
+
 
     function renderContent(mode, rows, sheetName) {
         const keywordContainer = document.getElementById('keyword-container');
         const tableContainer = document.getElementById('table-container');
         const powerSummary = document.getElementById('power-summary');
         
-        // 초기화
         keywordContainer.innerHTML = "";
         tableContainer.innerHTML = "";
         powerSummary.style.display = "none";
 
-        // [수정됨] 마케팅 도구 (검색량 조회 vs 공지사항) 처리 로직
+
+// ▼▼▼ 여기에 딱 두 줄만 추가해 주세요! ▼▼▼
+        const mainContent = document.querySelector('.main-content');
+        if (mainContent) mainContent.scrollTop = 0;
+        // ▲▲▲ 추가 끝 ▲▲▲
+
         if (mode === 'marketing') {
             const searchView = document.getElementById('marketing-search-view');
             const noticeView = document.getElementById('notice-card-view');
             
-            // 둘 다 일단 숨김
             if (searchView) searchView.style.display = "none";
             if (noticeView) noticeView.style.display = "none";
 
@@ -1281,13 +1160,12 @@ function renderContentNow(mode, sheetName, isInitial) {
             } else if (sheetName === '네이버 공지사항') {
                 if(noticeView) {
                     noticeView.style.display = "grid";
-                    loadNaverNotices(); // 공지사항 로딩 함수 호출
+                    loadNaverNotices(); 
                 }
             }
-            return; // 마케팅 도구는 여기서 로직 종료
+            return; 
         }
 
-        // 마케팅 도구가 아닌 다른 탭들의 공통 로직
         const searchView = document.getElementById('marketing-search-view');
         const noticeView = document.getElementById('notice-card-view');
         if (searchView) searchView.style.display = "none";
@@ -1302,7 +1180,7 @@ function renderContentNow(mode, sheetName, isInitial) {
             const header = rows[0];
             const body = rows.slice(1);
             body.sort((a, b) => parseKoreanDate(a[1]) - parseKoreanDate(b[1]));
-            tableContainer.innerHTML = createTable([header, ...body], mode, false);
+            tableContainer.innerHTML = createTable([header, ...body], mode, false, sheetName);
         }
         else if (mode === 'rank') {
             const header = rows[0];
@@ -1316,19 +1194,67 @@ function renderContentNow(mode, sheetName, isInitial) {
                     document.querySelectorAll('.keyword-btn').forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
                     const filtered = body.filter(r => r[RANK_KEYWORD_COL_IDX] === keyword);
-                    tableContainer.innerHTML = createTable([header, ...filtered], mode, true);
+                    tableContainer.innerHTML = createTable([header, ...filtered], mode, true, sheetName);
                 };
                 keywordContainer.appendChild(btn);
             });
             if (keywords.length > 0) {
                 const filtered = body.filter(r => r[RANK_KEYWORD_COL_IDX] === keywords[0]);
-                tableContainer.innerHTML = createTable([header, ...filtered], mode, true);
+                tableContainer.innerHTML = createTable([header, ...filtered], mode, true, sheetName);
             }
         }
         else if (mode === 'integrated') {
             const header = rows[0];
-            const body = rows.slice(1);
-            tableContainer.innerHTML = createTable([header, ...body], 'integrated', false);
+            
+            // [수정된 핵심 로직] 데이터의 원래 행 번호(구글 시트 상의 위치)를 기억해둠
+            const body = rows.slice(1).map((r, idx) => {
+                r.originalIndex = idx + 2; 
+                return r;
+            });
+
+            if (sheetName === '통합 (블로그)') {
+                // 병원 ID를 예쁜 이름으로 바꿔주는 도우미 함수
+                const getHospitalName = (id) => {
+                    const map = {
+                        'goodtteddy520': '더편한통증의학과',
+                        'dndnclinic': '연세든든외과',
+                        'gamjaung': '명가한의원',
+                        'bareunmom01': '바른몸한방병원',
+                        'seoulwithus': '서울위더스치과',
+                        'gmyonseiw': '연세W재활의학과',
+                        'w-ilsan': '서울W내과',
+                        'bareunent': '바른이비인후과',
+                        'woorikidsclinic': '연세우리아동발달클리닉'
+                    };
+                    return map[id] || id || '기타';
+                };
+
+                // B셀(index 1)에서 고유 병원 ID 추출
+                const hospitalIds = [...new Set(body.map(r => r[1]))].filter(k => k);
+                
+                hospitalIds.forEach((hId, idx) => {
+                    const btn = document.createElement('button');
+                    btn.className = `keyword-btn ${idx === 0 ? 'active' : ''}`;
+                    btn.innerText = getHospitalName(hId);
+                    btn.onclick = () => {
+                        document.querySelectorAll('.keyword-btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        // 해당 병원 데이터만 필터링
+                        const filtered = body.filter(r => r[1] === hId);
+                        tableContainer.innerHTML = createTable([header, ...filtered], mode, false, sheetName);
+                    };
+                    keywordContainer.appendChild(btn);
+                });
+                
+                if (hospitalIds.length > 0) {
+                    const filtered = body.filter(r => r[1] === hospitalIds[0]);
+                    tableContainer.innerHTML = createTable([header, ...filtered], mode, false, sheetName);
+                } else {
+                    tableContainer.innerHTML = createTable([header, ...body], mode, false, sheetName);
+                }
+            } else {
+                tableContainer.innerHTML = createTable([header, ...body], 'integrated', false, sheetName);
+            }
         }
         else if (mode === 'power') {
             const body = rows.slice(1);
@@ -1377,93 +1303,195 @@ function renderContentNow(mode, sheetName, isInitial) {
                 }
                 powerSummary.style.display = "flex";
             }
-            tableContainer.innerHTML = createTable(rows, mode, false);
+            tableContainer.innerHTML = createTable(rows, mode, false, sheetName);
         }
     }
 
-function createTable(rows, mode, hideKeywordCol) {
-    // [수정] 테이블 클래스 명확하게 분리 (통합검색 노출은 'integrated-table' 사용)
-    let tableClass = 'rank-table'; // 기본값 (순위)
-    
-    if (mode === 'review') {
-        tableClass = 'review-table';
-    } else if (mode === 'power') {
-        tableClass = 'power-table';
-    } else if (mode === 'integrated') {
-        tableClass = 'integrated-table'; // [신규] 여기서 분리됨!
-    }
 
-    let html = `<table class="${tableClass}"><thead><tr>`;
-    
-    // [이하 로직은 기존과 100% 동일]
-    for (let j = 0; j < rows[0].length; j++) {
-        if (mode === 'review' && j === REVIEW_COMPANY_COL_IDX) {
-            html += `<th>출처</th>`; 
-            continue;
-        }
-        if (mode === 'rank' && hideKeywordCol && j === RANK_KEYWORD_COL_IDX) continue;
+    function createTable(rows, mode, hideKeywordCol, sheetName) {
+        let tableClass = 'rank-table';
         
-        let headVal = rows[0][j] || '';
-        // 통합검색 노출 헤더 날짜 처리 ('20' 제거)
-        if (mode === 'integrated' && j >= rows[0].length - 2) {
-            headVal = String(headVal).trim().replace(/^20/, '');
+        if (mode === 'review') {
+            tableClass = 'review-table';
+        } else if (mode === 'power') {
+            tableClass = 'power-table';
+        } else if (mode === 'integrated') {
+            if (sheetName === '통합 (블로그)') {
+                tableClass = 'integrated-blog-table';
+            } else {
+                tableClass = 'integrated-table'; 
+            }
         }
-        html += `<th>${headVal}</th>`;
-    }
-    html += '</tr></thead><tbody>';
 
-    for (let i = 1; i < rows.length; i++) {
-        const isBad = (mode === 'review' && String(rows[i][4]).startsWith("O"));
-        html += `<tr${isBad ? ' class="bad-row"' : ''}>`;
-        for (let j = 0; j < rows[i].length; j++) {
-            
-            // [리뷰] 출처 아이콘 처리
+        let html = `<table class="${tableClass}"><thead><tr>`;
+        
+        // 1. 헤더 생성
+        for (let j = 0; j < rows[0].length; j++) {
             if (mode === 'review' && j === REVIEW_COMPANY_COL_IDX) {
-                let source = rows[i][j];
-                let iconHtml = '';
-                if (source === 'N') iconHtml = `<span class="source-icon icon-naver">N</span>`;
-                else if (source === 'D') iconHtml = `<span class="source-icon icon-daum">D</span>`;
-                else if (source === 'G') iconHtml = `<span class="source-icon icon-google">G</span>`;
-                else iconHtml = source;
-                html += `<td>${iconHtml}</td>`;
+                html += `<th>출처</th>`; 
                 continue;
             }
-
-            // [순위] 키워드 숨김 처리
             if (mode === 'rank' && hideKeywordCol && j === RANK_KEYWORD_COL_IDX) continue;
             
-            let val = rows[i][j] !== null ? rows[i][j] : '';
+            // 통합 (블로그) 시트에서 B셀(index 1), C셀(index 2) 숨김 (상단 버튼으로 뺐으므로)
+            if (sheetName === '통합 (블로그)' && (j === 1 || j === 2)) continue;
 
-            // 데이터 가공 (날짜 포맷 등)
-            if (mode === 'review') {
-                if (j === 5) val = String(val).replace(/^20/, '');
-            } 
-            else if (mode === 'rank' && j === 0) val = String(val).replace(/^20/, '');
-            else if (mode === 'power' && j === 0) val = String(val).replace(/^20(\d{2})(\d{2})(\d{2})$/, '$1-$2-$3');
-            else if (mode === 'integrated' && j >= rows[i].length - 2) {
-                val = String(val).trim().replace(/^20/, '');
-            }
-
-            // 순위 변동 화살표 색상 처리 (순위, 파워링크)
-            let cls = (mode === 'rank' || mode === 'power') && (String(val).includes('▲') || String(val).includes('▼')) ? (String(val).includes('▲') ? "rank-up" : "rank-down") : "";
+            let headVal = rows[0][j] || '';
             
-            // 셀 스타일 지정
-            let cellStyle = "";
-            if (mode === 'review') {
-                 cellStyle = "cursor: pointer;";
-            } else if (mode === 'integrated' && j === 3) {
-                 cellStyle = "background-color: #fff9c4;"; // 통합검색 노출 특정 열 강조
+            if (mode === 'integrated') {
+                if (sheetName === '통합 (블로그)') {
+                    if (j === 5 || j === 6) headVal = String(headVal).trim().replace(/^20/, '');
+                } else {
+                    if (j >= rows[0].length - 2) headVal = String(headVal).trim().replace(/^20/, '');
+                }
             }
-
-            // 모달 이벤트 (리뷰만)
-            let evt = mode === 'review' ? ` onclick="openModal('${String(val).replace(/"/g, '&quot;').replace(/'/g, "\\'").replace(/\n/g, '\\n')}')"` : "";
-            
-            html += `<td class="${cls}"${evt} style="${cellStyle}">${val}</td>`;
+            html += `<th>${headVal}</th>`;
         }
-        html += '</tr>';
+        
+        if (mode === 'integrated' && sheetName === '통합 (블로그)') {
+            html += `<th>관리</th>`;
+        }
+        
+        html += '</tr></thead><tbody>';
+
+        // 2. 바디(데이터) 생성
+        for (let i = 1; i < rows.length; i++) {
+
+
+// ▼▼▼ 여기를 수정합니다 ▼▼▼
+            let isHighlight = false;
+            
+            // 1. 리뷰 탭일 때: 부정 리뷰(O) 강조
+            if (mode === 'review' && String(rows[i][4]).startsWith("O")) {
+                isHighlight = true;
+            } 
+            // 2. 통합 (블로그) 탭일 때: 상태(I열 = 인덱스 8)가 'O'이면 강조
+            else if (mode === 'integrated' && sheetName === '통합 (블로그)' && String(rows[i][8]) === 'O') {
+                isHighlight = true;
+            }
+
+            // isHighlight가 true면 미리 만들어진 .bad-row 클래스(배경색 #ffebee)를 줄 전체에 적용
+            html += `<tr${isHighlight ? ' class="bad-row"' : ''}>`;
+            // ▲▲▲ 수정 끝 ▲▲▲
+            
+            for (let j = 0; j < rows[i].length; j++) {
+
+                // 통합 (블로그) 시트에서 B셀(index 1), C셀(index 2) 숨김
+                if (sheetName === '통합 (블로그)' && (j === 1 || j === 2)) continue;
+
+                if (mode === 'review' && j === REVIEW_COMPANY_COL_IDX) {
+                    let source = rows[i][j];
+                    let iconHtml = '';
+                    if (source === 'N') iconHtml = `<span class="source-icon icon-naver">N</span>`;
+                    else if (source === 'D') iconHtml = `<span class="source-icon icon-daum">D</span>`;
+                    else if (source === 'G') iconHtml = `<span class="source-icon icon-google">G</span>`;
+                    else iconHtml = source;
+                    html += `<td>${iconHtml}</td>`;
+                    continue;
+                }
+
+                if (mode === 'rank' && hideKeywordCol && j === RANK_KEYWORD_COL_IDX) continue;
+                
+                let val = rows[i][j] !== null ? rows[i][j] : '';
+
+                if (mode === 'review') {
+                    if (j === 5) val = String(val).replace(/^20/, '');
+                } 
+                else if (mode === 'rank' && j === 0) val = String(val).replace(/^20/, '');
+                else if (mode === 'power' && j === 0) val = String(val).replace(/^20(\d{2})(\d{2})(\d{2})$/, '$1-$2-$3');
+                else if (mode === 'integrated') {
+                    if (sheetName === '통합 (블로그)') {
+                        if (j === 5 || j === 6) val = String(val).trim().replace(/^20/, '');
+                    } else {
+                        if (j >= rows[i].length - 2) val = String(val).trim().replace(/^20/, '');
+                    }
+                }
+
+                let cls = (mode === 'rank' || mode === 'power') && (String(val).includes('▲') || String(val).includes('▼')) ? (String(val).includes('▲') ? "rank-up" : "rank-down") : "";
+                
+
+
+let cellStyle = "";
+                if (mode === 'review') {
+                     cellStyle = "cursor: pointer;";
+                } else if (mode === 'integrated') {
+                     if (sheetName === '통합 (블로그)') {
+                         // 통합 (블로그) 시트는 6번째 열 (인덱스 5) 배경색 강조
+                         if (j === 5) cellStyle = "background-color: #fff9c4;";
+                     } else {
+                         // 그 외 통합검색 노출 시트는 4번째 열 (인덱스 3) 배경색 강조
+                         if (j === 3) cellStyle = "background-color: #fff9c4;";
+                     }
+                }
+
+                // 통합 (블로그) O, X 상태 글씨 색상
+                if (sheetName === '통합 (블로그)' && j === 8) {
+                    if (val === 'O') cellStyle += "color: #2980b9;";
+                    if (val === 'X') cellStyle += "color: #e74c3c;";
+                }
+
+                let evt = mode === 'review' ? ` onclick="openModal('${String(val).replace(/"/g, '&quot;').replace(/'/g, "\\'").replace(/\n/g, '\\n')}')"` : "";
+                
+                html += `<td class="${cls}"${evt} style="${cellStyle}">${val}</td>`;
+            }
+            
+            if (mode === 'integrated' && sheetName === '통합 (블로그)') {
+                // 배열이 필터링되었더라도 원래 시트의 행 번호를 정확히 찾아갑니다!
+                let actualRowIndex = rows[i].originalIndex || i + 1; 
+                html += `<td><button class="write-action-btn" onclick="updateWriteStatus('${sheetName}', ${actualRowIndex}, this)">작성</button></td>`;
+            }
+            html += '</tr>';
+        }
+        return html + '</tbody></table>';
     }
-    return html + '</tbody></table>';
-}
+
+
+
+
+
+
+
+async function updateWriteStatus(sheetName, rowIndex, btnElement) {
+        // 확인 팝업창(confirm)을 띄우는 코드를 삭제했습니다. 누르면 즉시 실행됩니다!
+        
+        const originalText = btnElement.innerText;
+        btnElement.disabled = true;
+        btnElement.innerText = "처리중";
+        
+        try {
+            const urlParams = new URLSearchParams(window.location.search);
+            const userKey = urlParams.get('id');
+            const url = `${CONFIG.integrated.url}?id=${userKey}&type=updateWriteDate&sheetName=${encodeURIComponent(sheetName)}&rowIndex=${rowIndex}`;
+            
+            const res = await fetch(url).then(r => r.json());
+            
+            if (res.status === 'success') {
+                // 성공 시 화면 깜빡임 없이 통합 데이터만 조용히 다시 불러와 표 갱신
+                fetchData('integrated', CONFIG.integrated.url, userKey);
+            } else {
+                alert("기록 오류: " + res.error);
+                btnElement.disabled = false;
+                btnElement.innerText = originalText;
+            }
+        } catch (e) {
+            console.error(e);
+            alert("서버와 통신하는 중 오류가 발생했습니다.");
+            btnElement.disabled = false;
+            btnElement.innerText = originalText;
+        }
+    }
+
+
+// ▼▼▼ 제가 실수로 누락한 모바일 화면 전환 함수 2개 부활 ▼▼▼
+    function showMobileContent() {
+        document.body.classList.add('show-content');
+    }
+function showMobileMenu() {
+        // history.back() 대신 CSS 클래스를 지워서 무조건 목록 화면이 뜨게 만듭니다.
+        document.body.classList.remove('show-content');
+    }
+    // ▲▲▲ 추가 끝 ▲▲▲
+
 
 
 
@@ -1680,7 +1708,6 @@ async function loadNaverNotices() {
         return;
     }
 
-    // 스켈레톤 UI (12개로 늘림 - 두 섹션 대비)
     let skeletonHtml = '<div class="skeleton-notice-wrapper">';
     for(let i=0; i<12; i++) {
         skeletonHtml += `
@@ -1705,7 +1732,6 @@ async function loadNaverNotices() {
             container.innerHTML = "";
             let hasNewPost = false;
 
-            // ===== 공통 카드 생성 함수 =====
             const buildCards = (dataList) => {
                 dataList.forEach(item => {
                     const card = document.createElement('div');
@@ -1744,7 +1770,6 @@ async function loadNaverNotices() {
                 });
             };
 
-            // ===== 1. 네이버 플레이스 공지사항 섹션 =====
             if (res.data && res.data.length > 0) {
                 const placeHeader = document.createElement('div');
                 placeHeader.className = 'notice-section-header';
@@ -1756,11 +1781,10 @@ async function loadNaverNotices() {
                 buildCards(res.data);
             }
 
-            // ===== 2. 네이버 블로그 공지사항 섹션 =====
             if (res.blogData && res.blogData.length > 0) {
                 const blogHeader = document.createElement('div');
                 blogHeader.className = 'notice-section-header';
-                blogHeader.style.marginTop = '30px'; // 섹션 간 여백
+                blogHeader.style.marginTop = '30px'; 
                 blogHeader.innerHTML = `
                     <div class="notice-section-title" style="--section-color: #ff6b35;">네이버 블로그 공지사항</div>
                     <div class="notice-section-divider"></div>
@@ -1769,7 +1793,6 @@ async function loadNaverNotices() {
                 buildCards(res.blogData);
             }
 
-            // 둘 다 비어있을 때
             if ((!res.data || res.data.length === 0) && (!res.blogData || res.blogData.length === 0)) {
                 container.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding:40px 0; color:#888; font-size:14px;">표시할 공지사항이 없습니다.</div>';
             }
@@ -1787,19 +1810,14 @@ async function loadNaverNotices() {
     }
 }
 
-
-// [신규] 최초 접속 시 백그라운드에서 배지 체크하는 함수
 async function checkNoticeBadgeOnStart() {
     try {
-        // 데이터만 조용히 가져옴
         const res = await fetch(NOTICE_SCRIPT_URL).then(r => r.json());
         
         if (res.status === 'success' && res.data && res.data.length > 0) {
-            // 7일 이내 글이 하나라도 있는지 확인
             const hasNew = res.data.some(item => getDaysDiff(item.date) <= 5);
             
             if (hasNew) {
-                // 사이드바가 다 그려질 때까지 아주 잠깐 대기 후 뱃지 달기
                 setTimeout(() => {
                     showNewBadgeOnMenu();
                 }, 1000);
@@ -1810,56 +1828,18 @@ async function checkNoticeBadgeOnStart() {
     }
 }
 
-
-
     initDashboard();
 
-
-    // 1. 우클릭 방지
-
-    /*
-    
-    // 2. 개발자 도구(F12) 방지
-    document.addEventListener('keydown', e => {
-        if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key)) || (e.ctrlKey && e.key === 'U')) {
-            e.preventDefault(); e.returnValue = false;
-        }
-    });
-
-    */
-
-    // 3. [핵심] 뒤로가기 버튼 감지 및 처리 (이게 없어서 뒤로가기가 안 된 겁니다)
     window.addEventListener('popstate', function(event) {
         if (!event.state) {
-            // 초기 상태(목록)로 돌아감
             document.body.classList.remove('show-content');
         } else {
-            // 상세 내용 상태로 복구
             if (event.state.mode && event.state.sheet) {
-                // historySkip=true로 설정하여 무한 루프 방지
                 selectClinic(event.state.mode, event.state.sheet, false, true);
             }
             document.body.classList.add('show-content');
         }
     });
-
-    // 4. 소스 보기 방지 및 디버거 (선택 사항)
-    /*
-    (function() {
-        const threshold = 160;
-        const main = () => {
-            const start = new Date().getTime();
-            debugger; 
-            const end = new Date().getTime();
-            if (end - start > threshold) devtoolsOpen();
-        };
-        const devtoolsOpen = () => {
-            document.body.innerHTML = '<h1>접속 차단됨</h1>';
-            document.body.style.backgroundColor = 'white';
-        };
-        setInterval(main, 1000);
-    })();
-    */
 
 </script> </body>
 </html>
