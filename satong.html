@@ -1278,7 +1278,14 @@ function buildSidebar(mode, data, order) {
             }
         }
         else if (mode === 'power') {
-            const body = rows.slice(1);
+    const allBody = rows.slice(1);
+    const body = allBody.slice(-30); // ← 최근 30개만
+    const rows = [rows[0], ...body]; // ← 헤더 + 최근 30개로 재조합
+
+
+
+
+            
             if (body.length > 0) {
                 const lastRow = body[body.length - 1];
                 const lastDateStr = String(lastRow[0]).trim(); 
