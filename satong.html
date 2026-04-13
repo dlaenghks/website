@@ -1278,9 +1278,10 @@ function buildSidebar(mode, data, order) {
             }
         }
         else if (mode === 'power') {
-    const allBody = rows.slice(1);
-    const body = allBody.slice(-30); // ← 최근 30개만
-    const rows = [rows[0], ...body]; // ← 헤더 + 최근 30개로 재조합
+    const POWER_LIMIT = 30;
+    const header = rows[0];
+    const body = rows.slice(1).slice(-POWER_LIMIT); // ← 최근 30개만
+    const limitedRows = [header, ...body]; // ← 헤더 + 최근 30개로 재조합
 
 
 
