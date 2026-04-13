@@ -1436,13 +1436,18 @@ let cellStyle = "";
                 if (mode === 'review') {
                      cellStyle = "cursor: pointer;";
                 } else if (mode === 'integrated') {
+
+                    
                      if (sheetName === '통합 (블로그)') {
-                         // 통합 (블로그) 시트는 6번째 열 (인덱스 5) 배경색 강조
-                         if (j === 5) cellStyle = "background-color: #fff9c4;";
-                     } else {
-                         // 그 외 통합검색 노출 시트는 4번째 열 (인덱스 3) 배경색 강조
-                         if (j === 3) cellStyle = "background-color: #fff9c4;";
-                     }
+    if (j === 5 && !isHighlight) cellStyle = "background-color: #fff9c4;"; // ← !isHighlight 추가
+} else {
+    if (j === 3 && !isHighlight) cellStyle = "background-color: #fff9c4;"; // ← !isHighlight 추가
+}
+
+
+
+
+                    
                 }
 
                 // 통합 (블로그) O, X 상태 글씨 색상
