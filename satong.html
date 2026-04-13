@@ -1198,26 +1198,32 @@ function buildSidebar(mode, data, order) {
             tableContainer.innerHTML = createTable([header, ...body], mode, false, sheetName);
         }
         else if (mode === 'rank') {
-            const header = rows[0];
-            const body = rows.slice(1);
-            const keywords = [...new Set(body.map(r => r[RANK_KEYWORD_COL_IDX]))].filter(k => k);
-            keywords.forEach((keyword, idx) => {
-                const btn = document.createElement('button');
-                btn.className = `keyword-btn ${idx === 0 ? 'active' : ''}`;
-                btn.innerText = keyword;
-                btn.onclick = () => {
-                    document.querySelectorAll('.keyword-btn').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    const filtered = body.filter(r => r[RANK_KEYWORD_COL_IDX] === keyword);
-                    tableContainer.innerHTML = createTable([header, ...filtered], mode, true, sheetName);
-                };
-                keywordContainer.appendChild(btn);
-            });
-            if (keywords.length > 0) {
-                const filtered = body.filter(r => r[RANK_KEYWORD_COL_IDX] === keywords[0]);
-                tableContainer.innerHTML = createTable([header, ...filtered], mode, true, sheetName);
-            }
-        }
+    const header = rows[0];
+    const body = rows.slice(1);
+    const RANK_LIMIT = 30; // ← 최근 30개 제한
+    const keywords = [...new Set(body.map(r => r[RANK_KEYWORD_COL_IDX]))].filter(k => k);
+    keywords.forEach((keyword, idx) => {
+        const btn = document.createElement('button');
+        btn.className = `keyword-btn ${idx === 0 ? 'active' : ''}`;
+        btn.innerText = keyword;
+        btn.onclick = () => {
+            document.querySelectorAll('.keyword-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const filtered = body.filter(r => r[RANK_KEYWORD_COL_IDX] === keyword).slice(-RANK_LIMIT); // ← .slice(-30) 추가
+            tableContainer.innerHTML = createTable([header, ...filtered], mode, true, sheetName);
+        };
+        keywordContainer.appendChild(btn);
+    });
+    if (keywords.length > 0) {
+        const filtered = body.filter(r => r[RANK_KEYWORD_COL_IDX] === keywords[0]).slice(-RANK_LIMIT); // ← .slice(-30) 추가
+        tableContainer.innerHTML = createTable([header, ...filtered], mode, true, sheetName);
+    }
+}
+
+
+
+
+            
         else if (mode === 'integrated') {
             const header = rows[0];
             
