@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>통합 관리 대시보드</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         /* [기존 스타일 유지] */
         body { font-family: 'Malgun Gothic', sans-serif; margin: 0; display: flex; height: 100dvh; color: #333; overflow: hidden; background-color: #f5f6fa; }
@@ -709,6 +709,88 @@
     let orderCache = { review: [], rank: [], power: [], integrated: [] };
     let loadingStatus = { review: false, rank: false, power: false, bookmark: false, integrated: false, marketing: false };
     let trendChartInstance = null;
+    const loadedModes = new Set(['marketing']);
+    const pendingRequests = new Map();
+    const SESSION_CACHE_VERSION = 'v2';
+    const DATA_CACHE_TTL = 120 * 60 * 1000;
+    const NOTICE_CACHE_TTL = 120 * 60 * 1000;
+    const KEYWORD_CACHE_TTL = 120 * 60 * 1000;
+    const REQUEST_TIMEOUT = 30000;
+
+    function getSessionCacheKey(scope, key) {
+        return `dd:${SESSION_CACHE_VERSION}:${scope}:${key}`;
+    }
+
+    function readSessionCache(scope, key, maxAge, allowExpired = false) {
+        try {
+            const raw = sessionStorage.getItem(getSessionCacheKey(scope, key));
+            if (!raw) return null;
+            const cached = JSON.parse(raw);
+            if (!cached || typeof cached.savedAt !== 'number') return null;
+            if (!allowExpired && Date.now() - cached.savedAt > maxAge) return null;
+            return cached.value;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    function writeSessionCache(scope, key, value) {
+        try {
+            sessionStorage.setItem(getSessionCacheKey(scope, key), JSON.stringify({
+                savedAt: Date.now(),
+                value: value
+            }));
+        } catch (e) {
+            console.warn('세션 캐시 저장 생략:', e);
+        }
+    }
+
+    function removeSessionCache(scope, key) {
+        try {
+            sessionStorage.removeItem(getSessionCacheKey(scope, key));
+        } catch (e) {}
+    }
+
+    function clearDashboardSessionCache() {
+        try {
+            const prefix = `dd:${SESSION_CACHE_VERSION}:`;
+            const keys = [];
+            for (let i = 0; i < sessionStorage.length; i++) {
+                const key = sessionStorage.key(i);
+                if (key && key.startsWith(prefix)) keys.push(key);
+            }
+            keys.forEach(key => sessionStorage.removeItem(key));
+        } catch (e) {}
+    }
+
+    async function fetchJson(url, timeoutMs = REQUEST_TIMEOUT) {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), timeoutMs);
+        try {
+            const response = await fetch(url, { signal: controller.signal });
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            return await response.json();
+        } finally {
+            clearTimeout(timer);
+        }
+    }
+
+    function runOnce(key, task) {
+        if (pendingRequests.has(key)) return pendingRequests.get(key);
+        const promise = Promise.resolve().then(task).finally(() => pendingRequests.delete(key));
+        pendingRequests.set(key, promise);
+        return promise;
+    }
+
+    function applyModePayload(mode, payload) {
+        if (mode === 'bookmark') {
+            dataCache.bookmark = payload.links || [];
+        } else {
+            dataCache[mode] = payload.sheets || {};
+            orderCache[mode] = payload.order || [];
+        }
+        loadedModes.add(mode);
+    }
 
     history.replaceState(null, '', location.pathname + location.search);
 
@@ -792,32 +874,71 @@ function showNewBadgeOnMenu() {
         document.getElementById('loading-overlay').classList.remove('visible');
     }
 
+    function prefetchDeferredModes(userKey, options = {}) {
+        const modes = ['rank', 'power', 'integrated', 'bookmark'];
+
+        Promise.allSettled(modes.map(mode =>
+            fetchData(mode, CONFIG[mode].url, userKey, options)
+        )).then(results => {
+            results.forEach((result, index) => {
+                if (result.status === 'rejected') {
+                    console.warn(`[${modes[index]}] 백그라운드 로드 실패:`, result.reason);
+                }
+            });
+        });
+    }
+
     async function initDashboard(isRefresh = false) {
         const urlParams = new URLSearchParams(window.location.search);
         const userKey = urlParams.get('id');
         if (!userKey) { alert("ID 코드가 없습니다."); return; }
 
+        if (isRefresh) clearDashboardSessionCache();
         showOverlay("데이터 로딩 중...");
-        
-        fetchData('bookmark', CONFIG.bookmark.url, userKey);
-        await loadReviewData(userKey);
-        hideOverlay();
-        toggleGroup('review', true);
+        try {
+            await loadReviewData(userKey, { forceNetwork: isRefresh });
+            toggleGroup('review', true);
+            buildSidebar('marketing', dataCache.marketing, orderCache.marketing);
+            checkNoticeBadgeOnStart();
+        } catch (e) {
+            console.error('초기 데이터 로드 실패:', e);
+            document.getElementById('page-title').innerText = '데이터를 불러오지 못했습니다.';
+        } finally {
+            hideOverlay();
+        }
 
-        buildSidebar('marketing', dataCache.marketing, orderCache.marketing);
-
-        fetchData('rank', CONFIG.rank.url, userKey);
-        fetchData('power', CONFIG.power.url, userKey);
-        fetchData('integrated', CONFIG.integrated.url, userKey);
-
-        checkNoticeBadgeOnStart();
+        if (loadedModes.has('review')) {
+            prefetchDeferredModes(userKey, { forceNetwork: isRefresh });
+        }
     }
 
- async function loadReviewData(userKey) {
+ async function loadReviewData(userKey, options = {}) {
+        const forceNetwork = options.forceNetwork === true;
+        const cacheKey = String(userKey);
+
+        if (!forceNetwork) {
+            const cached = readSessionCache('review', cacheKey, DATA_CACHE_TTL);
+            if (cached) {
+                dataCache.review = cached.data || {};
+                orderCache.review = cached.order || [];
+                loadedModes.add('review');
+                buildSidebar('review', dataCache.review, orderCache.review);
+                renderFirstReview();
+                return dataCache.review;
+            }
+        }
+
+        return runOnce('review', async () => {
         loadingStatus.review = true;
         buildSidebar('review', null, null);
         try {
-            const results = await Promise.all(CONFIG.review.urls.map(url => fetch(`${url}?id=${userKey}`).then(r => r.json())));
+            const requests = CONFIG.review.urls.map(url => fetchJson(`${url}?id=${encodeURIComponent(userKey)}`));
+            const settled = await Promise.allSettled(requests);
+            const results = settled
+                .filter(item => item.status === 'fulfilled')
+                .map(item => item.value)
+                .filter(res => res && !res.error && res.status !== 'error');
+            if (results.length === 0) throw settled[0]?.reason || new Error('리뷰 데이터를 불러오지 못했습니다.');
             let mergedData = {};
             let mergedOrder = [];
             results.forEach(res => {
@@ -830,51 +951,81 @@ function showNewBadgeOnMenu() {
             });
             dataCache.review = mergedData;
             orderCache.review = [...new Set([...mergedOrder, ...Object.keys(mergedData)])];
-            
+            loadedModes.add('review');
+            writeSessionCache('review', cacheKey, { data: dataCache.review, order: orderCache.review });
             buildSidebar('review', dataCache.review, orderCache.review);
-
-            let keys = (orderCache.review && orderCache.review.length > 0) ? orderCache.review : Object.keys(dataCache.review);
-            let firstBaseName = null;
-            let firstSheetGroup = [];
-
-            for (let sheetName of keys) {
-                if (!dataCache.review[sheetName]) continue;
-                let base = sheetName.replace(' (다음)', '').replace(' (구글)', '').trim();
-                firstBaseName = base;
-                
-                keys.forEach(s => {
-                    if (s.includes(base)) firstSheetGroup.push(s);
-                });
-                break;
+            renderFirstReview();
+            return dataCache.review;
+        } catch (e) {
+            console.error(e);
+            const stale = readSessionCache('review', cacheKey, DATA_CACHE_TTL, true);
+            if (stale) {
+                dataCache.review = stale.data || {};
+                orderCache.review = stale.order || [];
+                loadedModes.add('review');
+                buildSidebar('review', dataCache.review, orderCache.review);
+                renderFirstReview();
+                return dataCache.review;
             }
-
-            if (firstBaseName) {
-                selectIntegratedClinic(firstBaseName, firstSheetGroup, true);
-            }
-
-        } catch (e) { console.error(e); }
-        loadingStatus.review = false;
+            throw e;
+        } finally {
+            loadingStatus.review = false;
+        }
+        });
     }
 
-    async function fetchData(mode, url, userKey) {
+    function renderFirstReview() {
+        const keys = orderCache.review.length > 0 ? orderCache.review : Object.keys(dataCache.review || {});
+        const firstSheet = keys.find(sheetName => dataCache.review[sheetName]);
+        if (!firstSheet) return;
+        const baseName = firstSheet.replace(' (다음)', '').replace(' (구글)', '').trim();
+        const sheetGroup = keys.filter(sheetName => sheetName.includes(baseName));
+        selectIntegratedClinic(baseName, sheetGroup, true);
+    }
+
+    async function fetchData(mode, url, userKey, options = {}) {
+        const forceNetwork = options.forceNetwork === true;
+        const cacheKey = `${userKey}:${mode}`;
+
+        if (!forceNetwork) {
+            const cached = readSessionCache('data', cacheKey, DATA_CACHE_TTL);
+            if (cached) {
+                applyModePayload(mode, cached);
+                buildSidebar(mode, dataCache[mode], orderCache[mode]);
+                return dataCache[mode];
+            }
+        } else {
+            removeSessionCache('data', cacheKey);
+        }
+
+        return runOnce(`data:${mode}`, async () => {
         loadingStatus[mode] = true;
         buildSidebar(mode, null, null);
         try {
-            const res = await fetch(`${url}?id=${userKey}&type=${mode}`).then(r => r.json());
-
-            if (mode === 'bookmark') {
-                dataCache.bookmark = res.links;
-            } else {
-                dataCache[mode] = res.sheets || res;
-                orderCache[mode] = res.order || [];
+            const res = await fetchJson(`${url}?id=${encodeURIComponent(userKey)}&type=${encodeURIComponent(mode)}`);
+            if (res?.error || res?.status === 'error') {
+                throw new Error(res.error || `${mode} 데이터를 불러오지 못했습니다.`);
             }
-            
+            const payload = mode === 'bookmark'
+                ? { links: res.links || [] }
+                : { sheets: res.sheets || res, order: res.order || [] };
+            applyModePayload(mode, payload);
+            writeSessionCache('data', cacheKey, payload);
             console.log(`[${mode}] 데이터 로드 완료:`, dataCache[mode]);
-
+            return dataCache[mode];
+        } catch (e) {
+            console.error(e);
+            const stale = readSessionCache('data', cacheKey, DATA_CACHE_TTL, true);
+            if (stale) {
+                applyModePayload(mode, stale);
+                return dataCache[mode];
+            }
+            throw e;
+        } finally {
+            loadingStatus[mode] = false;
             buildSidebar(mode, dataCache[mode], orderCache[mode]);
-        } catch (e) { console.error(e); }
-        loadingStatus[mode] = false;
-        buildSidebar(mode, dataCache[mode], orderCache[mode]);
+        }
+        });
     }
 
 function buildSidebar(mode, data, order) {
@@ -1062,33 +1213,29 @@ function buildSidebar(mode, data, order) {
         }
     }
 
-    function toggleGroup(mode, forceOpen = false) {
+    async function toggleGroup(mode, forceOpen = false) {
         const targetGroup = document.getElementById(`group-${mode}`);
         const targetSubmenu = document.getElementById(`submenu-${mode}`);
-        
-        if (loadingStatus[mode] && (!dataCache[mode] || Object.keys(dataCache[mode]).length === 0)) {
-            const isAlreadyActive = targetGroup.classList.contains('active');
-            if (!isAlreadyActive) {
-                showOverlay(`데이터 로딩 중...`);
-                const checkTimer = setInterval(() => {
-                    if (!loadingStatus[mode]) {
-                        clearInterval(checkTimer);
-                        hideOverlay();
-                        if (!targetGroup.classList.contains('active')) toggleGroup(mode, forceOpen);
-                    }
-                }, 500);
-            }
-            return;
-        }
-
         const isAlreadyOpen = targetGroup.classList.contains('active');
 
         document.querySelectorAll('.menu-group').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.submenu-container').forEach(el => el.classList.remove('open'));
 
-        if (forceOpen || !isAlreadyOpen) {
-            targetGroup.classList.add('active');
-            targetSubmenu.classList.add('open');
+        if (!forceOpen && isAlreadyOpen) return;
+
+        targetGroup.classList.add('active');
+        targetSubmenu.classList.add('open');
+
+        if (loadedModes.has(mode) || mode === 'review' || mode === 'marketing') return;
+
+        const userKey = new URLSearchParams(window.location.search).get('id');
+        if (!userKey || !CONFIG[mode]?.url) return;
+
+        try {
+            await fetchData(mode, CONFIG[mode].url, userKey);
+        } catch (e) {
+            console.error(`[${mode}] 지연 로드 실패:`, e);
+            targetSubmenu.innerHTML = "<div style='padding:10px; font-size:12px; color:#e74c3c;'>데이터 로드 실패</div>";
         }
     }
 
@@ -1513,11 +1660,12 @@ async function updateWriteStatus(sheetName, rowIndex, btnElement) {
             const userKey = urlParams.get('id');
             const url = `${CONFIG.integrated.url}?id=${userKey}&type=updateWriteDate&sheetName=${encodeURIComponent(sheetName)}&rowIndex=${rowIndex}`;
             
-            const res = await fetch(url).then(r => r.json());
+            const res = await fetchJson(url);
             
             if (res.status === 'success') {
                 // 성공 시 화면 깜빡임 없이 통합 데이터만 조용히 다시 불러와 표 갱신
-                fetchData('integrated', CONFIG.integrated.url, userKey);
+                fetchData('integrated', CONFIG.integrated.url, userKey, { forceNetwork: true })
+                    .catch(e => console.error('통합 데이터 갱신 실패:', e));
             } else {
                 alert("기록 오류: " + res.error);
                 btnElement.disabled = false;
@@ -1576,11 +1724,12 @@ function showMobileMenu() {
                 const userKey = urlParams.get('id');
                 const url = `${CONFIG.integrated.url}?id=${userKey}&type=updateCellValue&sheetName=${encodeURIComponent(sheetName)}&rowIndex=${rowIndex}&colIndex=${colIndex}&newValue=${encodeURIComponent(newValue)}`;
                 
-                const res = await fetch(url).then(r => r.json());
+                const res = await fetchJson(url);
                 
                 if (res.status === 'success') {
                     // 성공 시 전체 데이터 다시 로드하여 수식 결과(O/X)까지 갱신
-                    fetchData('integrated', CONFIG.integrated.url, userKey);
+                    fetchData('integrated', CONFIG.integrated.url, userKey, { forceNetwork: true })
+                        .catch(e => console.error('통합 데이터 갱신 실패:', e));
                 } else {
                     alert("저장 실패: " + res.error);
                     tdElement.innerText = originalValue;
@@ -1615,6 +1764,19 @@ function showMobileMenu() {
         return safeNum(val).toLocaleString();
     };
 
+    async function getKeywordResponse(keyword) {
+        const normalized = keyword.trim().replace(/\s+/g, ' ');
+        const cacheKey = normalized.toLocaleLowerCase('ko-KR');
+        const cached = readSessionCache('keyword', cacheKey, KEYWORD_CACHE_TTL);
+        if (cached) return cached;
+
+        return runOnce(`keyword:${cacheKey}`, async () => {
+            const result = await fetchJson(`${CONFIG.marketing.url}?keyword=${encodeURIComponent(normalized)}`);
+            if (result.status === 'success') writeSessionCache('keyword', cacheKey, result);
+            return result;
+        });
+    }
+
     async function searchNaverKeyword() {
         const input = document.getElementById('naver-kwd-input');
         const keyword = input.value.trim();
@@ -1635,7 +1797,7 @@ function showMobileMenu() {
         inputField.style.opacity = "0.7"; 
         
         try {
-            const res = await fetch(`${CONFIG.marketing.url}?keyword=${keyword}`).then(r => r.json());
+            const res = await getKeywordResponse(keyword);
             
             if (res.status === 'success' && res.data) {
                 const d = res.data.main; 
@@ -1693,6 +1855,11 @@ function showMobileMenu() {
     }
 
     function renderTrendChart(trendList, recentTotalVolume) {
+        if (typeof Chart === 'undefined') {
+            document.querySelector('.chart-container-box').style.display = 'none';
+            console.warn('Chart.js가 로드되지 않아 차트 표시를 생략합니다.');
+            return;
+        }
         const ctx = document.getElementById('trendChart').getContext('2d');
         
         if (trendChartInstance) {
@@ -1804,6 +1971,17 @@ function showMobileMenu() {
         });
     }
 
+async function getNoticeResponse() {
+    const cached = readSessionCache('notice', 'all', NOTICE_CACHE_TTL);
+    if (cached) return cached;
+
+    return runOnce('notice', async () => {
+        const result = await fetchJson(NOTICE_SCRIPT_URL);
+        if (result.status === 'success') writeSessionCache('notice', 'all', result);
+        return result;
+    });
+}
+
 async function loadNaverNotices() {
     const container = document.getElementById('notice-card-view');
     
@@ -1829,7 +2007,7 @@ async function loadNaverNotices() {
     container.innerHTML = skeletonHtml;
     
     try {
-        const res = await fetch(NOTICE_SCRIPT_URL).then(r => r.json());
+        const res = await getNoticeResponse();
 
         if (res.status === 'success') {
             container.innerHTML = "";
@@ -1915,7 +2093,7 @@ async function loadNaverNotices() {
 
 async function checkNoticeBadgeOnStart() {
     try {
-        const res = await fetch(NOTICE_SCRIPT_URL).then(r => r.json());
+        const res = await getNoticeResponse();
         
         if (res.status === 'success' && res.data && res.data.length > 0) {
             const hasNew = res.data.some(item => getDaysDiff(item.date) <= 5);
