@@ -672,7 +672,7 @@
 
 <script>
     const CONFIG = {
-        bookmark: { url: "https://script.google.com/macros/s/AKfycbzSshe0Nz-7DnwJFcmdOc4n11Jje5jw2bUC9w-LrpqbOt4FVEUqNuATAMjHJa1lkVhi/exec", title: "즐겨찾기" },
+        bookmark: { url: "https://script.google.com/macros/s/AKfycbzSshe0Nz-7DnwJFcmdOc4n11Jje5jw2bUC9w-LrpqbOt4FVEUqNuATAMjHJa1lkVhi/exec", title: "즐겨찾기", versioned: false },
         review: { 
             urls: [
                 { url: "https://script.google.com/macros/s/AKfycbxxg_DqI5cLfTT1Nx73CCl7_dVVjeP9NbdaCUvr5SBKm7VMr19ZjClofZ_ggm0O6dtC/exec", versioned: true },
@@ -681,9 +681,9 @@
             ], 
             title: "리뷰 모니터링" 
         },
-        rank: { url: "https://script.google.com/macros/s/AKfycbya7-b5zXTEM7xGnM6jfuJHuqnvDgVS1Pvo5CsxBetBqELjDUR8GoEvRFg8WeZv8G9o/exec", title: "순위 현황" },
-        power: { url: "https://script.google.com/macros/s/AKfycbzSshe0Nz-7DnwJFcmdOc4n11Jje5jw2bUC9w-LrpqbOt4FVEUqNuATAMjHJa1lkVhi/exec", title: "파워링크 현황" },
-        integrated: { url: "https://script.google.com/macros/s/AKfycbzSshe0Nz-7DnwJFcmdOc4n11Jje5jw2bUC9w-LrpqbOt4FVEUqNuATAMjHJa1lkVhi/exec", title: "통합검색 노출" },
+        rank: { url: "https://script.google.com/macros/s/AKfycbya7-b5zXTEM7xGnM6jfuJHuqnvDgVS1Pvo5CsxBetBqELjDUR8GoEvRFg8WeZv8G9o/exec", title: "순위 현황", versioned: true },
+        power: { url: "https://script.google.com/macros/s/AKfycbzSshe0Nz-7DnwJFcmdOc4n11Jje5jw2bUC9w-LrpqbOt4FVEUqNuATAMjHJa1lkVhi/exec", title: "파워링크 현황", versioned: true },
+        integrated: { url: "https://script.google.com/macros/s/AKfycbzSshe0Nz-7DnwJFcmdOc4n11Jje5jw2bUC9w-LrpqbOt4FVEUqNuATAMjHJa1lkVhi/exec", title: "통합검색 노출", versioned: true },
 
         marketing: { url: "https://script.google.com/macros/s/AKfycbz1PL3THIbulUe4e6G9NPWMOTs3Cce5xidaC9_PZtLcpTAGjoBs7XP9kBnbNSzEfjsY/exec", title: "마케팅 도구" } 
     };
@@ -1059,16 +1059,50 @@ function showNewBadgeOnMenu() {
         selectIntegratedClinic(baseName, sheetGroup, true);
     }
 
+    async function fetchModeVersion(mode, url, userKey) {
+        const separator = url.includes('?') ? '&' : '?';
+        const result = await fetchJson(
+            `${url}${separator}id=${encodeURIComponent(userKey)}&type=version&mode=${encodeURIComponent(mode)}`
+        );
+
+        if (
+            result?.status !== 'success' ||
+            result?.type !== 'version' ||
+            result?.mode !== mode ||
+            !result.dataVersion
+        ) {
+            throw new Error(`${mode} dataVersion 응답이 올바르지 않습니다.`);
+        }
+
+        return String(result.dataVersion);
+    }
+
     async function fetchData(mode, url, userKey, options = {}) {
         const forceNetwork = options.forceNetwork === true;
         const cacheKey = `${userKey}:${mode}`;
 
         if (!forceNetwork) {
-            const cached = readSessionCache('data', cacheKey, DATA_CACHE_TTL);
+            const freshCached = readSessionCache('data', cacheKey, DATA_CACHE_TTL);
+            const cached = freshCached || readSessionCache('data', cacheKey, DATA_CACHE_TTL, true);
+
             if (cached) {
+                // 저장된 데이터를 먼저 표시하고, 버전 지원 모드는 작은 요청으로 최신 여부만 확인합니다.
                 applyModePayload(mode, cached);
                 buildSidebar(mode, dataCache[mode], orderCache[mode]);
-                return dataCache[mode];
+
+                if (CONFIG[mode]?.versioned === true) {
+                    try {
+                        const currentVersion = await fetchModeVersion(mode, url, userKey);
+                        if (String(cached.dataVersion || '') === currentVersion) {
+                            return dataCache[mode];
+                        }
+                    } catch (versionError) {
+                        console.warn(`[${mode}] dataVersion 확인 실패:`, versionError);
+                        if (freshCached) return dataCache[mode];
+                    }
+                } else if (freshCached) {
+                    return dataCache[mode];
+                }
             }
         } else {
             removeSessionCache('data', cacheKey);
@@ -1083,8 +1117,12 @@ function showNewBadgeOnMenu() {
                 throw new Error(res.error || `${mode} 데이터를 불러오지 못했습니다.`);
             }
             const payload = mode === 'bookmark'
-                ? { links: res.links || [] }
-                : { sheets: res.sheets || res, order: res.order || [] };
+                ? { links: res.links || [], dataVersion: res.dataVersion || null }
+                : {
+                    sheets: res.sheets || res,
+                    order: res.order || [],
+                    dataVersion: res.dataVersion || null
+                };
             applyModePayload(mode, payload);
             writeSessionCache('data', cacheKey, payload);
             console.log(`[${mode}] 데이터 로드 완료:`, dataCache[mode]);
