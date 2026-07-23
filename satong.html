@@ -675,9 +675,9 @@
         bookmark: { url: "https://script.google.com/macros/s/AKfycbzSshe0Nz-7DnwJFcmdOc4n11Jje5jw2bUC9w-LrpqbOt4FVEUqNuATAMjHJa1lkVhi/exec", title: "즐겨찾기" },
         review: { 
             urls: [
-                "https://script.google.com/macros/s/AKfycbxxg_DqI5cLfTT1Nx73CCl7_dVVjeP9NbdaCUvr5SBKm7VMr19ZjClofZ_ggm0O6dtC/exec",
-                "https://script.google.com/macros/s/AKfycbw2Y77qidHEu5OdCFeVb5SrbDkFBt_IKqOJIcb3ltuWIAPXydPL5K826MDxdvWa4mhCqw/exec",
-                "https://script.google.com/macros/s/AKfycbzyZYQHwEPgIDqS5uW08F31r6Bh4N5uiRMLupUUyHzBcA-LlX0uVrU4wHTSNWfNGw9H/exec",
+                { url: "https://script.google.com/macros/s/AKfycbxxg_DqI5cLfTT1Nx73CCl7_dVVjeP9NbdaCUvr5SBKm7VMr19ZjClofZ_ggm0O6dtC/exec", versioned: true },
+                { url: "https://script.google.com/macros/s/AKfycbw2Y77qidHEu5OdCFeVb5SrbDkFBt_IKqOJIcb3ltuWIAPXydPL5K826MDxdvWa4mhCqw/exec", versioned: false },
+                { url: "https://script.google.com/macros/s/AKfycbzyZYQHwEPgIDqS5uW08F31r6Bh4N5uiRMLupUUyHzBcA-LlX0uVrU4wHTSNWfNGw9H/exec", versioned: false },
             ], 
             title: "리뷰 모니터링" 
         },
@@ -711,10 +711,10 @@
     let trendChartInstance = null;
     const loadedModes = new Set(['marketing']);
     const pendingRequests = new Map();
-    const SESSION_CACHE_VERSION = 'v2';
-    const DATA_CACHE_TTL = 120 * 60 * 1000;
-    const NOTICE_CACHE_TTL = 120 * 60 * 1000;
-    const KEYWORD_CACHE_TTL = 120 * 60 * 1000;
+    const SESSION_CACHE_VERSION = 'v3'; // 버전 변경
+    const DATA_CACHE_TTL = 12 * 60 * 60 * 1000; // 12시간 (로컬 스토리지 사용)
+    const NOTICE_CACHE_TTL = 12 * 60 * 60 * 1000;
+    const KEYWORD_CACHE_TTL = 12 * 60 * 60 * 1000;
     const REQUEST_TIMEOUT = 30000;
 
     function getSessionCacheKey(scope, key) {
@@ -723,10 +723,16 @@
 
     function readSessionCache(scope, key, maxAge, allowExpired = false) {
         try {
-            const raw = sessionStorage.getItem(getSessionCacheKey(scope, key));
+            const raw = localStorage.getItem(getSessionCacheKey(scope, key));
             if (!raw) return null;
             const cached = JSON.parse(raw);
             if (!cached || typeof cached.savedAt !== 'number') return null;
+            
+            // 날짜가 다르면 새로고침 (오전 갱신 대응)
+            const savedDate = new Date(cached.savedAt).getDate();
+            const currentDate = new Date().getDate();
+            if (!allowExpired && savedDate !== currentDate) return null;
+            
             if (!allowExpired && Date.now() - cached.savedAt > maxAge) return null;
             return cached.value;
         } catch (e) {
@@ -736,18 +742,18 @@
 
     function writeSessionCache(scope, key, value) {
         try {
-            sessionStorage.setItem(getSessionCacheKey(scope, key), JSON.stringify({
+            localStorage.setItem(getSessionCacheKey(scope, key), JSON.stringify({
                 savedAt: Date.now(),
                 value: value
             }));
         } catch (e) {
-            console.warn('세션 캐시 저장 생략:', e);
+            console.warn('캐시 저장 생략:', e);
         }
     }
 
     function removeSessionCache(scope, key) {
         try {
-            sessionStorage.removeItem(getSessionCacheKey(scope, key));
+            localStorage.removeItem(getSessionCacheKey(scope, key));
         } catch (e) {}
     }
 
@@ -755,11 +761,11 @@
         try {
             const prefix = `dd:${SESSION_CACHE_VERSION}:`;
             const keys = [];
-            for (let i = 0; i < sessionStorage.length; i++) {
-                const key = sessionStorage.key(i);
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
                 if (key && key.startsWith(prefix)) keys.push(key);
             }
-            keys.forEach(key => sessionStorage.removeItem(key));
+            keys.forEach(key => localStorage.removeItem(key));
         } catch (e) {}
     }
 
@@ -888,13 +894,55 @@ function showNewBadgeOnMenu() {
         });
     }
 
+    function getReviewSourceUrl(source) {
+        return typeof source === 'string' ? source : source.url;
+    }
+
+    function getVersionedReviewSources() {
+        return CONFIG.review.urls.filter(source => typeof source === 'object' && source.versioned === true);
+    }
+
+    function applyReviewCache(cached) {
+        dataCache.review = cached?.data || {};
+        orderCache.review = cached?.order || [];
+        loadedModes.add('review');
+        buildSidebar('review', dataCache.review, orderCache.review);
+        renderFirstReview();
+    }
+
+    async function fetchReviewVersions(userKey) {
+        const sources = getVersionedReviewSources();
+        const entries = await Promise.all(sources.map(async source => {
+            const url = getReviewSourceUrl(source);
+            const separator = url.includes('?') ? '&' : '?';
+            const result = await fetchJson(`${url}${separator}id=${encodeURIComponent(userKey)}&type=version`);
+
+            if (result?.status !== 'success' || result?.type !== 'version' || !result.dataVersion) {
+                throw new Error(`dataVersion 응답이 올바르지 않습니다: ${url}`);
+            }
+            return [url, String(result.dataVersion)];
+        }));
+
+        return Object.fromEntries(entries);
+    }
+
+    function reviewVersionsMatch(cachedVersions, currentVersions) {
+        if (!cachedVersions || !currentVersions) return false;
+        return Object.entries(currentVersions).every(([url, version]) =>
+            String(cachedVersions[url] || '') === String(version)
+        );
+    }
+
     async function initDashboard(isRefresh = false) {
         const urlParams = new URLSearchParams(window.location.search);
         const userKey = urlParams.get('id');
         if (!userKey) { alert("ID 코드가 없습니다."); return; }
 
         if (isRefresh) clearDashboardSessionCache();
-        showOverlay("데이터 로딩 중...");
+        const hasCachedReview = !isRefresh && Boolean(
+            readSessionCache('review', String(userKey), DATA_CACHE_TTL, true)
+        );
+        if (!hasCachedReview) showOverlay("데이터 로딩 중...");
         try {
             await loadReviewData(userKey, { forceNetwork: isRefresh });
             toggleGroup('review', true);
@@ -917,42 +965,74 @@ function showNewBadgeOnMenu() {
         const cacheKey = String(userKey);
 
         if (!forceNetwork) {
-            const cached = readSessionCache('review', cacheKey, DATA_CACHE_TTL);
+            const freshCached = readSessionCache('review', cacheKey, DATA_CACHE_TTL);
+            const cached = freshCached || readSessionCache('review', cacheKey, DATA_CACHE_TTL, true);
+
             if (cached) {
-                dataCache.review = cached.data || {};
-                orderCache.review = cached.order || [];
-                loadedModes.add('review');
-                buildSidebar('review', dataCache.review, orderCache.review);
-                renderFirstReview();
-                return dataCache.review;
+                // 저장된 데이터는 즉시 화면에 표시하고, 작은 버전 요청으로 최신 여부만 확인합니다.
+                applyReviewCache(cached);
+
+                const versionedSources = getVersionedReviewSources();
+                if (versionedSources.length > 0) {
+                    try {
+                        const currentVersions = await fetchReviewVersions(userKey);
+                        const allSourcesVersioned = versionedSources.length === CONFIG.review.urls.length;
+                        if (reviewVersionsMatch(cached.versions, currentVersions) && (allSourcesVersioned || freshCached)) {
+                            return dataCache.review;
+                        }
+                    } catch (versionError) {
+                        console.warn('리뷰 dataVersion 확인 실패:', versionError);
+                        if (freshCached) return dataCache.review;
+                    }
+                } else if (freshCached) {
+                    return dataCache.review;
+                }
             }
         }
 
         return runOnce('review', async () => {
         loadingStatus.review = true;
-        buildSidebar('review', null, null);
+        if (!dataCache.review || Object.keys(dataCache.review).length === 0) {
+            buildSidebar('review', null, null);
+        }
         try {
-            const requests = CONFIG.review.urls.map(url => fetchJson(`${url}?id=${encodeURIComponent(userKey)}`));
+            const sources = CONFIG.review.urls.map(source => ({
+                url: getReviewSourceUrl(source),
+                versioned: typeof source === 'object' && source.versioned === true
+            }));
+            const requests = sources.map(source => fetchJson(`${source.url}?id=${encodeURIComponent(userKey)}`));
             const settled = await Promise.allSettled(requests);
-            const results = settled
-                .filter(item => item.status === 'fulfilled')
-                .map(item => item.value)
-                .filter(res => res && !res.error && res.status !== 'error');
-            if (results.length === 0) throw settled[0]?.reason || new Error('리뷰 데이터를 불러오지 못했습니다.');
             let mergedData = {};
             let mergedOrder = [];
-            results.forEach(res => {
-                if (!res) return;
+            let successCount = 0;
+            const versions = {};
+
+            settled.forEach((item, index) => {
+                if (item.status !== 'fulfilled') return;
+                const res = item.value;
+                if (!res || res.error || res.status === 'error') return;
+                successCount += 1;
+
                 const sheets = res.sheets || res;
                 Object.keys(sheets).forEach(key => {
-                    if (!['error', 'status', 'order'].includes(key)) mergedData[key] = sheets[key];
+                    if (!['error', 'status', 'type', 'dataVersion', 'order'].includes(key)) mergedData[key] = sheets[key];
                 });
                 if (res.order) mergedOrder = mergedOrder.concat(res.order);
+
+                if (sources[index].versioned && res.dataVersion) {
+                    versions[sources[index].url] = String(res.dataVersion);
+                }
             });
+
+            if (successCount === 0) throw settled[0]?.reason || new Error('리뷰 데이터를 불러오지 못했습니다.');
             dataCache.review = mergedData;
             orderCache.review = [...new Set([...mergedOrder, ...Object.keys(mergedData)])];
             loadedModes.add('review');
-            writeSessionCache('review', cacheKey, { data: dataCache.review, order: orderCache.review });
+            writeSessionCache('review', cacheKey, {
+                data: dataCache.review,
+                order: orderCache.review,
+                versions: versions
+            });
             buildSidebar('review', dataCache.review, orderCache.review);
             renderFirstReview();
             return dataCache.review;
@@ -960,11 +1040,7 @@ function showNewBadgeOnMenu() {
             console.error(e);
             const stale = readSessionCache('review', cacheKey, DATA_CACHE_TTL, true);
             if (stale) {
-                dataCache.review = stale.data || {};
-                orderCache.review = stale.order || [];
-                loadedModes.add('review');
-                buildSidebar('review', dataCache.review, orderCache.review);
-                renderFirstReview();
+                applyReviewCache(stale);
                 return dataCache.review;
             }
             throw e;
