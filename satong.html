@@ -2014,12 +2014,23 @@ function showMobileMenu() {
 
         const labels = [];
         const estimatedVolumes = [];
+        const currentMonthForecast = [];
         const now = new Date();
         const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+        const currentMonthPeriods = trendList
+            .filter(item => item.period && item.period.substring(0, 7) === currentMonthKey)
+            .map(item => Number(item.period.substring(8, 10)))
+            .filter(day => Number.isFinite(day) && day > 0);
+        const observedDays = currentMonthPeriods.length > 0 ? Math.max(...currentMonthPeriods) : 0;
+        const daysInCurrentMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+        const projectedCurrentMonthVolume = observedDays > 0
+            ? Math.round((monthlyMap[currentMonthKey] * multiplier / observedDays) * daysInCurrentMonth)
+            : null;
 
-        Object.keys(monthlyMap).sort().filter(key => key !== currentMonthKey).forEach(key => {
+        Object.keys(monthlyMap).sort().forEach(key => {
             labels.push(key.slice(2).replace('-', '.')); 
-            estimatedVolumes.push(Math.round(monthlyMap[key] * multiplier));
+            estimatedVolumes.push(key === currentMonthKey ? null : Math.round(monthlyMap[key] * multiplier));
+            currentMonthForecast.push(key === currentMonthKey ? projectedCurrentMonthVolume : null);
         });
 
         trendChartInstance = new Chart(ctx, {
@@ -2038,7 +2049,22 @@ function showMobileMenu() {
                     pointHoverBackgroundColor: '#3498db',
                     pointHoverBorderColor: '#fff',
                     fill: true,
-                    tension: 0.3
+                    tension: 0.3,
+                    spanGaps: false
+                }, {
+                    label: '현재 달 월말 예상 검색수',
+                    data: currentMonthForecast,
+                    borderColor: '#f97316',
+                    backgroundColor: '#f97316',
+                    pointRadius: 6,
+                    pointHoverRadius: 8,
+                    pointBackgroundColor: '#fff',
+                    pointBorderColor: '#f97316',
+                    pointBorderWidth: 3,
+                    pointHoverBackgroundColor: '#f97316',
+                    pointHoverBorderColor: '#fff',
+                    showLine: false,
+                    fill: false
                 }]
             },
             options: {
@@ -2059,7 +2085,7 @@ function showMobileMenu() {
                         displayColors: false,
                         callbacks: {
                             label: function(context) {
-                                return ` 예상: ${context.parsed.y.toLocaleString()}회`;
+                                return ` ${context.dataset.label}: ${context.parsed.y.toLocaleString()}회`;
                             }
                         }
                     }
