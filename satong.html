@@ -2014,8 +2014,10 @@ function showMobileMenu() {
 
         const labels = [];
         const estimatedVolumes = [];
+        const now = new Date();
+        const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
-        Object.keys(monthlyMap).sort().forEach(key => {
+        Object.keys(monthlyMap).sort().filter(key => key !== currentMonthKey).forEach(key => {
             labels.push(key.slice(2).replace('-', '.')); 
             estimatedVolumes.push(Math.round(monthlyMap[key] * multiplier));
         });
