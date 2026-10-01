@@ -1,0 +1,2366 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>통합 관리 대시보드</title>
+    <script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* [기존 스타일 유지] */
+        body { font-family: 'Malgun Gothic', sans-serif; margin: 0; display: flex; height: 100dvh; color: #333; overflow: hidden; background-color: #f5f6fa; }
+        .sidebar { width: 240px; background-color: #fff; border-right: 1px solid #ddd; display: flex; flex-direction: column; flex-shrink: 0; user-select: none; overflow-y: auto; transition: 0.3s; }
+        .sidebar::-webkit-scrollbar { width: 5px; }
+        .sidebar::-webkit-scrollbar-thumb { background-color: #ccc; border-radius: 10px; }
+        .sidebar-header { padding: 15px; font-weight: bold; font-size: 1.1rem; border-bottom: 1px solid #eee; color: #ffffff; position: sticky; top: 0; background: #3498db; z-index: 10; }
+        .menu-group { border-bottom: 1px solid #f0f0f0; }
+        .menu-title {
+            padding: 12px 15px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between; /* 양쪽 끝 정렬 (텍스트그룹 <-> 화살표) */
+            align-items: center;
+            font-weight: bold;
+            color: #555;
+            transition: 0.2s;
+        }
+
+        .menu-text-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 6px; /* 텍스트와 뱃지 사이 간격 */
+        }
+
+        .menu-title:hover { background-color: #f8f9fa; color: #3498db; }
+        .menu-title .icon { font-size: 10px; transition: transform 0.3s; }
+        .submenu-container { display: none; background-color: #fcfcfc; padding-bottom: 5px; }
+        .submenu-container.open { display: block; } 
+        .menu-group.active .icon { transform: rotate(180deg); }
+        .submenu-item { padding: 8px 15px 8px 30px; cursor: pointer; font-size: 13px; color: #666; transition: 0.2s; border-left: 3px solid transparent; text-decoration: none; display: block; }
+        .submenu-item:hover { background-color: #eef2f5; color: #333; }
+        .submenu-item.active { background-color: #e6f7ff; color: #007bff; border-left-color: #007bff; font-weight: bold; }
+        .menu-divider { margin: 10px 15px; border-top: 1px solid #ccc; height: 0; }
+        .main-content { flex-grow: 1; padding: 0 20px 80px 20px; overflow-y: auto; display: flex; flex-direction: column; -webkit-overflow-scrolling: touch; }
+        .content-header { display: flex; align-items: center; border-bottom: 2px solid #007bff; padding: 15px 0 10px 0; margin-bottom: 15px; position: sticky; top: 0; background-color: #f5f6fa; z-index: 20; }
+        h2 { margin: 0; font-size: 1.2rem; color: #2c3e50; flex-grow: 1; }
+        .refresh-btn { padding: 6px 12px; cursor: pointer; background-color: #3498db; color: white; border: none; border-radius: 4px; font-weight: bold; font-size: 12px; margin-left: 10px; }
+        .mobile-back-btn { display: none; margin-right: 10px; padding: 6px 12px; background-color: #3498db; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; font-weight: bold; color: #ffffff; font-size: 12px; }
+        .notice-box { background-color: #e8f4fd; color: #2c3e50; padding: 12px 15px; margin-bottom: 15px; border-left: 5px solid #3498db; border-radius: 4px; font-size: 13px; line-height: 1.5; box-shadow: 0 1px 2px rgba(0,0,0,0.05); display: none; }
+        .search-view-container { display: none; flex-direction: column; align-items: center; justify-content: center; padding-top: 50px; animation: fadeIn 0.3s ease-out; }
+        .search-box-wrapper { position: relative; width: 100%; max-width: 600px; margin-bottom: 30px; }
+        .search-input { width: 100%; padding: 15px 20px; font-size: 16px; border: 2px solid #e2e8f0; border-radius: 50px; outline: none; transition: 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.02); box-sizing: border-box; }
+        .search-input:focus { border-color: #3498db; box-shadow: 0 4px 12px rgba(52, 152, 219, 0.15); }
+        .search-btn-icon { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: #3498db; color: white; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+        .search-btn-icon:hover { background: #2980b9; transform: translateY(-50%) scale(1.05); }
+        .result-card { background: white; width: 100%; max-width: 600px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #eee; overflow: hidden; display: none; margin-bottom: 20px; }
+        .result-header { background: #f8f9fa; padding: 15px 20px; border-bottom: 1px solid #eee; font-weight: bold; color: #555; display: flex; justify-content: space-between; align-items: center; }
+        .keyword-badge { background: #3498db; color: #ffffff; padding: 4px 10px; border-radius: 4px; font-size: 14px; }
+        .result-grid { display: grid; grid-template-columns: 1fr 1fr; }
+        .result-item { padding: 20px; text-align: center; border-bottom: 1px solid #eee; border-right: 1px solid #eee; }
+        .result-item:nth-child(2n) { border-right: none; }
+        .result-item:nth-last-child(-n+2) { border-bottom: none; }
+        .res-label { font-size: 12px; color: #888; margin-bottom: 5px; }
+        .res-value { font-size: 18px; font-weight: 800; color: #333; }
+        .chart-container-box { padding: 20px; height: 300px; position: relative; }
+        .power-summary-container { display: none; flex-direction: column; gap: 12px; margin-bottom: 15px; animation: fadeIn 0.4s ease-out; }
+        .summary-cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+        .summary-card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.04); border: 1px solid #e2e8f0; display: flex; flex-direction: column; position: relative; }
+        .summary-card .label { font-size: 11px; color: #64748b; margin-bottom: 4px; font-weight: bold; display: flex; justify-content: flex-start; align-items: center; gap: 6px; }
+        .summary-card .value { font-size: 18px; color: #1e293b; font-weight: 800; margin-bottom: 8px; }
+        .trend-tag { font-size: 10px; padding: 2px 6px; border-radius: 4px; }
+        .trend-up { background-color: #fff5f5; color: #e53e3e; } 
+        .trend-down { background-color: #f0fff4; color: #38a169; } 
+        .gauge-container { width: 100%; height: 6px; background-color: #edf2f7; border-radius: 10px; overflow: hidden; margin-top: auto; }
+        .gauge-bar { height: 100%; width: 0%; transition: width 0.8s ease-in-out; }
+        .gauge-green { background-color: #48bb78; }
+        .gauge-yellow { background-color: #ecc94b; }
+        .gauge-red { background-color: #f56565; }
+        .summary-card.alert { border: 2px solid #fecaca; background-color: #fff5f5; }
+        .charge-status { padding: 12px; border-radius: 8px; font-size: 12.5px; font-weight: bold; text-align: center; display: none; background-color: #fff1f2; color: #be123c; border: 1px dashed #fda4af; }
+        .keyword-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 15px; }
+        .keyword-btn { padding: 6px 12px; cursor: pointer; border: 1px solid #ccc; background: white; border-radius: 4px; font-size: 12px; font-weight: bold; color: #555; }
+        .keyword-btn.active { background-color: #3498db; color: white; border-color: #3498db; box-shadow: 0 2px 3px rgba(0,0,0,0.1); }
+        table { border-collapse: collapse; width: 100%; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1); table-layout: fixed; }
+        th, td { border: 1px solid #eee; padding: 10px; text-align: left; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        th { background-color: #f8f9fa; font-weight: bold; color: #555; position: sticky; top: 58px; z-index: 10; box-shadow: 0 2px 2px -1px rgba(0,0,0,0.1); }
+        tr:hover { background-color: #f9f9f9; }
+
+        .rank-table th:nth-child(1) { width: 130px; } 
+        .rank-table th:nth-child(2) { width: 90px; } 
+
+        .integrated-table th {     border: 1px solid #5d5d5d;}
+        .integrated-table td {     border: 1px solid #5d5d5d;}
+
+        .integrated-table th:nth-child(1) { width: 150px; text-align: center;}
+        .integrated-table td:nth-child(1) { text-align: center; font-weight: 700; font-size: 16px;}
+        .integrated-table th:nth-child(2) { width: 90px; text-align: center;}
+        .integrated-table td:nth-child(2) { text-align: center; font-size: 16px;}
+        .integrated-table th:nth-child(3) { width: 90px; text-align: center;}
+        .integrated-table td:nth-child(3) { text-align: center; font-size: 16px;}
+        .integrated-table th:nth-child(4) { width: 80px; text-align: center; }
+        .integrated-table td:nth-child(4) { text-align: center; font-weight: 700; font-size: 16px;}
+        .integrated-table th:nth-child(5) { width: 80px; text-align: center;}
+        .integrated-table td:nth-child(5) { text-align: center; font-weight: 700; color: #ff0000; font-size: 16px;}
+        .integrated-table th:nth-child(6) { width: 80px; text-align: center;}
+        .integrated-table td:nth-child(6) { text-align: center; font-weight: 700; color: #ff0000; font-size: 16px;}
+
+        /* ▼▼▼ [수정된 부분] 통합 (블로그) 테이블 전용 스타일 ▼▼▼ */
+        .integrated-blog-table th {     border: 1px solid #5d5d5d;}
+        .integrated-blog-table td {     border: 1px solid #5d5d5d;}
+
+        /* B셀(인덱스1), C셀(인덱스2)이 빠지므로 1번부터 차례대로 맞춥니다 */
+        .integrated-blog-table th:nth-child(1), .integrated-blog-table td:nth-child(1) { width: 150px; text-align: center; font-size: 13px;} /* 키워드 */
+        .integrated-blog-table th:nth-child(2), .integrated-blog-table td:nth-child(2) { width: 80px; text-align: center; font-size: 13px;} /* 순위1 */
+        .integrated-blog-table th:nth-child(3), .integrated-blog-table td:nth-child(3) { width: 80px; text-align: center; color: #155724; font-size: 13px;} /*  */
+        .integrated-blog-table th:nth-child(4), .integrated-blog-table td:nth-child(4) { width: 80px; text-align: center; font-weight: 700; color: #155724; font-size: 13px;} /* 총 검색량*/
+        .integrated-blog-table th:nth-child(5), .integrated-blog-table td:nth-child(5) { width: 80px; text-align: center; font-weight: 700; color: #155724; font-size: 13px;} /* 현재 순위*/
+
+        .integrated-blog-table td:nth-child(5) {font-weight: 700; color: #ff0000;} /* 현재 순위*/
+
+        
+        /* H, I, J열 (작성일, 상태, 작성버튼) */
+        .integrated-blog-table th:nth-child(6), .integrated-blog-table td:nth-child(6) { width: 100px; text-align: center; font-size: 14px;} /* H열 (작성일) */
+        .integrated-blog-table th:nth-child(7) { width: 60px; text-align: center; font-size: 13px;} /* I열 (상태) */
+        .integrated-blog-table td:nth-child(7) { width: 60px; text-align: center; font-weight: bold; font-size: 16px;} /* I열 (상태) */
+
+        .integrated-blog-table th:nth-child(8), .integrated-blog-table td:nth-child(8) { width: 70px; text-align: center; font-size: 13px; } /* 버튼 */
+
+        /* 작성 버튼 디자인 */
+        .write-action-btn {
+            padding: 5px 12px;
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 12px;
+            transition: 0.2s;
+        }
+        .write-action-btn:hover { background-color: #2ecc71; }
+        .write-action-btn:disabled { background-color: #95a5a6; cursor: not-allowed; }
+        /* ▲▲▲ 수정 끝 ▲▲▲ */
+
+
+
+/* 편집 입력창 스타일 */
+        .edit-input {
+            width: 90%;
+            padding: 4px;
+            font-size: 13px;
+            border: 2px solid #3498db;
+            border-radius: 4px;
+            outline: none;
+            text-align: center;
+        }
+
+
+
+        .power-table th:nth-child(2), .power-table td:nth-child(2), .power-table th:nth-child(6), .power-table td:nth-child(6), .power-table th:nth-child(7), .power-table td:nth-child(7) { display: none; }
+        .bad-row { background-color: #ffebee !important; }
+        .rank-up { color: #e74c3c; font-weight: bold; }
+        .rank-down { color: #3498db; font-weight: bold; }
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; display: flex; justify-content: center; align-items: center; visibility: hidden; opacity: 0; transition: 0.3s; }
+        .overlay.visible { visibility: visible; opacity: 1; }
+        .loading-box { background: white; padding: 20px; border-radius: 10px; text-align: center; }
+        .spinner { width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 10px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .modal { background: white; width: 85%; max-width: 500px; max-height: 80vh; border-radius: 8px; display: flex; flex-direction: column; transform: translateY(20px); transition: 0.3s; overflow: hidden; }
+        .overlay.visible .modal { transform: translateY(0); }
+        .modal-header { padding: 15px; border-bottom: 1px solid #eee; font-weight: bold; display: flex; justify-content: space-between; background: #f8f9fa; }
+        .close-btn { cursor: pointer; font-size: 20px; color: #888; }
+        .modal-body { padding: 20px; overflow-y: auto; line-height: 1.6; font-size: 14px; word-break: break-all; white-space: pre-wrap; }
+
+        .review-table th:nth-child(1) { width: 30px; text-align: center; }
+        .review-table th:nth-child(2) { width: 60px; text-align: center; }
+        .review-table td:nth-child(2) { text-align: center; }
+        .review-table th:nth-child(3) { width: 60px; text-align: center;}
+        .review-table td:nth-child(3) { text-align: center; }
+        .review-table th:nth-child(4) { width: 150px }
+        .review-table th:nth-child(5) { width: 50px; text-align: center; }
+        .review-table td:nth-child(5) { text-align: center; }
+        .review-table th:nth-child(6) { width: 60px; text-align: center; }
+        .review-table td:nth-child(6) { text-align: center; }
+        .review-table th:nth-child(7) { width: 50px; text-align: center; }
+        .review-table td:nth-child(1) { text-align: center; }
+
+        @media (max-width: 768px) {
+            .sidebar { width: 100%; height: 100dvh; position: absolute; z-index: 100; border-right: none; }
+            .main-content { display: none; width: 100%; height: 100dvh; }
+            body.show-content .sidebar { display: none; }
+            body.show-content .main-content { display: flex; }
+            .mobile-back-btn { display: inline-block; }
+            .content-header h2 { font-size: 1rem; }
+            .review-table th:nth-child(1) { width: 6px; text-align: center; font-size: 12px;}
+            .review-table td:nth-child(1) { text-align: center;}
+            .review-table th:nth-child(2) { width: 20px; text-align: center; font-size: 12px; text-align: center;}
+            .review-table td:nth-child(2) { text-align: center;}
+            .review-table th:nth-child(7) { display: none; font-size: 12px;}
+            .review-table td:nth-child(7) { display: none; font-size: 12px;}
+            .review-table td:nth-child(3) { display: none;}
+            .review-table th:nth-child(3) { display: none;}
+            .review-table th:nth-child(5), .review-table th:nth-child(6) { width: 1px; text-align: center; font-size: 12px; text-align: center;}
+            .review-table th:nth-child(3) { width: 1px; text-align: center; font-size: 12px; text-align: center;}
+            .review-table td:nth-child(3) { text-align: center;}
+            .review-table td:nth-child(5) { text-align: center;}
+            .review-table td:nth-child(6) { text-align: center;}
+            .review-table th:nth-child(4) { width: 70px; text-align: center; font-size: 12px; text-align: center;}
+
+            .rank-table th:nth-child(1) { width: 55px; text-align: center;}
+            .rank-table td:nth-child(1) { text-align: center;}
+            .rank-table th:nth-child(2) { width: 30px; text-align: center;}
+            .rank-table td:nth-child(2) { text-align: center;}
+            .rank-table th:nth-child(3) { width: 30px; text-align: center;}
+            .rank-table td:nth-child(3) { text-align: center;}
+            .rank-table th:nth-child(4) { width: 30px; text-align: center;}
+            .rank-table td:nth-child(4) { text-align: center;}
+            .rank-table th:nth-child(5) { width: 30px; text-align: center;}
+            .rank-table td:nth-child(5) { text-align: center;}
+            .rank-table th:nth-child(6) { width: 30px; text-align: center;}
+            .rank-table td:nth-child(6) { text-align: center;}
+            .rank-table th:nth-child(7) { width: 30px; text-align: center;}
+            .rank-table td:nth-child(7) { text-align: center;}
+
+            .integrated-table th:nth-child(1) { width: 80px; text-align: center;}
+            .integrated-table td:nth-child(1) { text-align: center;}
+            .integrated-table th:nth-child(2) { width: 25px; text-align: center;}
+            .integrated-table td:nth-child(2) { text-align: center;}
+            .integrated-table th:nth-child(3) { width: 25px; text-align: center;}
+            .integrated-table td:nth-child(3) { text-align: center;}
+            .integrated-table th:nth-child(4) { width: 30px; text-align: center;}
+            .integrated-table td:nth-child(4) { text-align: center;}
+            .integrated-table th:nth-child(5) { width: 25px; text-align: center;}
+            .integrated-table td:nth-child(5) { text-align: center;}
+            .integrated-table th:nth-child(6) { width: 25px; text-align: center;}
+            .integrated-table td:nth-child(6) { text-align: center;}
+
+            /* ▼▼▼ [수정된 부분] 통합 (블로그) 모바일 테이블 전용 스타일 ▼▼▼ */
+            .integrated-blog-table th:nth-child(1), .integrated-blog-table td:nth-child(1) { width: 80px; text-align: center;}
+            .integrated-blog-table th:nth-child(2), .integrated-blog-table td:nth-child(2) { width: 30px; text-align: center;}
+            .integrated-blog-table th:nth-child(3), .integrated-blog-table td:nth-child(3) { width: 25px; text-align: center;}
+            .integrated-blog-table th:nth-child(4), .integrated-blog-table td:nth-child(4) { width: 25px; text-align: center;}
+            .integrated-blog-table th:nth-child(5), .integrated-blog-table td:nth-child(5) { width: 25px; text-align: center;}
+            .integrated-blog-table th:nth-child(6), .integrated-blog-table td:nth-child(6) { width: 40px; text-align: center; font-size: 11px;} /* 작성일 */
+            .integrated-blog-table th:nth-child(7), .integrated-blog-table td:nth-child(7) { width: 30px; text-align: center; font-size: 12px;} /* 상태 */
+            .integrated-blog-table th:nth-child(8), .integrated-blog-table td:nth-child(8) { width: 40px; text-align: center;} /* 버튼 */
+            /* ▲▲▲ 신규 추가 끝 ▲▲▲ */
+        }
+
+        .related-card { margin-top: 20px; background: white; width: 100%; max-width: 600px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #eee; overflow: hidden; display: none; }
+        .related-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .related-table th { background: #f1f3f5; padding: 10px; font-weight: bold; color: #555; text-align: center; border-bottom: 1px solid #ddd; position: sticky; top: 0; }
+        .related-table td { padding: 8px 10px; border-bottom: 1px solid #eee; text-align: center; color: #333; }
+        .related-table tr:last-child td { border-bottom: none; }
+        .related-table tr:hover { background-color: #f8f9fa; }
+        .kwd-col { text-align: left !important; font-weight: bold; color: #3498db !important; }
+        @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+        .skeleton-card { background: white; width: 100%; max-width: 600px; border-radius: 12px; border: 1px solid #eee; overflow: hidden; margin-bottom: 20px; display: none; }
+        .skeleton-header { padding: 15px 20px; border-bottom: 1px solid #eee; display: flex; align-items: center; gap: 10px; }
+        .skeleton-body { padding: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .skeleton-box { background: #f0f0f0; background-image: linear-gradient(90deg, #f0f0f0 25%, #fafafa 50%, #f0f0f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 4px; }
+        .sk-title { width: 100px; height: 24px; }
+        .sk-badge { width: 150px; height: 24px; border-radius: 12px; }
+        .sk-label { width: 60px; height: 14px; margin-bottom: 8px; margin: 0 auto 8px auto; }
+        .sk-value { width: 80px; height: 24px; margin: 0 auto; }
+        .sk-item { text-align: center; }
+
+        /* [추가된 CSS] 공지사항 카드 스타일 */
+        .notice-container {
+            display: none; /* 기본 숨김 */
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            width: 100%;
+            max-width: 1200px;
+            margin-top: 20px;
+            animation: fadeIn 0.4s ease-out;
+        }
+        .notice-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+            border: 1px solid #eee;
+            transition: transform 0.2s;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+        }
+        .notice-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+        }
+
+        /* 공지사항 이미지 스타일 */
+        .notice-img {
+            width: 100%;
+            height: 140px;
+            object-fit: cover;
+            background-color: #f0f0f0;
+            display: block; /* 이미지가 있을 때만 보임 */
+        }
+
+        /* 이미지가 없을 때 보여줄 박스 스타일 */
+        .no-image-placeholder {
+            width: 100%;
+            height: 140px;
+            background-color: #e9ecef; /* 회색 배경 */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #adb5bd;
+            font-weight: bold;
+            font-size: 14px;
+            border-bottom: 1px solid #eee;
+        }
+        .no-image-icon {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .notice-content {
+            padding: 15px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .notice-title {
+            font-size: 15px;
+            font-weight: bold;
+            color: #333;
+            white-space: nowrap; 
+            overflow: hidden; 
+            text-overflow: ellipsis; 
+            height: 20px; 
+            line-height: 1.2;
+            padding-bottom: 10px;        
+            border-bottom: 1px solid #eee; 
+            margin-bottom: 10px;         
+        }
+
+        .notice-body {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.5;
+            height: 59px; 
+            overflow: hidden; 
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            flex-grow: 0;
+            padding-bottom: 10px;        
+            border-bottom: 1px solid #eee; 
+            margin-bottom: 10px;         
+        }
+
+        .notice-date {
+            font-size: 12px;
+            color: #999;
+            text-align: right;
+            margin-top: auto;
+        }
+
+        .platform-badges {
+            display: inline-flex;
+            gap: 4px;
+            margin-left: auto;
+        }
+
+        .badge-btn {
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            background-color: #fff;
+            cursor: pointer;
+            font-weight: bold;
+            color: #555;
+            transition: 0.2s;
+        }
+
+        .badge-btn.active {
+            border-color: transparent;
+            color: white;
+        }
+
+        .badge-n.active { background-color: #03C75A; }
+        .badge-d.active { background-color: #F7E600; color: #3b1e1e; }
+        .badge-g.active { background-color: #4285F4; }
+
+        .submenu-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-right: 10px;
+        }
+
+        .new-badge {
+            display: inline-block;
+            background-color: #e74c3c;
+            color: white;
+            font-size: 10px;
+            font-weight: bold;
+            padding: 2px 5px;
+            border-radius: 10px;
+            vertical-align: middle;
+            line-height: 1;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.9; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .skeleton-notice-wrapper {
+            display: contents;
+        }
+        .skeleton-notice-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #eee;
+            display: flex;
+            flex-direction: column;
+            height: 300px;
+        }
+        .sk-notice-img {
+            width: 100%;
+            height: 140px;
+        }
+        .sk-notice-content {
+            padding: 15px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .sk-line {
+            border-radius: 4px;
+        }
+        .sk-title-line { width: 80%; height: 20px; }
+        .sk-body-line { width: 100%; height: 14px; }
+        .sk-body-line.short { width: 60%; }
+        .sk-date-line { width: 30%; height: 12px; margin-top: auto; align-self: flex-end; }
+
+        .skeleton-anim {
+            background: #f0f0f0;
+            background-image: linear-gradient(90deg, #f0f0f0 25%, #fafafa 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+        }
+
+        .source-icon {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            font-weight: 900;
+            font-size: 13px;
+            color: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .icon-naver { background-color: #03C75A; border: 1px solid #03C75A; }
+        .icon-daum { background-color: #FEE500; color: #3b1e1e; border: 1px solid #FEE500; }
+        .icon-google { background: white; color: #ea4335; border: 1px solid #eee; }
+
+        .notice-section-header {
+            grid-column: 1 / -1;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 4px;
+            margin-top: 10px;
+        }
+        .notice-section-title {
+            font-size: 16px;
+            font-weight: 800;
+            color: #2c3e50;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .notice-section-title::before {
+            content: '';
+            display: inline-block;
+            width: 4px;
+            height: 16px;
+            background-color: #03C75A;
+            border-radius: 2px;
+        }
+        .notice-section-divider {
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(to right, #ccc, transparent);
+        }
+
+        .notice-section-title[style*="--section-color"]::before {
+            background-color: #03C75A;
+        }
+.main-content.place-ads-active{padding-bottom:0;overflow:hidden}
+.main-content.place-ads-active>.content-header{flex-shrink:0}
+.main-content.place-ads-active>:not(.content-header):not(#place-ads-view){display:none!important}
+#place-ads-view{display:none;flex:1;min-height:0;flex-direction:column}
+.place-ads-active #place-ads-view{display:flex}
+#place-ads-frame{width:100%;height:100%;flex:1;min-height:300px;border:0;background:#f5f7fa}
+#place-ads-connection{padding:12px 0;color:#64748b;font-size:13px}
+#place-ads-view [hidden]{display:none!important}
+</style>
+</head>
+<body>
+
+    <div id="loading-overlay" class="overlay">
+        <div class="loading-box">
+            <div class="spinner"></div>
+            <div id="loading-text" class="loading-text">데이터 동기화 중...</div>
+        </div>
+    </div>
+
+    <div id="detail-modal" class="overlay" onclick="closeModal()">
+        <div class="modal" onclick="event.stopPropagation()"> 
+            <div class="modal-header">
+                <span id="modal-title">상세 내용</span>
+                <span class="close-btn" onclick="closeModal()">&times;</span>
+            </div>
+            <div class="modal-body" id="modal-content"></div>
+        </div>
+    </div>
+
+    <nav class="sidebar">
+        <div class="sidebar-header">통합 관리 대시보드</div>
+        <div class="menu-group" id="group-review">
+            <div class="menu-title" onclick="toggleGroup('review')">플레이스 리뷰 <span class="icon">▼</span></div>
+            <div class="submenu-container" id="submenu-review"></div>
+        </div>
+        <div class="menu-group" id="group-rank">
+            <div class="menu-title" onclick="toggleGroup('rank')">플레이스 순위 <span class="icon">▼</span></div>
+            <div class="submenu-container" id="submenu-rank"></div>
+        </div>
+        <div class="menu-group" id="group-place-ads">
+            <div class="menu-title" onclick="toggleGroup('place-ads')">플레이스 광고 <span class="icon">▼</span></div>
+            <div class="submenu-container" id="submenu-place-ads">
+                <div class="submenu-item" id="nav-place-ads-all" onclick="selectPlaceAds('')">전체 현황</div>
+                <div id="place-ads-companies" style="font-size:12px;padding:8px 15px 8px 30px;color:#888">광고 화면 로그인 후 업체 목록이 표시됩니다.</div>
+            </div>
+        </div>
+        <div class="menu-group" id="group-power">
+            <div class="menu-title" onclick="toggleGroup('power')">파워링크 현황 <span class="icon">▼</span></div>
+            <div class="submenu-container" id="submenu-power"></div>
+        </div>
+        <div class="menu-group" id="group-integrated">
+            <div class="menu-title" onclick="toggleGroup('integrated')">통합검색 노출 <span class="icon">▼</span></div>
+            <div class="submenu-container" id="submenu-integrated"></div>
+        </div>
+        <div class="menu-group" id="group-marketing">
+            <div class="menu-title" onclick="toggleGroup('marketing')">마케팅 도구 <span class="icon">▼</span></div>
+            <div class="submenu-container" id="submenu-marketing"></div>
+        </div>
+        <div class="menu-group" id="group-bookmark">
+            <div class="menu-title" onclick="toggleGroup('bookmark')">즐겨찾기 <span class="icon">▼</span></div>
+            <div class="submenu-container" id="submenu-bookmark"></div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="content-header">
+            <button class="mobile-back-btn" onclick="showMobileMenu()">&#60; 목록</button>
+            <h2 id="page-title">데이터 동기화 중...</h2>
+            <button class="refresh-btn" onclick="initDashboard(true)">새로고침 ↻</button>
+        </div>
+        
+        <div id="notice-box" class="notice-box"></div>
+
+        <div id="power-summary" class="power-summary-container">
+            <div class="summary-cards-grid">
+                <div class="summary-card" id="balance-card">
+                    <div class="label">광고 잔액 * 아침 9시 기준 <span id="d-day-tag" style="font-weight: 800; color: #4a5568;"></span></div>
+                    <div class="value" id="current-balance">0원</div>
+                    <div class="gauge-container"><div id="balance-gauge" class="gauge-bar"></div></div>
+                </div>
+                <div class="summary-card">
+                    <div class="label">1일 평균 광고비 (최근 7일) <span id="spent-trend" class="trend-tag"></span></div>
+                    <div class="value" id="avg-spent">0원</div>
+                    <div class="gauge-container"><div class="gauge-bar gauge-green" style="width: 100%"></div></div>
+                </div>
+                <div class="summary-card">
+                    <div class="label" id="month-spend-label">월 광고비 사용액</div>
+                    <div class="value" id="month-spend-val">0원</div>
+                </div>
+                <div class="summary-card">
+                    <div class="label" id="month-charge-label">월 광고비 충전액</div>
+                    <div class="value" id="month-charge-val">0원</div>
+                </div>
+            </div>
+            <div id="charge-alert" class="charge-status">⚠️ 잔액이 매우 부족합니다! <br>1~2일 이내 소진 예상되오니 즉시 충전하세요.</div>
+        </div>
+
+        <div id="keyword-container" class="keyword-tabs"></div>
+        <div id="table-container"></div>
+
+        <div id="marketing-search-view" class="search-view-container">
+            <div class="search-box-wrapper">
+                <input type="text" id="naver-kwd-input" class="search-input" placeholder="조회할 키워드를 입력하세요 (예: 사람과소통)" onkeypress="if(event.key === 'Enter') searchNaverKeyword()">
+                <button class="search-btn-icon" onclick="searchNaverKeyword()">🔍</button>
+            </div>
+            
+            <div id="skeleton-ui" class="skeleton-card">
+                <div class="skeleton-header">
+                    <div class="skeleton-box sk-title"></div>
+                    <div class="skeleton-box sk-badge"></div>
+                </div>
+                <div class="skeleton-body">
+                    <div class="sk-item"><div class="skeleton-box sk-label"></div><div class="skeleton-box sk-value"></div></div>
+                    <div class="sk-item"><div class="skeleton-box sk-label"></div><div class="skeleton-box sk-value"></div></div>
+                    <div class="sk-item"><div class="skeleton-box sk-label"></div><div class="skeleton-box sk-value"></div></div>
+                    <div class="sk-item"><div class="skeleton-box sk-label"></div><div class="skeleton-box sk-value"></div></div>
+                </div>
+            </div>
+
+            <div id="kwd-result-card" class="result-card">
+                <div class="result-header">
+                    <span id="main-card-title">분석 결과</span> 
+                    <span id="res-keyword" class="keyword-badge"></span>
+                </div>
+                <div class="result-grid">
+                    <div class="result-item">
+                        <div class="res-label">월간 검색수 (PC)</div>
+                        <div class="res-value" id="res-pc-cnt">-</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="res-label">월간 검색수 (Mobile)</div>
+                        <div class="res-value" id="res-mo-cnt">-</div>
+                    </div>
+                    
+                    <div class="result-item">
+                        <div class="res-label">월평균 클릭수 (PC)</div>
+                        <div class="res-value" id="res-pc-clk">-</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="res-label">월평균 클릭수 (Mobile)</div>
+                        <div class="res-value" id="res-mo-clk">-</div>
+                    </div>
+
+                    <div class="result-item">
+                        <div class="res-label">평균 클릭률 (PC)</div>
+                        <div class="res-value" id="res-pc-ctr">-</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="res-label">평균 클릭률 (Mobile)</div>
+                        <div class="res-value" id="res-mo-ctr">-</div>
+                    </div>
+                </div>
+                <div class="chart-container-box">
+                    <canvas id="trendChart"></canvas>
+                </div>
+            </div>
+
+            <div id="related-result-card" class="related-card">
+                <div class="result-header">
+                    <span>연관검색어 - 30개</span>
+                </div>
+                <div style="overflow-x: auto; max-height: 500px; overflow-y: auto;">
+                    <table class="related-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 34%">키워드</th>
+                                <th style="width: 22%">PC 검색수</th>
+                                <th style="width: 22%">Mo 검색수</th>
+                                <th style="width: 22%; color: #e74c3c;">Total</th> 
+                            </tr>
+                        </thead>
+                        <tbody id="related-table-body">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="notice-card-view" class="notice-container"></div>
+        <section id="place-ads-view" aria-label="플레이스 광고 관리">
+            <div id="place-ads-connection" role="status">광고 관리 화면을 연결하는 중입니다.</div>
+            <iframe id="place-ads-frame" title="플레이스 광고 조회 및 승인" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+        </section>
+
+    </main>
+
+<script>
+    const CONFIG = {
+        bookmark: { url: "https://script.google.com/macros/s/AKfycbzSshe0Nz-7DnwJFcmdOc4n11Jje5jw2bUC9w-LrpqbOt4FVEUqNuATAMjHJa1lkVhi/exec", title: "즐겨찾기", versioned: false },
+        review: { 
+            urls: [
+                { url: "https://script.google.com/macros/s/AKfycbxxg_DqI5cLfTT1Nx73CCl7_dVVjeP9NbdaCUvr5SBKm7VMr19ZjClofZ_ggm0O6dtC/exec", versioned: true },
+                { url: "https://script.google.com/macros/s/AKfycbw2Y77qidHEu5OdCFeVb5SrbDkFBt_IKqOJIcb3ltuWIAPXydPL5K826MDxdvWa4mhCqw/exec", versioned: false },
+                { url: "https://script.google.com/macros/s/AKfycbzyZYQHwEPgIDqS5uW08F31r6Bh4N5uiRMLupUUyHzBcA-LlX0uVrU4wHTSNWfNGw9H/exec", versioned: false },
+            ], 
+            title: "리뷰 모니터링" 
+        },
+        rank: { url: "https://script.google.com/macros/s/AKfycbya7-b5zXTEM7xGnM6jfuJHuqnvDgVS1Pvo5CsxBetBqELjDUR8GoEvRFg8WeZv8G9o/exec", title: "순위 현황", versioned: true },
+        power: { url: "https://script.google.com/macros/s/AKfycbzSshe0Nz-7DnwJFcmdOc4n11Jje5jw2bUC9w-LrpqbOt4FVEUqNuATAMjHJa1lkVhi/exec", title: "파워링크 현황", versioned: true },
+        integrated: { url: "https://script.google.com/macros/s/AKfycbzSshe0Nz-7DnwJFcmdOc4n11Jje5jw2bUC9w-LrpqbOt4FVEUqNuATAMjHJa1lkVhi/exec", title: "통합검색 노출", versioned: true },
+
+        marketing: { url: "https://script.google.com/macros/s/AKfycbz1PL3THIbulUe4e6G9NPWMOTs3Cce5xidaC9_PZtLcpTAGjoBs7XP9kBnbNSzEfjsY/exec", title: "마케팅 도구" } 
+    };
+
+    const NOTICE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyb8B7jg2HEmMY8-s_FL0OygWDkm91ISPI9yMpYzo_faplmeyAqwDlHAgG9yM0J8MCu/exec";
+
+    const NOTICE_MESSAGES = {
+        review: "📢 <b>Notice:</b> 오전(단어 필터링 + AI 검수), 오후(AI 검수) 총 2회 진행(<b>리뷰 목록 2회 업데이트</b>), 부정 리뷰 발견 시 이메일 발송합니다.",
+        rank: "📢 <b>Notice:</b> <b>오전, 오후 총 2회 노출 순위 확인</b>, 순위 변동은 ▲ 상승/▼ 하락으로 표시되고, 50위 미만은 기록되지 않습니다.",
+        power: "📢 <b>Notice:</b> <b>최근 7일 소진액 및 잔액 기반으로 분석한 광고비 현황입니다.</b>",
+        integrated: "📢 <b>Notice:</b> <b>통합검색 노출 현황</b>입니다. 최근 2일치 노출 순위를 표시합니다.",
+        marketing: "📢 <b>Notice:</b> <b>네이버 검색광고 API</b>와 <b>데이터랩 API</b>를 결합한 추정 데이터입니다. 그래프는 데이터랩 트렌드 지수를 실제 검색량으로 역산한 수치입니다."
+    };
+
+    const REVIEW_COMPANY_COL_IDX = 0; 
+    const RANK_KEYWORD_COL_IDX = 1; 
+
+    let dataCache = { 
+        review: {}, rank: null, power: null, bookmark: null, integrated: null, 
+        marketing: { "네이버 검색량 조회": [], "네이버 공지사항": [] } 
+    };
+
+    let orderCache = { review: [], rank: [], power: [], integrated: [] };
+    let loadingStatus = { review: false, rank: false, power: false, bookmark: false, integrated: false, marketing: false };
+    let trendChartInstance = null;
+    const loadedModes = new Set(['marketing']);
+    const pendingRequests = new Map();
+    const SESSION_CACHE_VERSION = 'v3'; // 버전 변경
+    const DATA_CACHE_TTL = 12 * 60 * 60 * 1000; // 12시간 (로컬 스토리지 사용)
+    const NOTICE_CACHE_TTL = 12 * 60 * 60 * 1000;
+    const KEYWORD_CACHE_TTL = 12 * 60 * 60 * 1000;
+    const REQUEST_TIMEOUT = 30000;
+
+    function getSessionCacheKey(scope, key) {
+        return `dd:${SESSION_CACHE_VERSION}:${scope}:${key}`;
+    }
+
+    function readSessionCache(scope, key, maxAge, allowExpired = false) {
+        try {
+            const raw = localStorage.getItem(getSessionCacheKey(scope, key));
+            if (!raw) return null;
+            const cached = JSON.parse(raw);
+            if (!cached || typeof cached.savedAt !== 'number') return null;
+            
+            // 날짜가 다르면 새로고침 (오전 갱신 대응)
+            const savedDate = new Date(cached.savedAt).getDate();
+            const currentDate = new Date().getDate();
+            if (!allowExpired && savedDate !== currentDate) return null;
+            
+            if (!allowExpired && Date.now() - cached.savedAt > maxAge) return null;
+            return cached.value;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    function writeSessionCache(scope, key, value) {
+        try {
+            localStorage.setItem(getSessionCacheKey(scope, key), JSON.stringify({
+                savedAt: Date.now(),
+                value: value
+            }));
+        } catch (e) {
+            console.warn('캐시 저장 생략:', e);
+        }
+    }
+
+    function removeSessionCache(scope, key) {
+        try {
+            localStorage.removeItem(getSessionCacheKey(scope, key));
+        } catch (e) {}
+    }
+
+    function clearDashboardSessionCache() {
+        try {
+            const prefix = `dd:${SESSION_CACHE_VERSION}:`;
+            const keys = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && key.startsWith(prefix)) keys.push(key);
+            }
+            keys.forEach(key => localStorage.removeItem(key));
+        } catch (e) {}
+    }
+
+    async function fetchJson(url, timeoutMs = REQUEST_TIMEOUT) {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), timeoutMs);
+        try {
+            const response = await fetch(url, { signal: controller.signal });
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            return await response.json();
+        } finally {
+            clearTimeout(timer);
+        }
+    }
+
+    function runOnce(key, task) {
+        if (pendingRequests.has(key)) return pendingRequests.get(key);
+        const promise = Promise.resolve().then(task).finally(() => pendingRequests.delete(key));
+        pendingRequests.set(key, promise);
+        return promise;
+    }
+
+    function applyModePayload(mode, payload) {
+        if (mode === 'bookmark') {
+            dataCache.bookmark = payload.links || [];
+        } else {
+            dataCache[mode] = payload.sheets || {};
+            orderCache[mode] = payload.order || [];
+        }
+        loadedModes.add(mode);
+    }
+
+    history.replaceState(null, '', location.pathname + location.search);
+
+function getDaysDiff(dateString) {
+    if (!dateString) return 999;
+    
+    const parts = dateString.split('.');
+    if (parts.length !== 3) return 999;
+    
+    const postDate = new Date(parts[0], parts[1] - 1, parts[2]);
+    const today = new Date();
+    
+    postDate.setHours(0,0,0,0);
+    today.setHours(0,0,0,0);
+    
+    const diffTime = Math.abs(today - postDate);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+    
+    return diffDays;
+}
+
+function showNewBadgeOnMenu() {
+    const marketingTitle = document.querySelector('#group-marketing .menu-title');
+    
+    if (marketingTitle && !marketingTitle.querySelector('.new-badge')) {
+        const icon = marketingTitle.querySelector('.icon');
+        const text = marketingTitle.childNodes[0];
+
+        const wrapper = document.createElement('span');
+        wrapper.className = 'menu-text-wrapper';
+        wrapper.innerText = text.textContent.trim();
+        
+        const badge = document.createElement('span');
+        badge.className = 'new-badge';
+        badge.innerText = 'N';
+        
+        wrapper.appendChild(badge);
+
+        text.remove();
+        marketingTitle.insertBefore(wrapper, icon);
+    }
+
+    const noticeItem = document.getElementById('nav-marketing-네이버 공지사항');
+    if (noticeItem && !noticeItem.querySelector('.new-badge')) {
+        noticeItem.style.display = 'flex';
+        noticeItem.style.alignItems = 'center';
+        noticeItem.style.justifyContent = 'space-between';
+        
+        if (!noticeItem.querySelector('.menu-text-wrapper')) {
+             const text = noticeItem.innerText;
+             noticeItem.innerText = '';
+             
+             const wrapper = document.createElement('span');
+             wrapper.innerText = text;
+             noticeItem.appendChild(wrapper);
+             
+             const badge = document.createElement('span');
+             badge.className = 'new-badge';
+             badge.innerText = 'N';
+             badge.style.marginLeft = 'auto';
+             noticeItem.appendChild(badge);
+        }
+    }
+}
+
+    function parseKoreanDate(dateStr) {
+        if (!dateStr || typeof dateStr !== 'string') return new Date(0);
+        const matches = dateStr.match(/(\d+)년\s*(\d+)월\s*(\d+)일/);
+        return matches ? new Date(matches[1], matches[2] - 1, matches[3]) : new Date(0);
+    }
+
+    function cleanNum(val) { return Number(String(val).replace(/[^0-9.-]+/g,"")) || 0; }
+
+    function showOverlay(text) {
+        const overlay = document.getElementById('loading-overlay');
+        document.getElementById('loading-text').innerText = text || "데이터 동기화 중...";
+        overlay.classList.add('visible');
+    }
+
+    function hideOverlay() {
+        document.getElementById('loading-overlay').classList.remove('visible');
+    }
+
+    function prefetchDeferredModes(userKey, options = {}) {
+        const modes = ['rank', 'power', 'integrated', 'bookmark'];
+
+        Promise.allSettled(modes.map(mode =>
+            fetchData(mode, CONFIG[mode].url, userKey, options)
+        )).then(results => {
+            results.forEach((result, index) => {
+                if (result.status === 'rejected') {
+                    console.warn(`[${modes[index]}] 백그라운드 로드 실패:`, result.reason);
+                }
+            });
+        });
+    }
+
+    function getReviewSourceUrl(source) {
+        return typeof source === 'string' ? source : source.url;
+    }
+
+    function getVersionedReviewSources() {
+        return CONFIG.review.urls.filter(source => typeof source === 'object' && source.versioned === true);
+    }
+
+    function applyReviewCache(cached) {
+        dataCache.review = cached?.data || {};
+        orderCache.review = cached?.order || [];
+        loadedModes.add('review');
+        buildSidebar('review', dataCache.review, orderCache.review);
+        renderFirstReview();
+    }
+
+    async function fetchReviewVersions(userKey) {
+        const sources = getVersionedReviewSources();
+        const entries = await Promise.all(sources.map(async source => {
+            const url = getReviewSourceUrl(source);
+            const separator = url.includes('?') ? '&' : '?';
+            const result = await fetchJson(`${url}${separator}id=${encodeURIComponent(userKey)}&type=version`);
+
+            if (result?.status !== 'success' || result?.type !== 'version' || !result.dataVersion) {
+                throw new Error(`dataVersion 응답이 올바르지 않습니다: ${url}`);
+            }
+            return [url, String(result.dataVersion)];
+        }));
+
+        return Object.fromEntries(entries);
+    }
+
+    function reviewVersionsMatch(cachedVersions, currentVersions) {
+        if (!cachedVersions || !currentVersions) return false;
+        return Object.entries(currentVersions).every(([url, version]) =>
+            String(cachedVersions[url] || '') === String(version)
+        );
+    }
+
+    async function initDashboard(isRefresh = false) {
+        if (placeAdsActive && isRefresh) { sendPlaceAds('place-ads-refresh'); return; }
+        const urlParams = new URLSearchParams(window.location.search);
+        const userKey = urlParams.get('id');
+        if (!userKey) { alert("ID 코드가 없습니다."); return; }
+
+        if (isRefresh) clearDashboardSessionCache();
+        const hasCachedReview = !isRefresh && Boolean(
+            readSessionCache('review', String(userKey), DATA_CACHE_TTL, true)
+        );
+        if (!hasCachedReview) showOverlay("데이터 로딩 중...");
+        try {
+            await loadReviewData(userKey, { forceNetwork: isRefresh });
+            if (!placeAdsActive) toggleGroup('review', true);
+            buildSidebar('marketing', dataCache.marketing, orderCache.marketing);
+            checkNoticeBadgeOnStart();
+        } catch (e) {
+            console.error('초기 데이터 로드 실패:', e);
+            if (!placeAdsActive) document.getElementById('page-title').innerText = '데이터를 불러오지 못했습니다.';
+        } finally {
+            hideOverlay();
+        }
+
+        if (loadedModes.has('review')) {
+            prefetchDeferredModes(userKey, { forceNetwork: isRefresh });
+        }
+    }
+
+ async function loadReviewData(userKey, options = {}) {
+        const forceNetwork = options.forceNetwork === true;
+        const cacheKey = String(userKey);
+
+        if (!forceNetwork) {
+            const freshCached = readSessionCache('review', cacheKey, DATA_CACHE_TTL);
+            const cached = freshCached || readSessionCache('review', cacheKey, DATA_CACHE_TTL, true);
+
+            if (cached) {
+                // 저장된 데이터는 즉시 화면에 표시하고, 작은 버전 요청으로 최신 여부만 확인합니다.
+                applyReviewCache(cached);
+
+                const versionedSources = getVersionedReviewSources();
+                if (versionedSources.length > 0) {
+                    try {
+                        const currentVersions = await fetchReviewVersions(userKey);
+                        const allSourcesVersioned = versionedSources.length === CONFIG.review.urls.length;
+                        if (reviewVersionsMatch(cached.versions, currentVersions) && (allSourcesVersioned || freshCached)) {
+                            return dataCache.review;
+                        }
+                    } catch (versionError) {
+                        console.warn('리뷰 dataVersion 확인 실패:', versionError);
+                        if (freshCached) return dataCache.review;
+                    }
+                } else if (freshCached) {
+                    return dataCache.review;
+                }
+            }
+        }
+
+        return runOnce('review', async () => {
+        loadingStatus.review = true;
+        if (!dataCache.review || Object.keys(dataCache.review).length === 0) {
+            buildSidebar('review', null, null);
+        }
+        try {
+            const sources = CONFIG.review.urls.map(source => ({
+                url: getReviewSourceUrl(source),
+                versioned: typeof source === 'object' && source.versioned === true
+            }));
+            const requests = sources.map(source => fetchJson(`${source.url}?id=${encodeURIComponent(userKey)}`));
+            const settled = await Promise.allSettled(requests);
+            let mergedData = {};
+            let mergedOrder = [];
+            let successCount = 0;
+            const versions = {};
+
+            settled.forEach((item, index) => {
+                if (item.status !== 'fulfilled') return;
+                const res = item.value;
+                if (!res || res.error || res.status === 'error') return;
+                successCount += 1;
+
+                const sheets = res.sheets || res;
+                Object.keys(sheets).forEach(key => {
+                    if (!['error', 'status', 'type', 'dataVersion', 'order'].includes(key)) mergedData[key] = sheets[key];
+                });
+                if (res.order) mergedOrder = mergedOrder.concat(res.order);
+
+                if (sources[index].versioned && res.dataVersion) {
+                    versions[sources[index].url] = String(res.dataVersion);
+                }
+            });
+
+            if (successCount === 0) throw settled[0]?.reason || new Error('리뷰 데이터를 불러오지 못했습니다.');
+            dataCache.review = mergedData;
+            orderCache.review = [...new Set([...mergedOrder, ...Object.keys(mergedData)])];
+            loadedModes.add('review');
+            writeSessionCache('review', cacheKey, {
+                data: dataCache.review,
+                order: orderCache.review,
+                versions: versions
+            });
+            buildSidebar('review', dataCache.review, orderCache.review);
+            renderFirstReview();
+            return dataCache.review;
+        } catch (e) {
+            console.error(e);
+            const stale = readSessionCache('review', cacheKey, DATA_CACHE_TTL, true);
+            if (stale) {
+                applyReviewCache(stale);
+                return dataCache.review;
+            }
+            throw e;
+        } finally {
+            loadingStatus.review = false;
+        }
+        });
+    }
+
+    function renderFirstReview() {
+        const keys = orderCache.review.length > 0 ? orderCache.review : Object.keys(dataCache.review || {});
+        const firstSheet = keys.find(sheetName => dataCache.review[sheetName]);
+        if (!firstSheet) return;
+        const baseName = firstSheet.replace(' (다음)', '').replace(' (구글)', '').trim();
+        const sheetGroup = keys.filter(sheetName => sheetName.includes(baseName));
+        selectIntegratedClinic(baseName, sheetGroup, true);
+    }
+
+    async function fetchModeVersion(mode, url, userKey) {
+        const separator = url.includes('?') ? '&' : '?';
+        const result = await fetchJson(
+            `${url}${separator}id=${encodeURIComponent(userKey)}&type=version&mode=${encodeURIComponent(mode)}`
+        );
+
+        if (
+            result?.status !== 'success' ||
+            result?.type !== 'version' ||
+            result?.mode !== mode ||
+            !result.dataVersion
+        ) {
+            throw new Error(`${mode} dataVersion 응답이 올바르지 않습니다.`);
+        }
+
+        return String(result.dataVersion);
+    }
+
+    async function fetchData(mode, url, userKey, options = {}) {
+        const forceNetwork = options.forceNetwork === true;
+        const cacheKey = `${userKey}:${mode}`;
+
+        if (!forceNetwork) {
+            const freshCached = readSessionCache('data', cacheKey, DATA_CACHE_TTL);
+            const cached = freshCached || readSessionCache('data', cacheKey, DATA_CACHE_TTL, true);
+
+            if (cached) {
+                // 저장된 데이터를 먼저 표시하고, 버전 지원 모드는 작은 요청으로 최신 여부만 확인합니다.
+                applyModePayload(mode, cached);
+                buildSidebar(mode, dataCache[mode], orderCache[mode]);
+
+                if (CONFIG[mode]?.versioned === true) {
+                    try {
+                        const currentVersion = await fetchModeVersion(mode, url, userKey);
+                        if (String(cached.dataVersion || '') === currentVersion) {
+                            return dataCache[mode];
+                        }
+                    } catch (versionError) {
+                        console.warn(`[${mode}] dataVersion 확인 실패:`, versionError);
+                        if (freshCached) return dataCache[mode];
+                    }
+                } else if (freshCached) {
+                    return dataCache[mode];
+                }
+            }
+        } else {
+            removeSessionCache('data', cacheKey);
+        }
+
+        return runOnce(`data:${mode}`, async () => {
+        loadingStatus[mode] = true;
+        buildSidebar(mode, null, null);
+        try {
+            const res = await fetchJson(`${url}?id=${encodeURIComponent(userKey)}&type=${encodeURIComponent(mode)}`);
+            if (res?.error || res?.status === 'error') {
+                throw new Error(res.error || `${mode} 데이터를 불러오지 못했습니다.`);
+            }
+            const payload = mode === 'bookmark'
+                ? { links: res.links || [], dataVersion: res.dataVersion || null }
+                : {
+                    sheets: res.sheets || res,
+                    order: res.order || [],
+                    dataVersion: res.dataVersion || null
+                };
+            applyModePayload(mode, payload);
+            writeSessionCache('data', cacheKey, payload);
+            console.log(`[${mode}] 데이터 로드 완료:`, dataCache[mode]);
+            return dataCache[mode];
+        } catch (e) {
+            console.error(e);
+            const stale = readSessionCache('data', cacheKey, DATA_CACHE_TTL, true);
+            if (stale) {
+                applyModePayload(mode, stale);
+                return dataCache[mode];
+            }
+            throw e;
+        } finally {
+            loadingStatus[mode] = false;
+            buildSidebar(mode, dataCache[mode], orderCache[mode]);
+        }
+        });
+    }
+
+function buildSidebar(mode, data, order) {
+        const container = document.getElementById(`submenu-${mode}`);
+        if (!container) return;
+        container.innerHTML = ""; 
+
+        if (loadingStatus[mode] && (!data || Object.keys(data).length === 0)) {
+            container.innerHTML = "<div style='padding:10px; font-size:12px; color:#3498db;'>목록 로딩 중...</div>";
+            return;
+        }
+
+        if (mode === 'bookmark') {
+            if (!data || data.length === 0) {
+                if (!loadingStatus.bookmark) container.innerHTML = "<div style='padding:10px; font-size:12px; color:#999'>데이터 없음</div>";
+                return;
+            }
+            data.forEach(item => {
+                const itemName = item.name ? String(item.name).trim() : "";
+                if (itemName === '-') {
+                    const sep = document.createElement('div'); sep.className = 'menu-divider'; container.appendChild(sep); return; 
+                }
+                const link = document.createElement('a');
+                link.className = 'submenu-item'; link.innerText = item.name;
+                link.href = item.url.startsWith('http') ? item.url : 'http://' + item.url;
+                link.target = "_blank"; link.style.color = "#333";
+                container.appendChild(link);
+            });
+            return;
+        }
+
+        let keys = (order && order.length > 0) ? order : Object.keys(data || {});
+        if (keys.length === 0 && !loadingStatus[mode]) {
+            container.innerHTML = "<div style='padding:10px; font-size:12px; color:#999'>데이터 없음</div>";
+            return;
+        }
+
+        if (mode === 'review') {
+            let grouped = {};
+            keys.forEach(sheetName => {
+                let baseName = sheetName.replace(' (다음)', '').replace(' (구글)', '').trim();
+                if (!grouped[baseName]) grouped[baseName] = [];
+                grouped[baseName].push(sheetName);
+            });
+
+            Object.keys(grouped).forEach(baseName => {
+                const item = document.createElement('div');
+                item.className = 'submenu-item';
+                item.id = `nav-group-${baseName}`; 
+                item.innerText = baseName;
+                
+                item.onclick = () => selectIntegratedClinic(baseName, grouped[baseName]);
+                
+                container.appendChild(item);
+            });
+            return;
+        }
+
+        keys.forEach(function(sheetName) {
+            if (mode === 'power' && !sheetName.includes("(파워링크)")) return;
+            if (mode !== 'power' && sheetName.includes("(파워링크)")) return;
+            if (!data[sheetName]) return;
+
+            const item = document.createElement('div');
+            item.className = 'submenu-item';
+            item.id = `nav-${mode}-${sheetName}`; 
+            
+            let displayName = sheetName.replace('(파워링크)', '');
+            if (mode === 'integrated') {
+                displayName = displayName.replace(' 노출 (통합검색)', '').trim();
+            }
+            item.innerText = displayName;
+            
+            item.onclick = () => selectClinic(mode, sheetName, false, false);
+            container.appendChild(item);
+        });
+    }
+
+    function selectIntegratedClinic(baseName, sheetNames, isInitialLoad = false) {
+        if (isInitialLoad && placeAdsActive) return;
+        hidePlaceAds();
+        document.querySelectorAll('.submenu-item').forEach(el => el.classList.remove('active'));
+        const currentItem = document.getElementById(`nav-group-${baseName}`);
+        if (currentItem) currentItem.classList.add('active');
+        toggleGroup('review', true);
+
+        document.getElementById('page-title').innerText = `[통합 리뷰] ${baseName}`;
+        const noticeBox = document.getElementById('notice-box');
+        noticeBox.innerHTML = NOTICE_MESSAGES['review'];
+        noticeBox.style.display = 'block';
+
+        const LIMIT = 20; 
+        let header = [];
+        let groups = { 'N': [], 'D': [], 'G': [] }; 
+
+        if (sheetNames.length > 0 && dataCache.review[sheetNames[0]]) {
+            header = [...dataCache.review[sheetNames[0]][0]];
+            header[0] = "출처"; 
+        }
+
+        const getTimestampAndFormat = (row) => {
+            let dateStr = String(row[1]).trim();
+            const now = new Date();
+            let timestamp = 0;
+            let formattedDate = dateStr; 
+
+            if (dateStr.includes('전')) {
+                const num = parseInt(dateStr.replace(/[^0-9]/g, '')) || 1;
+                if (dateStr.includes('초')) timestamp = now.getTime() - (num * 1000);
+                else if (dateStr.includes('분')) timestamp = now.getTime() - (num * 60 * 1000);
+                else if (dateStr.includes('시간')) timestamp = now.getTime() - (num * 60 * 60 * 1000);
+                else if (dateStr.includes('일')) timestamp = now.setDate(now.getDate() - num);
+                else if (dateStr.includes('주')) timestamp = now.setDate(now.getDate() - (num * 7));
+                else if (dateStr.includes('달') || dateStr.includes('개월')) timestamp = now.setMonth(now.getMonth() - num);
+                else if (dateStr.includes('년')) timestamp = now.setFullYear(now.getFullYear() - num);
+                
+                if (timestamp > 0) {
+                    const d = new Date(timestamp);
+                    const yy = String(d.getFullYear()).slice(2);
+                    const mm = String(d.getMonth() + 1).padStart(2, '0');
+                    const dd = String(d.getDate()).padStart(2, '0');
+                    formattedDate = `${yy}-${mm}-${dd}`;
+                }
+            }
+            else if (dateStr.match(/^\d{4}\.\d{2}\.\d{2}\.?$/)) {
+                const parts = dateStr.split('.');
+                const yy = parts[0].slice(2);
+                formattedDate = `${yy}-${parts[1]}-${parts[2]}`;
+                timestamp = new Date(parts[0], parts[1]-1, parts[2]).getTime();
+            }
+            else if (dateStr.match(/^\d{4}년\s*\d{1,2}월\s*\d{1,2}일/)) {
+                const m = dateStr.match(/(\d{4})년\s*(\d{1,2})월\s*(\d{1,2})일/);
+                const yy = m[1].slice(2);
+                const mm = m[2].padStart(2,'0');
+                const dd = m[3].padStart(2,'0');
+                formattedDate = `${yy}-${mm}-${dd}`;
+                timestamp = new Date(m[1], m[2]-1, m[3]).getTime();
+            }
+            else if (dateStr.match(/^\d{2}-\d{2}-\d{2}$/)) {
+                formattedDate = dateStr;
+                timestamp = new Date('20' + dateStr).getTime();
+            }
+
+            row[1] = formattedDate; 
+            return timestamp;
+        };
+
+        sheetNames.forEach(sheetName => {
+            const rows = dataCache.review[sheetName];
+            if (!rows || rows.length < 2) return;
+
+            let platformCode = 'N'; 
+            if (sheetName.includes('(다음)')) platformCode = 'D';
+            else if (sheetName.includes('(구글)')) platformCode = 'G';
+
+            for (let i = 1; i < rows.length; i++) {
+                let row = [...rows[i]];
+                row[0] = platformCode; 
+                row._timestamp = getTimestampAndFormat(row); 
+                groups[platformCode].push(row);
+            }
+        });
+
+        ['N', 'D', 'G'].forEach(code => {
+            groups[code].sort((a, b) => b._timestamp - a._timestamp);
+            if (groups[code].length > LIMIT) {
+                groups[code] = groups[code].slice(0, LIMIT);
+            }
+            groups[code].sort((a, b) => a._timestamp - b._timestamp);
+        });
+
+        const finalRows = [
+            header,
+            ...groups['N'],
+            ...groups['D'],
+            ...groups['G']
+        ];
+
+        if (finalRows.length <= 1) { 
+            document.getElementById('table-container').innerHTML = "<p>데이터가 없습니다.</p>";
+        } else {
+            renderContent('review', finalRows, baseName);
+        }
+        
+        if (!isInitialLoad || window.innerWidth > 768) {
+            showMobileContent();
+        }
+    }
+
+    async function toggleGroup(mode, forceOpen = false) {
+        const targetGroup = document.getElementById(`group-${mode}`);
+        const targetSubmenu = document.getElementById(`submenu-${mode}`);
+        const isAlreadyOpen = targetGroup.classList.contains('active');
+
+        document.querySelectorAll('.menu-group').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.submenu-container').forEach(el => el.classList.remove('open'));
+
+        if (!forceOpen && isAlreadyOpen) return;
+
+        targetGroup.classList.add('active');
+        targetSubmenu.classList.add('open');
+
+        if (loadedModes.has(mode) || mode === 'review' || mode === 'marketing' || mode === 'place-ads') return;
+
+        const userKey = new URLSearchParams(window.location.search).get('id');
+        if (!userKey || !CONFIG[mode]?.url) return;
+
+        try {
+            await fetchData(mode, CONFIG[mode].url, userKey);
+        } catch (e) {
+            console.error(`[${mode}] 지연 로드 실패:`, e);
+            targetSubmenu.innerHTML = "<div style='padding:10px; font-size:12px; color:#e74c3c;'>데이터 로드 실패</div>";
+        }
+    }
+
+    function selectClinic(mode, sheetName, isInitial = false, isHistorySkip = false) {
+        if (mode === 'place-ads') { selectPlaceAds(sheetName === '__all__' ? '' : sheetName, isHistorySkip); return; }
+        hidePlaceAds();
+        if (mode === 'bookmark') return;
+        
+        if (!isHistorySkip && !isInitial) {
+             history.pushState({ mode: mode, sheet: sheetName }, '', '#detail');
+        }
+
+        if (loadingStatus[mode]) {
+            showOverlay(`데이터 로딩 중...`);
+            const checkDataTimer = setInterval(() => {
+                if (!loadingStatus[mode]) {
+                    clearInterval(checkDataTimer);
+                    hideOverlay();
+                    renderContentNow(mode, sheetName, isInitial);
+                }
+            }, 500);
+            return;
+        }
+
+        renderContentNow(mode, sheetName, isInitial);
+    }
+
+    function renderContentNow(mode, sheetName, isInitial) {
+        document.querySelectorAll('.submenu-item').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.badge-btn').forEach(el => el.classList.remove('active'));
+
+        if (mode === 'review') {
+            const currentBadge = document.getElementById(`nav-review-${sheetName}`);
+            if (currentBadge) {
+                currentBadge.classList.add('active');
+                const parentRow = currentBadge.closest('.submenu-item');
+                if (parentRow) parentRow.classList.add('active'); 
+            }
+        } 
+        else {
+            const currentItem = document.getElementById(`nav-${mode}-${sheetName}`);
+            toggleGroup(mode, true); 
+            if (currentItem) currentItem.classList.add('active');
+        }
+
+        document.getElementById('page-title').innerText = `[${CONFIG[mode].title}] ${sheetName.replace('(파워링크)', '')}`;
+
+        const noticeBox = document.getElementById('notice-box');
+        noticeBox.innerHTML = NOTICE_MESSAGES[mode] || "";
+        noticeBox.style.display = 'block';
+        
+        renderContent(mode, dataCache[mode][sheetName], sheetName);
+        
+        if (!isInitial) showMobileContent();
+    }
+
+
+
+
+
+
+    function renderContent(mode, rows, sheetName) {
+        hidePlaceAds();
+        const keywordContainer = document.getElementById('keyword-container');
+        const tableContainer = document.getElementById('table-container');
+        const powerSummary = document.getElementById('power-summary');
+        
+        keywordContainer.innerHTML = "";
+        tableContainer.innerHTML = "";
+        powerSummary.style.display = "none";
+
+
+// ▼▼▼ 여기에 딱 두 줄만 추가해 주세요! ▼▼▼
+        const mainContent = document.querySelector('.main-content');
+        if (mainContent) mainContent.scrollTop = 0;
+        // ▲▲▲ 추가 끝 ▲▲▲
+
+        if (mode === 'marketing') {
+            const searchView = document.getElementById('marketing-search-view');
+            const noticeView = document.getElementById('notice-card-view');
+            
+            if (searchView) searchView.style.display = "none";
+            if (noticeView) noticeView.style.display = "none";
+
+            if (sheetName === '네이버 검색량 조회') {
+                if(searchView) searchView.style.display = "flex";
+            } else if (sheetName === '네이버 공지사항') {
+                if(noticeView) {
+                    noticeView.style.display = "grid";
+                    loadNaverNotices(); 
+                }
+            }
+            return; 
+        }
+
+        const searchView = document.getElementById('marketing-search-view');
+        const noticeView = document.getElementById('notice-card-view');
+        if (searchView) searchView.style.display = "none";
+        if (noticeView) noticeView.style.display = "none";
+
+        if (!rows || rows.length < 1) {
+            tableContainer.innerHTML = "<p>데이터가 없습니다.</p>";
+            return;
+        }
+
+        if (mode === 'review') {
+            const header = rows[0];
+            const body = rows.slice(1);
+            body.sort((a, b) => parseKoreanDate(a[1]) - parseKoreanDate(b[1]));
+            tableContainer.innerHTML = createTable([header, ...body], mode, false, sheetName);
+        }
+        else if (mode === 'rank') {
+    const header = rows[0];
+    const body = rows.slice(1);
+    const RANK_LIMIT = 30; // ← 최근 30개 제한
+    const keywords = [...new Set(body.map(r => r[RANK_KEYWORD_COL_IDX]))].filter(k => k);
+    keywords.forEach((keyword, idx) => {
+        const btn = document.createElement('button');
+        btn.className = `keyword-btn ${idx === 0 ? 'active' : ''}`;
+        btn.innerText = keyword;
+        btn.onclick = () => {
+            document.querySelectorAll('.keyword-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const filtered = body.filter(r => r[RANK_KEYWORD_COL_IDX] === keyword).slice(-RANK_LIMIT); // ← .slice(-30) 추가
+            tableContainer.innerHTML = createTable([header, ...filtered], mode, true, sheetName);
+        };
+        keywordContainer.appendChild(btn);
+    });
+    if (keywords.length > 0) {
+        const filtered = body.filter(r => r[RANK_KEYWORD_COL_IDX] === keywords[0]).slice(-RANK_LIMIT); // ← .slice(-30) 추가
+        tableContainer.innerHTML = createTable([header, ...filtered], mode, true, sheetName);
+    }
+}
+
+
+
+
+            
+        else if (mode === 'integrated') {
+            const header = rows[0];
+            
+            // [수정된 핵심 로직] 데이터의 원래 행 번호(구글 시트 상의 위치)를 기억해둠
+            const body = rows.slice(1).map((r, idx) => {
+                r.originalIndex = idx + 2; 
+                return r;
+            });
+
+            if (sheetName === '통합 (블로그)') {
+                // 병원 ID를 예쁜 이름으로 바꿔주는 도우미 함수
+                const getHospitalName = (id) => {
+                    const map = {
+                        'goodtteddy520': '더편한통증의학과',
+                        'dndnclinic': '연세든든외과',
+                        'gamjaung': '명가한의원',
+                        'bareunmom01': '바른몸한방병원',
+                        'seoulwithus': '서울위더스치과',
+                        'gmyonseiw': '연세W재활의학과',
+                        'w-ilsan': '서울W내과',
+                        'bareunent': '바른이비인후과',
+                        'ohchip77': '연세위드치과',
+                        'gajinamu': '연세위드치과',
+                        'woorikidsclinic': '연세우리소아과',
+                        'allbareunsmc': '올바른삼성내과'
+                    };
+                    return map[id] || id || '기타';
+                };
+
+                // B셀(index 1)에서 고유 병원 ID 추출
+                const hospitalIds = [...new Set(body.map(r => r[1]))].filter(k => k);
+                
+                hospitalIds.forEach((hId, idx) => {
+                    const btn = document.createElement('button');
+                    btn.className = `keyword-btn ${idx === 0 ? 'active' : ''}`;
+                    btn.innerText = getHospitalName(hId);
+                    btn.onclick = () => {
+                        document.querySelectorAll('.keyword-btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        // 해당 병원 데이터만 필터링
+                        const filtered = body.filter(r => r[1] === hId);
+                        tableContainer.innerHTML = createTable([header, ...filtered], mode, false, sheetName);
+                    };
+                    keywordContainer.appendChild(btn);
+                });
+                
+                if (hospitalIds.length > 0) {
+                    const filtered = body.filter(r => r[1] === hospitalIds[0]);
+                    tableContainer.innerHTML = createTable([header, ...filtered], mode, false, sheetName);
+                } else {
+                    tableContainer.innerHTML = createTable([header, ...body], mode, false, sheetName);
+                }
+            } else {
+                tableContainer.innerHTML = createTable([header, ...body], 'integrated', false, sheetName);
+            }
+        }
+        else if (mode === 'power') {
+    const POWER_LIMIT = 30;
+    const header = rows[0];
+    const body = rows.slice(1).slice(-POWER_LIMIT); // ← 최근 30개만
+    const limitedRows = [header, ...body]; // ← 헤더 + 최근 30개로 재조합
+
+
+
+
+            
+            if (body.length > 0) {
+                const lastRow = body[body.length - 1];
+                const lastDateStr = String(lastRow[0]).trim(); 
+                const targetPrefix = lastDateStr.substring(0, 6); 
+                const targetMonth = parseInt(lastDateStr.substring(4, 6)); 
+                let varMonthSpent = 0, varMonthCharge = 0;
+                body.forEach(row => {
+                    const rowDate = String(row[0]).trim(); 
+                    if (rowDate.startsWith(targetPrefix)) {
+                        varMonthSpent += cleanNum(row[3]); varMonthCharge += cleanNum(row[4]); 
+                    }
+                });
+                document.getElementById('month-spend-label').innerText = `${targetMonth}월 광고비 사용액`;
+                document.getElementById('month-spend-val').innerText = varMonthSpent.toLocaleString() + "원";
+                document.getElementById('month-charge-label').innerText = `${targetMonth}월 광고비 충전액`;
+                document.getElementById('month-charge-val').innerText = varMonthCharge.toLocaleString() + "원";
+                const last7 = body.slice(-7);
+                const avgSpent = Math.round(last7.reduce((acc, r) => acc + cleanNum(r[3]), 0) / (last7.length || 1));
+                const trendTag = document.getElementById('spent-trend');
+                if (body.length >= 10) {
+                    const prev7 = body.slice(-14, -7);
+                    const prevAvg = Math.round(prev7.reduce((acc, r) => acc + cleanNum(r[3]), 0) / (prev7.length || 1));
+                    const diff = ((avgSpent - prevAvg) / (prevAvg || 1)) * 100;
+                    trendTag.innerText = (diff >= 0 ? "▲ " : "▼ ") + Math.abs(diff).toFixed(1) + "%";
+                    trendTag.className = "trend-tag " + (diff >= 0 ? "trend-up" : "trend-down");
+                    trendTag.style.display = "inline-block";
+                } else { trendTag.style.display = "none"; }
+                const latestBalance = cleanNum(body[body.length - 1][6]); 
+                const remainingDays = avgSpent > 0 ? (latestBalance / avgSpent).toFixed(1) : 0;
+                document.getElementById('avg-spent').innerText = avgSpent.toLocaleString() + "원";
+                document.getElementById('current-balance').innerText = latestBalance.toLocaleString() + "원";
+                document.getElementById('d-day-tag').innerText = `(D-${Math.floor(remainingDays)}일분)`;
+                const gauge = document.getElementById('balance-gauge');
+                const gaugePercent = Math.min((remainingDays / 10) * 100, 100);
+                gauge.style.width = gaugePercent + "%";
+                const alertBox = document.getElementById('charge-alert'), balCard = document.getElementById('balance-card');
+                if (remainingDays < 2) {
+                    alertBox.style.display = "block"; balCard.classList.add('alert'); gauge.className = "gauge-bar gauge-red";
+                } else if (remainingDays < 5) {
+                    alertBox.style.display = "none"; balCard.classList.remove('alert'); gauge.className = "gauge-bar gauge-yellow";
+                } else {
+                    alertBox.style.display = "none"; balCard.classList.remove('alert'); gauge.className = "gauge-bar gauge-green";
+                }
+                powerSummary.style.display = "flex";
+            }
+            tableContainer.innerHTML = createTable(limitedRows, mode, false, sheetName);
+        }
+    }
+
+
+    function createTable(rows, mode, hideKeywordCol, sheetName) {
+        let tableClass = 'rank-table';
+        
+        if (mode === 'review') {
+            tableClass = 'review-table';
+        } else if (mode === 'power') {
+            tableClass = 'power-table';
+        } else if (mode === 'integrated') {
+            if (sheetName === '통합 (블로그)') {
+                tableClass = 'integrated-blog-table';
+            } else {
+                tableClass = 'integrated-table'; 
+            }
+        }
+
+        let html = `<table class="${tableClass}"><thead><tr>`;
+        
+        // 1. 헤더 생성
+        for (let j = 0; j < rows[0].length; j++) {
+            if (mode === 'review' && j === REVIEW_COMPANY_COL_IDX) {
+                html += `<th>출처</th>`; 
+                continue;
+            }
+            if (mode === 'rank' && hideKeywordCol && j === RANK_KEYWORD_COL_IDX) continue;
+            
+            // 통합 (블로그) 시트에서 B셀(index 1), C셀(index 2) 숨김 (상단 버튼으로 뺐으므로)
+            if (sheetName === '통합 (블로그)' && (j === 1 || j === 2)) continue;
+
+            let headVal = rows[0][j] || '';
+            
+            if (mode === 'integrated') {
+                if (sheetName === '통합 (블로그)') {
+                    if (j === 5 || j === 6) headVal = String(headVal).trim().replace(/^20/, '');
+                } else {
+                    if (j >= rows[0].length - 2) headVal = String(headVal).trim().replace(/^20/, '');
+                }
+            }
+            html += `<th>${headVal}</th>`;
+        }
+        
+        if (mode === 'integrated' && sheetName === '통합 (블로그)') {
+            html += `<th>관리</th>`;
+        }
+        
+        html += '</tr></thead><tbody>';
+
+        // 2. 바디(데이터) 생성
+        for (let i = 1; i < rows.length; i++) {
+
+
+// ▼▼▼ 여기를 수정합니다 ▼▼▼
+            let isHighlight = false;
+            
+            // 1. 리뷰 탭일 때: 부정 리뷰(O) 강조
+            if (mode === 'review' && String(rows[i][4]).startsWith("O")) {
+                isHighlight = true;
+            } 
+            // 2. 통합 (블로그) 탭일 때: 상태(I열 = 인덱스 8)가 'O'이면 강조
+            else if (mode === 'integrated' && sheetName === '통합 (블로그)' && String(rows[i][8]) === 'O') {
+                isHighlight = true;
+            }
+
+            // isHighlight가 true면 미리 만들어진 .bad-row 클래스(배경색 #ffebee)를 줄 전체에 적용
+            html += `<tr${isHighlight ? ' class="bad-row"' : ''}>`;
+            // ▲▲▲ 수정 끝 ▲▲▲
+            
+            for (let j = 0; j < rows[i].length; j++) {
+
+                // 통합 (블로그) 시트에서 B셀(index 1), C셀(index 2) 숨김
+                if (sheetName === '통합 (블로그)' && (j === 1 || j === 2)) continue;
+
+                if (mode === 'review' && j === REVIEW_COMPANY_COL_IDX) {
+                    let source = rows[i][j];
+                    let iconHtml = '';
+                    if (source === 'N') iconHtml = `<span class="source-icon icon-naver">N</span>`;
+                    else if (source === 'D') iconHtml = `<span class="source-icon icon-daum">D</span>`;
+                    else if (source === 'G') iconHtml = `<span class="source-icon icon-google">G</span>`;
+                    else iconHtml = source;
+                    html += `<td>${iconHtml}</td>`;
+                    continue;
+                }
+
+                if (mode === 'rank' && hideKeywordCol && j === RANK_KEYWORD_COL_IDX) continue;
+                
+                let val = rows[i][j] !== null ? rows[i][j] : '';
+
+                if (mode === 'review') {
+                    if (j === 5) val = String(val).replace(/^20/, '');
+                } 
+                else if (mode === 'rank' && j === 0) val = String(val).replace(/^20/, '');
+                else if (mode === 'power' && j === 0) val = String(val).replace(/^20(\d{2})(\d{2})(\d{2})$/, '$1-$2-$3');
+                else if (mode === 'integrated') {
+                    if (sheetName === '통합 (블로그)') {
+                        if (j === 5 || j === 6) val = String(val).trim().replace(/^20/, '');
+                    } else {
+                        if (j >= rows[i].length - 2) val = String(val).trim().replace(/^20/, '');
+                    }
+                }
+
+                let cls = (mode === 'rank' || mode === 'power') && (String(val).includes('▲') || String(val).includes('▼')) ? (String(val).includes('▲') ? "rank-up" : "rank-down") : "";
+                
+
+
+let cellStyle = "";
+                if (mode === 'review') {
+                     cellStyle = "cursor: pointer;";
+                } else if (mode === 'integrated') {
+
+                    
+                     if (sheetName === '통합 (블로그)') {
+    if (j === 5 && !isHighlight) cellStyle = "background-color: #fff9c4;"; // ← !isHighlight 추가
+} else {
+    if (j === 3 && !isHighlight) cellStyle = "background-color: #fff9c4;"; // ← !isHighlight 추가
+}
+
+
+
+
+                    
+                }
+
+                // 통합 (블로그) O, X 상태 글씨 색상
+                if (sheetName === '통합 (블로그)' && j === 8) {
+                    if (val === 'O') cellStyle += "color: #2980b9;";
+                    if (val === 'X') cellStyle += "color: #e74c3c;";
+                }
+
+
+
+let actualRowIndex = rows[i].originalIndex || i + 1;
+                let evt = "";
+                
+                if (mode === 'review') {
+                    evt = ` onclick="openModal('${String(val).replace(/"/g, '&quot;').replace(/'/g, "\\'").replace(/\n/g, '\\n')}')"`;
+                } 
+                // 통합 (블로그) 작성일 셀(index 7) 더블 클릭 시 편집 모드 활성화
+                else if (mode === 'integrated' && sheetName === '통합 (블로그)' && j === 7) {
+                    evt = ` ondblclick="makeEditable(this, '${sheetName}', ${actualRowIndex}, 8)" title="더블클릭하여 수정"`;
+                }
+                
+                html += `<td class="${cls}"${evt} style="${cellStyle}">${val}</td>`;
+
+
+
+
+            }
+            
+            if (mode === 'integrated' && sheetName === '통합 (블로그)') {
+                // 배열이 필터링되었더라도 원래 시트의 행 번호를 정확히 찾아갑니다!
+                let actualRowIndex = rows[i].originalIndex || i + 1; 
+                html += `<td><button class="write-action-btn" onclick="updateWriteStatus('${sheetName}', ${actualRowIndex}, this)">작성</button></td>`;
+            }
+            html += '</tr>';
+        }
+        return html + '</tbody></table>';
+    }
+
+
+
+
+
+
+
+async function updateWriteStatus(sheetName, rowIndex, btnElement) {
+        // 확인 팝업창(confirm)을 띄우는 코드를 삭제했습니다. 누르면 즉시 실행됩니다!
+        
+        const originalText = btnElement.innerText;
+        btnElement.disabled = true;
+        btnElement.innerText = "처리중";
+        
+        try {
+            const urlParams = new URLSearchParams(window.location.search);
+            const userKey = urlParams.get('id');
+            const url = `${CONFIG.integrated.url}?id=${userKey}&type=updateWriteDate&sheetName=${encodeURIComponent(sheetName)}&rowIndex=${rowIndex}`;
+            
+            const res = await fetchJson(url);
+            
+            if (res.status === 'success') {
+                // 성공 시 화면 깜빡임 없이 통합 데이터만 조용히 다시 불러와 표 갱신
+                fetchData('integrated', CONFIG.integrated.url, userKey, { forceNetwork: true })
+                    .catch(e => console.error('통합 데이터 갱신 실패:', e));
+            } else {
+                alert("기록 오류: " + res.error);
+                btnElement.disabled = false;
+                btnElement.innerText = originalText;
+            }
+        } catch (e) {
+            console.error(e);
+            alert("서버와 통신하는 중 오류가 발생했습니다.");
+            btnElement.disabled = false;
+            btnElement.innerText = originalText;
+        }
+    }
+
+
+// ▼▼▼ 제가 실수로 누락한 모바일 화면 전환 함수 2개 부활 ▼▼▼
+    function showMobileContent() {
+        document.body.classList.add('show-content');
+    }
+function showMobileMenu() {
+        // history.back() 대신 CSS 클래스를 지워서 무조건 목록 화면이 뜨게 만듭니다.
+        document.body.classList.remove('show-content');
+    }
+    // ▲▲▲ 추가 끝 ▲▲▲
+
+
+// 셀을 편집 가능하게 만드는 함수
+    function makeEditable(tdElement, sheetName, rowIndex, colIndex) {
+        if (tdElement.querySelector('input')) return; // 이미 편집 중이면 무시
+
+        const originalValue = tdElement.innerText.trim();
+        tdElement.innerHTML = `<input type="text" class="edit-input" value="${originalValue}">`;
+        
+        const input = tdElement.querySelector('input');
+        input.focus();
+
+        // 엔터키 입력 시 저장, ESC 입력 시 취소
+        input.onkeyup = function(e) {
+            if (e.key === 'Enter') input.blur();
+            if (e.key === 'Escape') {
+                tdElement.innerText = originalValue;
+            }
+        };
+
+        // 포커스를 잃으면(클릭 등) 서버로 전송
+        input.onblur = async function() {
+            const newValue = input.value.trim();
+            if (newValue === originalValue) {
+                tdElement.innerText = originalValue;
+                return;
+            }
+
+            tdElement.innerText = "저장 중...";
+            
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                const userKey = urlParams.get('id');
+                const url = `${CONFIG.integrated.url}?id=${userKey}&type=updateCellValue&sheetName=${encodeURIComponent(sheetName)}&rowIndex=${rowIndex}&colIndex=${colIndex}&newValue=${encodeURIComponent(newValue)}`;
+                
+                const res = await fetchJson(url);
+                
+                if (res.status === 'success') {
+                    // 성공 시 전체 데이터 다시 로드하여 수식 결과(O/X)까지 갱신
+                    fetchData('integrated', CONFIG.integrated.url, userKey, { forceNetwork: true })
+                        .catch(e => console.error('통합 데이터 갱신 실패:', e));
+                } else {
+                    alert("저장 실패: " + res.error);
+                    tdElement.innerText = originalValue;
+                }
+            } catch (e) {
+                console.error(e);
+                alert("통신 오류가 발생했습니다.");
+                tdElement.innerText = originalValue;
+            }
+        };
+    }
+
+
+
+
+
+
+    function openModal(content) { document.getElementById('modal-content').innerText = content; document.getElementById('detail-modal').classList.add('visible'); }
+    function closeModal() { document.getElementById('detail-modal').classList.remove('visible'); }
+
+    const safeNum = (val) => {
+        if (val === undefined || val === null || val === "") return 0;
+        const num = Number(val);
+        return isNaN(num) ? 0 : num;
+    };
+    const getRealNum = (val) => {
+        if (typeof val === 'string' && val.includes('<')) return 0;
+        return Number(val) || 0;
+    };
+    const safeStrNum = (val) => {
+        if (typeof val === 'string' && val.includes('<')) return val; 
+        return safeNum(val).toLocaleString();
+    };
+
+    async function getKeywordResponse(keyword) {
+        const normalized = keyword.trim().replace(/\s+/g, ' ');
+        const cacheKey = normalized.toLocaleLowerCase('ko-KR');
+        const cached = readSessionCache('keyword', cacheKey, KEYWORD_CACHE_TTL);
+        if (cached) return cached;
+
+        return runOnce(`keyword:${cacheKey}`, async () => {
+            const result = await fetchJson(`${CONFIG.marketing.url}?keyword=${encodeURIComponent(normalized)}`);
+            if (result.status === 'success') writeSessionCache('keyword', cacheKey, result);
+            return result;
+        });
+    }
+
+    async function searchNaverKeyword() {
+        const input = document.getElementById('naver-kwd-input');
+        const keyword = input.value.trim();
+        if (!keyword) { alert("키워드를 입력해주세요."); return; }
+
+        const skeleton = document.getElementById('skeleton-ui');
+        const mainCard = document.getElementById('kwd-result-card');
+        const relatedCard = document.getElementById('related-result-card');
+        const btn = document.querySelector('.search-btn-icon');
+        const inputField = document.querySelector('.search-input');
+        const tbody = document.getElementById('related-table-body');
+
+        mainCard.style.display = "none";
+        relatedCard.style.display = "none";
+        skeleton.style.display = "block";
+        btn.disabled = true;
+        inputField.disabled = true;
+        inputField.style.opacity = "0.7"; 
+        
+        try {
+            const res = await getKeywordResponse(keyword);
+            
+            if (res.status === 'success' && res.data) {
+                const d = res.data.main; 
+                const list = res.data.related;
+                const trendData = res.data.trend || []; 
+
+                const mainTitle = document.getElementById('main-card-title');
+                if(mainTitle) mainTitle.innerText = d.relKeyword || keyword;
+
+                let mainTotal = getRealNum(d.monthlyPcQcCnt) + getRealNum(d.monthlyMobileQcCnt);
+                document.getElementById('res-keyword').innerText = `최근 30일 검색수 ${mainTotal.toLocaleString()}`;
+
+                document.getElementById('res-pc-cnt').innerText = safeStrNum(d.monthlyPcQcCnt);
+                document.getElementById('res-mo-cnt').innerText = safeStrNum(d.monthlyMobileQcCnt);
+                document.getElementById('res-pc-clk').innerText = safeNum(d.monthlyAvePcClkCnt).toFixed(1);
+                document.getElementById('res-mo-clk').innerText = safeNum(d.monthlyAveMobileClkCnt).toFixed(1);
+                document.getElementById('res-pc-ctr').innerText = safeNum(d.monthlyAvePcCtr).toFixed(2) + "%";
+                document.getElementById('res-mo-ctr').innerText = safeNum(d.monthlyAveMobileCtr).toFixed(2) + "%";
+
+                renderTrendChart(trendData, mainTotal);
+
+                tbody.innerHTML = ""; 
+                if (list && list.length > 0) {
+                    const fragment = document.createDocumentFragment(); 
+                    list.forEach(item => {
+                        const tr = document.createElement('tr');
+                        const tdKwd = document.createElement('td'); tdKwd.className = "kwd-col"; tdKwd.innerText = item.relKeyword;
+                        const tdPc = document.createElement('td'); tdPc.innerText = safeStrNum(item.monthlyPcQcCnt);
+                        const tdMo = document.createElement('td'); tdMo.innerText = safeStrNum(item.monthlyMobileQcCnt);
+                        let totalSum = getRealNum(item.monthlyPcQcCnt) + getRealNum(item.monthlyMobileQcCnt);
+                        const tdTotal = document.createElement('td'); tdTotal.innerText = totalSum.toLocaleString(); tdTotal.style.fontWeight = "bold"; tdTotal.style.color = "#333";
+                        tr.appendChild(tdKwd); tr.appendChild(tdPc); tr.appendChild(tdMo); tr.appendChild(tdTotal);
+                        fragment.appendChild(tr); 
+                    });
+                    tbody.appendChild(fragment);
+                    relatedCard.style.display = "block"; 
+                }
+                skeleton.style.display = "none";
+                mainCard.style.display = "block"; 
+
+            } else {
+                alert("데이터를 가져오지 못했습니다: " + (res.message || "결과 없음"));
+                skeleton.style.display = "none";
+            }
+        } catch (e) {
+            console.error(e);
+            alert("검색 중 오류가 발생했습니다.");
+            skeleton.style.display = "none";
+        } finally {
+            btn.disabled = false;
+            inputField.disabled = false;
+            inputField.style.opacity = "1";
+            inputField.focus();
+        }
+    }
+
+    function renderTrendChart(trendList, recentTotalVolume) {
+        if (typeof Chart === 'undefined') {
+            document.querySelector('.chart-container-box').style.display = 'none';
+            console.warn('Chart.js가 로드되지 않아 차트 표시를 생략합니다.');
+            return;
+        }
+        const ctx = document.getElementById('trendChart').getContext('2d');
+        
+        if (trendChartInstance) {
+            trendChartInstance.destroy();
+        }
+
+        if (!trendList || trendList.length === 0) {
+            document.querySelector('.chart-container-box').style.display = 'none';
+            return;
+        }
+        document.querySelector('.chart-container-box').style.display = 'block';
+
+        let recentDays = trendList.slice(-31, -1);
+        if (recentDays.length < 30) {
+            recentDays = trendList.slice(-30); 
+        }
+
+        let sumOfRatios = 0;
+        recentDays.forEach(day => {
+            sumOfRatios += Number(day.ratio || 0);
+        });
+
+        let multiplier = 0;
+        if (sumOfRatios > 0) {
+            multiplier = recentTotalVolume / sumOfRatios;
+        }
+
+        let monthlyMap = {};
+        trendList.forEach(item => {
+            let monthKey = item.period.substring(0, 7); 
+            if (!monthlyMap[monthKey]) {
+                monthlyMap[monthKey] = 0;
+            }
+            monthlyMap[monthKey] += Number(item.ratio || 0);
+        });
+
+        const labels = [];
+        const estimatedVolumes = [];
+        const currentMonthForecast = [];
+        const now = new Date();
+        const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+        const currentMonthPeriods = trendList
+            .filter(item => item.period && item.period.substring(0, 7) === currentMonthKey)
+            .map(item => Number(item.period.substring(8, 10)))
+            .filter(day => Number.isFinite(day) && day > 0);
+        const observedDays = currentMonthPeriods.length > 0 ? Math.max(...currentMonthPeriods) : 0;
+        const daysInCurrentMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+        const projectedCurrentMonthVolume = observedDays > 0
+            ? Math.round((monthlyMap[currentMonthKey] * multiplier / observedDays) * daysInCurrentMonth)
+            : null;
+
+        Object.keys(monthlyMap).sort().forEach(key => {
+            labels.push(key.slice(2).replace('-', '.')); 
+            estimatedVolumes.push(key === currentMonthKey ? null : Math.round(monthlyMap[key] * multiplier));
+            currentMonthForecast.push(key === currentMonthKey ? projectedCurrentMonthVolume : null);
+        });
+
+        trendChartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: '월별 예상 검색수',
+                    data: estimatedVolumes,
+                    borderColor: '#3498db',
+                    backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                    borderWidth: 2,
+                    pointRadius: 4,
+                    pointBackgroundColor: '#fff',
+                    pointBorderColor: '#3498db',
+                    pointHoverBackgroundColor: '#3498db',
+                    pointHoverBorderColor: '#fff',
+                    fill: true,
+                    tension: 0.3,
+                    spanGaps: false
+                }, {
+                    label: '현재 달 월말 예상 검색수',
+                    data: currentMonthForecast,
+                    borderColor: '#f97316',
+                    backgroundColor: '#f97316',
+                    pointRadius: 6,
+                    pointHoverRadius: 8,
+                    pointBackgroundColor: '#fff',
+                    pointBorderColor: '#f97316',
+                    pointBorderWidth: 3,
+                    pointHoverBackgroundColor: '#f97316',
+                    pointHoverBorderColor: '#fff',
+                    showLine: false,
+                    fill: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: 'rgba(0,0,0,0.8)',
+                        titleFont: { size: 13 },
+                        bodyFont: { size: 13, weight: 'bold' },
+                        padding: 10,
+                        cornerRadius: 8,
+                        displayColors: false,
+                        callbacks: {
+                            label: function(context) {
+                                return ` ${context.dataset.label}: ${context.parsed.y.toLocaleString()}회`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: '#f0f0f0', drawBorder: false },
+                        ticks: {
+                            callback: function(value) {
+                                if(value >= 10000) return (value/10000).toFixed(1) + '만';
+                                return value.toLocaleString();
+                            },
+                            font: { size: 11, family: "'Malgun Gothic', sans-serif" },
+                            padding: 8
+                        }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { 
+                            font: { size: 11, family: "'Malgun Gothic', sans-serif" },
+                            maxRotation: 0
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+async function getNoticeResponse() {
+    const cached = readSessionCache('notice', 'all', NOTICE_CACHE_TTL);
+    if (cached) return cached;
+
+    return runOnce('notice', async () => {
+        const result = await fetchJson(NOTICE_SCRIPT_URL);
+        if (result.status === 'success') writeSessionCache('notice', 'all', result);
+        return result;
+    });
+}
+
+async function loadNaverNotices() {
+    const container = document.getElementById('notice-card-view');
+    
+    if (container.innerHTML.trim() !== "" && !container.querySelector('.skeleton-notice-card')) {
+        return;
+    }
+
+    let skeletonHtml = '<div class="skeleton-notice-wrapper">';
+    for(let i=0; i<12; i++) {
+        skeletonHtml += `
+            <div class="skeleton-notice-card">
+                <div class="sk-notice-img skeleton-anim"></div>
+                <div class="sk-notice-content">
+                    <div class="sk-line sk-title-line skeleton-anim"></div>
+                    <div class="sk-line sk-body-line skeleton-anim"></div>
+                    <div class="sk-line sk-body-line skeleton-anim"></div>
+                    <div class="sk-line sk-body-line short skeleton-anim"></div>
+                    <div class="sk-line sk-date-line skeleton-anim"></div>
+                </div>
+            </div>`;
+    }
+    skeletonHtml += '</div>';
+    container.innerHTML = skeletonHtml;
+    
+    try {
+        const res = await getNoticeResponse();
+
+        if (res.status === 'success') {
+            container.innerHTML = "";
+            let hasNewPost = false;
+
+            const buildCards = (dataList) => {
+                dataList.forEach(item => {
+                    const card = document.createElement('div');
+                    card.className = 'notice-card';
+                    card.onclick = () => window.open(item.link, '_blank');
+
+                    let cleanTitle = item.title || '';
+                    if (cleanTitle.length > 35) cleanTitle = cleanTitle.substring(0, 35) + "...";
+
+                    let cleanBody = item.content || '';
+                    if (cleanBody.length > 65) cleanBody = cleanBody.substring(0, 65) + "...";
+
+                    let imgHtml = '';
+                    if (item.image && item.image.trim() !== "") {
+                        imgHtml = `<img src="${item.image}" class="notice-img" alt="공지 이미지">`;
+                    } else {
+                        imgHtml = `<div class="no-image-placeholder"><span class="no-image-icon">🖼️</span><span>NO IMAGE</span></div>`;
+                    }
+
+                    let dateBadge = "";
+                    const daysDiff = getDaysDiff(item.date);
+                    if (daysDiff <= 5) {
+                        dateBadge = ` <span class="new-badge">N</span>`;
+                        hasNewPost = true;
+                    }
+
+                    card.innerHTML = `
+                        ${imgHtml}
+                        <div class="notice-content">
+                            <div class="notice-title">${cleanTitle}</div>
+                            <div class="notice-body">${cleanBody}</div>
+                            <div class="notice-date">${item.date}${dateBadge}</div>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+            };
+
+            if (res.data && res.data.length > 0) {
+                const placeHeader = document.createElement('div');
+                placeHeader.className = 'notice-section-header';
+                placeHeader.innerHTML = `
+                    <div class="notice-section-title">네이버 플레이스 공지사항</div>
+                    <div class="notice-section-divider"></div>
+                `;
+                container.appendChild(placeHeader);
+                buildCards(res.data);
+            }
+
+            if (res.blogData && res.blogData.length > 0) {
+                const blogHeader = document.createElement('div');
+                blogHeader.className = 'notice-section-header';
+                blogHeader.style.marginTop = '30px'; 
+                blogHeader.innerHTML = `
+                    <div class="notice-section-title" style="--section-color: #ff6b35;">네이버 블로그 공지사항</div>
+                    <div class="notice-section-divider"></div>
+                `;
+                container.appendChild(blogHeader);
+                buildCards(res.blogData);
+            }
+
+            if ((!res.data || res.data.length === 0) && (!res.blogData || res.blogData.length === 0)) {
+                container.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding:40px 0; color:#888; font-size:14px;">표시할 공지사항이 없습니다.</div>';
+            }
+
+            if (hasNewPost) {
+                showNewBadgeOnMenu();
+            }
+
+        } else {
+            container.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding:40px 0; color:#888; font-size:14px;">표시할 공지사항이 없습니다.</div>';
+        }
+    } catch (e) {
+        console.error(e);
+        container.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding:20px; color:red;">데이터 통신 오류 발생</div>';
+    }
+}
+
+async function checkNoticeBadgeOnStart() {
+    try {
+        const res = await getNoticeResponse();
+        
+        if (res.status === 'success' && res.data && res.data.length > 0) {
+            const hasNew = res.data.some(item => getDaysDiff(item.date) <= 5);
+            
+            if (hasNew) {
+                setTimeout(() => {
+                    showNewBadgeOnMenu();
+                }, 1000);
+            }
+        }
+    } catch (e) {
+        console.log("배지 체크 중 오류(무시):", e);
+    }
+}
+
+    // PLACE_ADS_HOST_START: display and navigation only; approvals stay inside Apps Script.
+    const PLACE_ADS_WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbxTWrHmpYnkUPyIFjGJ2zgihhabXtfbttCyhUwY3GJ8485RSEMW8Dws-Xux9hqbelJt/exec';
+    let placeAdsActive = false, placeAdsKey = '', placeAdsChannel = '', placeAdsSource = null, placeAdsOrigin = '', placeAdsCompanies = [];
+    function sendPlaceAds(type, extra = {}) {
+        if (!placeAdsSource) return;
+        placeAdsSource.postMessage({ ...extra, type, channel: placeAdsChannel }, placeAdsOrigin);
+    }
+    function hidePlaceAds() {
+        placeAdsActive = false;
+        document.querySelector('.main-content').classList.remove('place-ads-active');
+    }
+    function highlightPlaceAds() {
+        document.querySelectorAll('.submenu-item').forEach(el => el.classList.remove('active'));
+        if (!placeAdsKey) document.getElementById('nav-place-ads-all').classList.add('active');
+        document.querySelectorAll('#place-ads-companies .submenu-item').forEach(el => el.classList.toggle('active', el.dataset.companyKey === placeAdsKey));
+    }
+    function buildPlaceAdsCompanies(companies) {
+        placeAdsCompanies = companies;
+        const container = document.getElementById('place-ads-companies');
+        container.replaceChildren(); container.style.padding = '0';
+        if (!companies.length) {
+            container.textContent = '로그인 후 분석된 업체 목록이 표시됩니다.';
+            container.style.padding = '8px 15px 8px 30px';
+        }
+        companies.forEach(company => {
+            const item = document.createElement('div');
+            item.className = 'submenu-item'; item.textContent = company.name; item.dataset.companyKey = company.key;
+            item.onclick = () => selectPlaceAds(company.key);
+            container.appendChild(item);
+        });
+        if (placeAdsKey && !companies.some(c => c.key === placeAdsKey)) { placeAdsKey = ''; sendPlaceAds('place-ads-select', {key:''}); }
+        if (placeAdsActive) {
+            document.getElementById('page-title').textContent = placeAdsKey ? '[플레이스 광고] ' + companies.find(c => c.key === placeAdsKey).name : '[플레이스 광고] 전체 현황';
+            highlightPlaceAds();
+        }
+    }
+    function selectPlaceAds(key = '', isHistorySkip = false) {
+        placeAdsKey = placeAdsCompanies.some(c => c.key === key) ? key : '';
+        placeAdsActive = true;
+        document.querySelector('.main-content').classList.add('place-ads-active');
+        document.getElementById('page-title').textContent = placeAdsKey ? '[플레이스 광고] ' + placeAdsCompanies.find(c => c.key === placeAdsKey).name : '[플레이스 광고] 전체 현황';
+        toggleGroup('place-ads', true); highlightPlaceAds(); showMobileContent();
+        if (!isHistorySkip) history.pushState({mode:'place-ads',sheet:placeAdsKey||'__all__'}, '', '#detail');
+        if (!placeAdsChannel) {
+            const bytes = new Uint8Array(24); crypto.getRandomValues(bytes);
+            placeAdsChannel = Array.from(bytes, b => b.toString(16).padStart(2,'0')).join('');
+            const url = new URL(PLACE_ADS_WEBAPP_URL); url.searchParams.set('embed','1'); url.searchParams.set('channel',placeAdsChannel);
+            document.getElementById('place-ads-frame').src = url.href;
+            setTimeout(() => {
+                if (!placeAdsSource) document.getElementById('place-ads-connection').textContent = '연결이 지연되고 있습니다. 잠시 후 페이지를 새로고침해 주세요.';
+            }, 30000);
+        } else { sendPlaceAds('place-ads-select', {key:placeAdsKey}); }
+    }
+    window.addEventListener('message', event => {
+        const message = event.data;
+        // Apps Script runs the HTML in its own nested googleusercontent frame.
+        if (!placeAdsChannel || !message || message.channel !== placeAdsChannel || !event.source || event.source === window) return;
+        if (!/^https:\/\/(?:script|[a-z0-9-]+-script|[a-z0-9-]+\.script)\.googleusercontent\.com$/.test(event.origin)) return;
+        if (placeAdsSource && (event.source !== placeAdsSource || event.origin !== placeAdsOrigin)) return;
+        if (message.type === 'place-ads-ready') {
+            placeAdsSource = event.source; placeAdsOrigin = event.origin;
+            sendPlaceAds('place-ads-connect'); sendPlaceAds('place-ads-select', {key:placeAdsKey});
+            document.getElementById('place-ads-connection').hidden = true;
+        } else if (message.type === 'place-ads-companies' && event.source === placeAdsSource && Array.isArray(message.companies)) {
+            const seen = new Set();
+            const companies = message.companies.slice(0,1000).filter(c => c && typeof c.key === 'string' && c.key.length <= 250 && typeof c.name === 'string' && c.name.length <= 250 && !seen.has(c.key) && seen.add(c.key));
+            buildPlaceAdsCompanies(companies);
+        }
+    });
+    // PLACE_ADS_HOST_END
+
+    initDashboard();
+
+    window.addEventListener('popstate', function(event) {
+        if (!event.state) {
+            document.body.classList.remove('show-content');
+        } else {
+            if (event.state.mode && event.state.sheet) {
+                selectClinic(event.state.mode, event.state.sheet, false, true);
+            }
+            document.body.classList.add('show-content');
+        }
+    });
+
+</script> </body>
+</html>
