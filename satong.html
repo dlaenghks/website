@@ -503,7 +503,88 @@
         .notice-section-title[style*="--section-color"]::before {
             background-color: #03C75A;
         }
-    </style>
+
+
+.main-content.place-ads-active{padding-bottom:30px}
+.main-content.place-ads-active>.content-header{flex-shrink:0}
+.main-content.place-ads-active>:not(.content-header):not(#place-ads-view){display:none!important}
+#place-ads-view{display:none;min-width:0;width:100%}
+.place-ads-active #place-ads-view{display:block}
+#place-ads-view,#place-ads-view *{box-sizing:border-box}
+#place-ads-view [hidden]{display:none!important}
+#place-ads-view button{border:1px solid #dbe3ec;background:#fff;color:#43556a;border-radius:6px;padding:9px 13px;font:inherit;font-size:13px;cursor:pointer}
+#place-ads-view button:hover{border-color:#3498db;color:#247bb5}
+#place-ads-view button:disabled{opacity:.55;cursor:wait}
+#place-ads-view button.pa-primary{background:#3498db;border-color:#3498db;color:white}
+#place-ads-view input{font:inherit;font-size:14px;border:1px solid #dbe3ec;border-radius:6px;padding:11px 13px;background:white;min-width:0}
+#place-ads-view input:focus{outline:2px solid #3498db40;border-color:#3498db}
+#place-ads-view .pa-login{max-width:430px;margin:45px auto;background:white;border:1px solid #e2e8f0;border-radius:12px;padding:30px}
+#place-ads-view .pa-login h3{margin:0 0 12px;color:#2c3e50;font-size:21px}
+#place-ads-view .pa-login p{color:#64748b;font-size:13px;line-height:1.7}
+#place-ads-view .pa-login input,#place-ads-view .pa-login button{width:100%;margin-top:12px}
+#place-ads-view .pa-top{display:flex;align-items:center;justify-content:space-between;gap:15px;flex-wrap:wrap;margin-bottom:15px}
+#place-ads-view .pa-top p{font-size:12px;color:#64748b;margin:0}
+#place-ads-view .pa-actions{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+#place-ads-view .pa-notice{background:#e8f4fd;color:#2c3e50;padding:12px 15px;margin-bottom:16px;border-left:5px solid #3498db;border-radius:4px;font-size:13px;line-height:1.7}
+#place-ads-view .pa-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:20px}
+#place-ads-view .pa-stat{background:white;padding:17px;border:1px solid #e2e8f0;border-radius:10px;min-width:0}
+#place-ads-view .pa-stat span{font-size:12px;color:#64748b;display:block;margin-bottom:7px}
+#place-ads-view .pa-stat strong{font-size:24px;letter-spacing:-.7px;overflow-wrap:anywhere;color:#2c3e50}
+#place-ads-view .pa-toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+#place-ads-view .pa-toolbar input{max-width:320px;width:100%}
+#place-ads-view .pa-filters{display:flex;gap:4px;flex-wrap:wrap}
+#place-ads-view .pa-filters button{padding:8px 11px;background:transparent;border-color:transparent}
+#place-ads-view .pa-filters button.active{background:white;border-color:#dbe3ec;color:#247bb5}
+#pa-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+#place-ads-view .pa-card{background:white;border:1px solid #e2e8f0;border-radius:10px;overflow:hidden;min-width:0}
+#place-ads-view .pa-cardhead{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:20px 20px 10px}
+#place-ads-view .pa-cardhead h3{font-size:18px;color:#2c3e50;margin:0;overflow-wrap:anywhere}
+#place-ads-view .pa-badge{font-size:12px;border-radius:5px;padding:5px 8px;background:#edf2fa;color:#527096;white-space:nowrap}
+#place-ads-view .pa-badge.pending{background:#fff4d8;color:#926319}
+#place-ads-view .pa-badge.applied{background:#e3f4eb;color:#268a58}
+#place-ads-view .pa-badge.blocked,#place-ads-view .pa-badge.needs_check,#place-ads-view .pa-badge.needs_review{background:#ffeded;color:#a63e3e}
+#place-ads-view .pa-date{font-size:12px;color:#64748b;padding:0 20px}
+#place-ads-view .pa-cardbudget{padding:17px 20px;border-bottom:1px solid #edf1f5}
+#place-ads-view .pa-row{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:12px;margin-bottom:10px;color:#64748b}
+#place-ads-view .pa-progress{height:5px;border-radius:6px;overflow:hidden;background:#edf1f6}
+#place-ads-view .pa-progress i{display:block;height:100%;background:#3498db}
+#place-ads-view .pa-numbers{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding:18px 20px}
+#place-ads-view .pa-label{font-size:12px;color:#64748b;margin-bottom:7px}
+#place-ads-view .pa-amount{font-size:22px;font-weight:bold;color:#2c3e50;overflow-wrap:anywhere}
+#place-ads-view .pa-before{font-size:15px;font-weight:normal;color:#64748b}
+#place-ads-view .pa-arrow{font-size:17px;color:#8da0b6}
+#place-ads-view .pa-clicks{padding:0 20px 16px;font-size:12px;color:#64748b;line-height:1.7}
+#place-ads-view .pa-reason,#place-ads-view .pa-result{background:#f8fafc;margin:0 20px 16px;padding:13px 15px;border-radius:6px;font-size:13px;line-height:1.75;overflow-wrap:anywhere}
+#place-ads-view .pa-reason strong,#place-ads-view .pa-result strong{color:#416184;font-size:12px}
+#place-ads-view .pa-reason p,#place-ads-view .pa-result p{margin:5px 0 0;white-space:pre-wrap;color:#43556a}
+#place-ads-view .pa-result{background:#edf8f2}
+#place-ads-view details{margin-top:8px}
+#place-ads-view summary{cursor:pointer;color:#247bb5}
+#place-ads-view .pa-cardfoot{padding:14px 20px;border-top:1px solid #edf1f5;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+#place-ads-view .pa-cardfoot small{font-size:11px;color:#64748b}
+#place-ads-view .pa-empty{grid-column:1/-1;padding:55px 15px;text-align:center;background:white;border:1px dashed #dbe3ec;border-radius:10px;color:#64748b;font-size:14px}
+#place-ads-view .pa-message{background:#fff9e8;color:#72541c;padding:12px 15px;border:1px solid #f0e3bb;border-radius:6px;margin-bottom:16px;line-height:1.7;font-size:13px;white-space:pre-wrap}
+#place-ads-view .pa-error{color:#a63e3e;font-size:13px;white-space:pre-wrap}
+#place-ads-view .pa-foot{font-size:12px;color:#64748b;line-height:1.8;margin-top:20px}
+#place-ads-view .pa-foot a{color:#247bb5}
+#pa-confirm{border:1px solid #dbe3ec;border-radius:12px;padding:26px;max-width:440px;width:calc(100% - 32px);color:#2c3e50}
+#pa-confirm::backdrop{background:#14263b80}
+#pa-confirm h3{margin:0;font-size:19px}
+#pa-confirm p{white-space:pre-wrap;line-height:1.8;font-size:14px}
+#pa-confirm .pa-actions{justify-content:flex-end}
+#pa-confirm.pa-batch-dialog{max-width:720px}
+#pa-confirm-items{max-height:42vh;overflow:auto;margin:15px 0}
+#place-ads-view .pa-batch-table{width:100%;table-layout:fixed;box-shadow:none;margin:0}
+#place-ads-view .pa-batch-table th,#place-ads-view .pa-batch-table td{position:static;white-space:normal;overflow-wrap:anywhere;padding:9px;font-size:12px;border:1px solid #e2e8f0}
+#place-ads-view .pa-batch-table th:first-child{width:40%}
+#place-ads-view .pa-batch-results{background:white;border:1px solid #dbe3ec;border-radius:8px;padding:16px;margin:0 0 18px;font-size:13px;line-height:1.7}
+#place-ads-view .pa-batch-results h3{font-size:15px;margin:0 0 8px;color:#2c3e50}
+#place-ads-view .pa-batch-results p{margin:5px 0;overflow-wrap:anywhere}
+#place-ads-view .pa-batch-results .pa-skipped{color:#926319}
+@media(max-width:1100px){#pa-list{grid-template-columns:1fr}#place-ads-view .pa-stat strong{font-size:21px}}
+@media(max-width:700px){#place-ads-view .pa-stats{grid-template-columns:repeat(2,minmax(0,1fr))}#place-ads-view .pa-toolbar input{max-width:none}#place-ads-view .pa-stat{padding:14px}#place-ads-view .pa-login{margin:20px auto;padding:24px}#place-ads-view .pa-amount{font-size:20px}#place-ads-view .pa-top .pa-actions{width:100%}}
+
+</style>
 </head>
 <body>
 
@@ -533,6 +614,13 @@
         <div class="menu-group" id="group-rank">
             <div class="menu-title" onclick="toggleGroup('rank')">플레이스 순위 <span class="icon">▼</span></div>
             <div class="submenu-container" id="submenu-rank"></div>
+        </div>
+        <div class="menu-group" id="group-place-ads">
+            <div class="menu-title" onclick="toggleGroup('place-ads')">플레이스 광고 <span class="icon">▼</span></div>
+            <div class="submenu-container" id="submenu-place-ads">
+                <div class="submenu-item" id="nav-place-ads-all" onclick="selectPlaceAds('')">전체 현황</div>
+                <div id="place-ads-companies" style="font-size:12px;padding:8px 15px 8px 30px;color:#888">광고 화면 로그인 후 업체 목록이 표시됩니다.</div>
+            </div>
         </div>
         <div class="menu-group" id="group-power">
             <div class="menu-title" onclick="toggleGroup('power')">파워링크 현황 <span class="icon">▼</span></div>
@@ -667,6 +755,33 @@
         </div>
 
         <div id="notice-card-view" class="notice-container"></div>
+        <section id="place-ads-view" aria-label="플레이스 광고 관리">
+    <div id="pa-message" class="pa-message" role="status" hidden></div>
+    <form id="pa-loginform"><div id="pa-login" class="pa-login">
+        <h3>플레이스 광고 관리</h3><p>관리자 키로 로그인하면 업체별 분석 결과와 승인할 제안을 확인할 수 있습니다.</p>
+        <input id="pa-key" type="password" autocomplete="current-password" placeholder="관리자 키" aria-label="광고 관리자 키" required>
+        <button type="submit" class="pa-primary">로그인</button><p id="pa-loginerror" class="pa-error" role="alert"></p>
+    </div></form>
+    <div id="pa-app" hidden>
+        <div class="pa-top"><p id="pa-updated">분석 결과를 불러오는 중입니다.</p><div class="pa-actions">
+            <button id="pa-refresh" type="button">새로고침</button><button id="pa-analyze" type="button" class="pa-primary">지금 분석하기</button><button id="pa-approve-all" type="button" class="pa-primary" title="검색·필터와 관계없이 승인 가능한 전체 제안을 확인하고 승인합니다." hidden disabled>모두 승인 (0개)</button><button id="pa-logout" type="button">로그아웃</button>
+        </div></div>
+        <div class="pa-notice">승인한 제안만 광고에 반영됩니다. 대기·거절 중에도 기존 광고는 계속 운영됩니다. 하루예산은 충전 잔액이 아닌 월예산을 기준으로 계산합니다.</div>
+        <div class="pa-stats" aria-label="광고 운영 요약">
+            <div class="pa-stat"><span>관리 업체</span><strong id="pa-count">0개</strong></div>
+            <div class="pa-stat"><span>승인 대기</span><strong id="pa-pending">0개</strong></div>
+            <div class="pa-stat"><span>적용 확인</span><strong id="pa-applied">0개</strong></div>
+            <div class="pa-stat"><span id="pa-budget-label">전체 월예산</span><strong id="pa-budget">0원</strong></div>
+        </div>
+        <div class="pa-toolbar"><input id="pa-search" type="search" placeholder="업체명 검색" aria-label="광고 업체명 검색"><div class="pa-filters">
+            <button type="button" class="active" data-pa-filter="all">전체</button><button type="button" data-pa-filter="pending">승인 대기</button><button type="button" data-pa-filter="applied">적용 확인</button><button type="button" data-pa-filter="review">확인 필요</button>
+        </div></div>
+        <section id="pa-batch-results" class="pa-batch-results" aria-live="polite" hidden></section>
+        <div id="pa-list" aria-label="업체별 광고 제안"></div><p id="pa-errors" class="pa-error" role="alert"></p>
+        <p class="pa-foot">전월 클릭수 · 클릭 목표 · 예상 클릭은 조회된 실적 기준입니다. 실제 적용 여부는 네이버 재조회 결과로 확인합니다. <a id="pa-jobs" target="_blank" rel="noopener noreferrer">GitHub 실행 내역 ↗</a></p>
+    </div>
+    <dialog id="pa-confirm" aria-labelledby="pa-confirm-title"><h3 id="pa-confirm-title">실행 내용 확인</h3><p id="pa-confirm-message"></p><div id="pa-confirm-items" hidden></div><div class="pa-actions"><button id="pa-cancel" type="button">취소</button><button id="pa-accept" type="button" class="pa-primary">확인하고 진행</button></div></dialog>
+</section>
 
     </main>
 
@@ -934,6 +1049,7 @@ function showNewBadgeOnMenu() {
     }
 
     async function initDashboard(isRefresh = false) {
+        if (placeAdsActive && isRefresh) { sendPlaceAds('place-ads-refresh'); return; }
         const urlParams = new URLSearchParams(window.location.search);
         const userKey = urlParams.get('id');
         if (!userKey) { alert("ID 코드가 없습니다."); return; }
@@ -945,12 +1061,12 @@ function showNewBadgeOnMenu() {
         if (!hasCachedReview) showOverlay("데이터 로딩 중...");
         try {
             await loadReviewData(userKey, { forceNetwork: isRefresh });
-            toggleGroup('review', true);
+            if (!placeAdsActive) toggleGroup('review', true);
             buildSidebar('marketing', dataCache.marketing, orderCache.marketing);
             checkNoticeBadgeOnStart();
         } catch (e) {
             console.error('초기 데이터 로드 실패:', e);
-            document.getElementById('page-title').innerText = '데이터를 불러오지 못했습니다.';
+            if (!placeAdsActive) document.getElementById('page-title').innerText = '데이터를 불러오지 못했습니다.';
         } finally {
             hideOverlay();
         }
@@ -1219,6 +1335,8 @@ function buildSidebar(mode, data, order) {
     }
 
     function selectIntegratedClinic(baseName, sheetNames, isInitialLoad = false) {
+        if (isInitialLoad && placeAdsActive) return;
+        hidePlaceAds();
         document.querySelectorAll('.submenu-item').forEach(el => el.classList.remove('active'));
         const currentItem = document.getElementById(`nav-group-${baseName}`);
         if (currentItem) currentItem.classList.add('active');
@@ -1340,7 +1458,7 @@ function buildSidebar(mode, data, order) {
         targetGroup.classList.add('active');
         targetSubmenu.classList.add('open');
 
-        if (loadedModes.has(mode) || mode === 'review' || mode === 'marketing') return;
+        if (loadedModes.has(mode) || mode === 'review' || mode === 'marketing' || mode === 'place-ads') return;
 
         const userKey = new URLSearchParams(window.location.search).get('id');
         if (!userKey || !CONFIG[mode]?.url) return;
@@ -1354,6 +1472,8 @@ function buildSidebar(mode, data, order) {
     }
 
     function selectClinic(mode, sheetName, isInitial = false, isHistorySkip = false) {
+        if (mode === 'place-ads') { selectPlaceAds(sheetName === '__all__' ? '' : sheetName, isHistorySkip); return; }
+        hidePlaceAds();
         if (mode === 'bookmark') return;
         
         if (!isHistorySkip && !isInitial) {
@@ -1410,6 +1530,7 @@ function buildSidebar(mode, data, order) {
 
 
     function renderContent(mode, rows, sheetName) {
+        hidePlaceAds();
         const keywordContainer = document.getElementById('keyword-container');
         const tableContainer = document.getElementById('table-container');
         const powerSummary = document.getElementById('power-summary');
@@ -2252,6 +2373,272 @@ async function checkNoticeBadgeOnStart() {
         console.log("배지 체크 중 오류(무시):", e);
     }
 }
+
+    // PLACE_ADS_HOST_START: native UI; secrets and advertising writes stay on the server.
+    const PLACE_ADS_WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbxTWrHmpYnkUPyIFjGJ2zgihhabXtfbttCyhUwY3GJ8485RSEMW8Dws-Xux9hqbelJt/exec';
+    let placeAdsActive = false, placeAdsKey = '', placeAdsCompanies = [];
+    function hidePlaceAds() {
+        placeAdsActive = false;
+        document.querySelector('.main-content').classList.remove('place-ads-active');
+    }
+    function highlightPlaceAds() {
+        document.querySelectorAll('.submenu-item').forEach(el => el.classList.remove('active'));
+        if (!placeAdsKey) document.getElementById('nav-place-ads-all').classList.add('active');
+        document.querySelectorAll('#place-ads-companies .submenu-item').forEach(el => el.classList.toggle('active', el.dataset.companyKey === placeAdsKey));
+    }
+    function buildPlaceAdsCompanies(companies) {
+        const seen = new Set();
+        placeAdsCompanies = companies.filter(c => c && typeof c.key === 'string' && typeof c.name === 'string' && !seen.has(c.key) && seen.add(c.key));
+        const container = document.getElementById('place-ads-companies');
+        container.replaceChildren(); container.style.padding = '0';
+        if (!placeAdsCompanies.length) {
+            container.textContent = '로그인 후 분석된 업체 목록이 표시됩니다.';
+            container.style.padding = '8px 15px 8px 30px';
+        }
+        placeAdsCompanies.forEach(company => {
+            const item = document.createElement('div');
+            item.className = 'submenu-item'; item.textContent = company.name; item.dataset.companyKey = company.key;
+            item.onclick = () => selectPlaceAds(company.key);
+            container.appendChild(item);
+        });
+        if (placeAdsKey && !placeAdsCompanies.some(c => c.key === placeAdsKey)) placeAdsKey = '';
+        if (placeAdsActive) updatePlaceAdsTitle();
+    }
+    function updatePlaceAdsTitle() {
+        const company = placeAdsCompanies.find(c => c.key === placeAdsKey);
+        document.getElementById('page-title').textContent = company ? '[플레이스 광고] ' + company.name : '[플레이스 광고] 전체 현황';
+        highlightPlaceAds();
+    }
+    function selectPlaceAds(key = '', isHistorySkip = false) {
+        placeAdsKey = placeAdsCompanies.some(c => c.key === key) ? key : '';
+        placeAdsActive = true;
+        document.querySelector('.main-content').classList.add('place-ads-active');
+        updatePlaceAdsTitle(); toggleGroup('place-ads', true); showMobileContent();
+        if (!isHistorySkip) history.pushState({mode:'place-ads',sheet:placeAdsKey||'__all__'}, '', '#detail');
+        placeAdsUI.select();
+    }
+    function sendPlaceAds(type) {
+        if (type === 'place-ads-refresh') placeAdsUI.refresh();
+    }
+    const placeAdsUI = (() => {
+        const root = document.getElementById('place-ads-view'), $ = id => document.getElementById('pa-' + id);
+        const buttons = () => root.querySelectorAll('button'), filters = () => root.querySelectorAll('[data-pa-filter]');
+        const storageKey = 'placeAdsWebSession:' + PLACE_ADS_WEBAPP_URL;
+        const labels = {pending:'승인 대기',approved:'실행 요청됨',applying:'적용 중',recovering:'현재 설정 확인 중',applied:'적용 확인',rejected:'거절',superseded:'새 제안 있음',blocked:'보류',needs_review:'재분석 필요',needs_check:'실제 설정 확인'};
+        const won = n => n == null ? '—' : Number(n).toLocaleString('ko-KR') + '원';
+        const num = n => n == null ? '—' : Number(n).toLocaleString('ko-KR');
+        let token = null, items = [], filter = 'all', busy = false, loading = false, loaded = false, generation = 0, batchReport = null;
+        try { token = JSON.parse(sessionStorage.getItem(storageKey) || 'null'); } catch(e) {}
+        function saveSession() {
+            try { if (token) sessionStorage.setItem(storageKey, JSON.stringify(token)); else sessionStorage.removeItem(storageKey); } catch(e) {}
+        }
+        function text(tag, content, cls) {
+            const el = document.createElement(tag); el.textContent = content;
+            if (cls) el.className = cls;
+            return el;
+        }
+        function dateLabel(value) {
+            const d = new Date(value);
+            return isNaN(d) ? '—' : d.toLocaleString('ko-KR', {month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit',timeZone:'Asia/Seoul'});
+        }
+        function notify(message) { $('message').textContent = message; $('message').hidden = !message; }
+        function clearSession() {
+            generation++; token = null; items = []; loaded = false; batchReport = null; saveSession();
+            $('key').value = ''; $('app').hidden = true; $('login').hidden = false;
+            $('list').replaceChildren(); $('errors').textContent = ''; $('jobs').removeAttribute('href');
+            $('batch-results').replaceChildren(); $('batch-results').hidden = true;
+            buildPlaceAdsCompanies([]);
+        }
+        async function call(action, extra = {}) {
+            let response;
+            const controller = new AbortController(), timer = setTimeout(() => controller.abort(), 60000);
+            try {
+                // text/plain avoids a CORS preflight. No cookies, URL credentials, or bridge key.
+                response = await fetch(PLACE_ADS_WEBAPP_URL, {
+                    method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, credentials:'omit', redirect:'follow', cache:'no-store',
+                    signal:controller.signal, body:JSON.stringify({kind:'place-ads-admin-v1',action,token,...extra})
+                });
+            } catch(e) {
+                throw new Error(action === 'dashboard' || action === 'login'
+                    ? '연결 응답을 받지 못했습니다. 잠시 후 다시 시도해 주세요.'
+                    : '요청 결과를 확인하지 못했습니다. 다시 승인하기 전에 새로고침으로 처리 상태를 확인하세요.');
+            } finally { clearTimeout(timer); }
+            let result;
+            try { result = await response.json(); } catch(e) { throw new Error('서버 응답을 확인할 수 없습니다. Apps Script 배포 버전을 확인하세요.'); }
+            if (!response.ok || typeof result.ok !== 'boolean') throw new Error('Apps Script에 최신 Code.gs를 저장하고 기존 웹앱을 새 버전으로 배포해 주세요.');
+            if (result.authRequired) { clearSession(); throw new Error(result.error || '다시 로그인하세요.'); }
+            if (!result.ok) throw new Error(result.error || '요청 실패');
+            return result.data;
+        }
+        function card(item) {
+            const d = item.decision, el = text('article', '', 'pa-card'); el.dataset.proposalId = item.id;
+            const head = text('div', '', 'pa-cardhead');
+            head.append(text('h3', item.name), text('span', labels[item.status] || item.status, 'pa-badge ' + item.status));
+            el.append(head, text('div', dateLabel(item.created) + ' 분석 · ' + (d.date || item.date) + ' 기준', 'pa-date'));
+            const budget = text('div', '', 'pa-cardbudget'), row = text('div', '', 'pa-row');
+            row.append(text('span', '월예산 ' + won(d.monthly_budget)), text('span', '어제까지 소진 ' + won(d.month_spend)));
+            const bar = text('div', '', 'pa-progress'), barValue = document.createElement('i');
+            barValue.style.width = Math.min(100, Math.max(0, (d.month_spend || 0) / (d.monthly_budget || 1) * 100)) + '%';
+            bar.append(barValue); budget.append(row, bar); el.append(budget);
+            const numbers = text('div', '', 'pa-numbers');
+            for (const [title,before,after] of [['입찰가 제안',d.current_bid,d.proposed_bid],['승인 하루예산',null,d.daily_budget]]) {
+                const box = document.createElement('div'), amount = text('div', '', 'pa-amount');
+                box.append(text('div', title, 'pa-label'));
+                if (before != null) amount.append(text('span', won(before), 'pa-before'), text('span', ' → ', 'pa-arrow'));
+                amount.append(document.createTextNode(won(after))); box.append(amount); numbers.append(box);
+            }
+            el.append(numbers, text('div', '전월 ' + num(d.previous_month_clicks) + '회 · 목표 ' + num(d.click_goal) + '회 · 예상 ' + num(d.forecast_clicks) + '회', 'pa-clicks'));
+            const reason = text('div', '', 'pa-reason');
+            reason.append(text('strong', ({INCREASE:'입찰 인상',DECREASE:'입찰 인하',HOLD:'입찰 유지'})[d.action] || '분석 결과'), text('p', d.reason || '분석 근거를 확인하세요.'));
+            const ai = d.codex || {}, details = document.createElement('details');
+            details.append(text('summary', 'AI 분석과 추가 근거'));
+            const analysis = ai.plan && ai.plan.analysis || ai.reason || ai.message || '분석 기록 없음';
+            details.append(text('p', typeof analysis === 'string' ? analysis : JSON.stringify(analysis)));
+            if (ai.plan && ai.plan.budget_plan) details.append(text('p', '예산 계획: ' + ai.plan.budget_plan));
+            if (ai.plan && ai.plan.next_check) details.append(text('p', '다음 확인: ' + ai.plan.next_check));
+            details.append(text('p', '모델 ' + (ai.model || 'gpt-6-sol') + ' · 추론 ' + (ai.reasoning_effort || 'high') + ' · ' + (ai.message || ai.status || '기록 없음')));
+            for (const note of d.notes || []) details.append(text('p', note));
+            reason.append(details); el.append(reason);
+            if (item.result) {
+                const result = text('div', '', 'pa-result'); result.append(text('strong', '실제 적용 결과'), text('p', item.result.message || labels[item.status] || ''));
+                if (item.result.actual_bid != null) result.append(text('p', '재조회 입찰가 ' + won(item.result.actual_bid) + ' · 하루예산 ' + won(item.result.actual_daily_budget)));
+                el.append(result);
+            }
+            const foot = text('div', '', 'pa-cardfoot'), actions = text('div', '', 'pa-actions'), expired = Date.parse(item.expires) <= Date.now();
+            foot.append(text('small', '유효시간 ' + dateLabel(item.expires)));
+            function button(label, action, primary = false) {
+                const b = text('button', label, primary ? 'pa-primary' : ''); b.type = 'button'; b.dataset.paAction = action; b.disabled = busy;
+                b.onclick = () => act(action, item); actions.append(b);
+            }
+            if (item.status === 'pending' && !expired) { button('거절', 'reject'); button('승인하고 적용', 'approve', true); }
+            else if (['needs_check','recovering'].includes(item.status)) button('현재 설정 확인', 'acknowledge');
+            else if (['approved','applying'].includes(item.status) && !expired) button('실행 다시 요청', 'approve');
+            else actions.append(text('span', expired && item.status === 'pending' ? '만료 · 다시 분석하세요' : labels[item.status] || '', 'pa-label'));
+            foot.append(actions); el.append(foot); return el;
+        }
+        function render() {
+            const selected = items.filter(i => !placeAdsKey || i.key === placeAdsKey), query = $('search').value.trim().toLowerCase();
+            const list = selected.filter(i => i.name.toLowerCase().includes(query) && (filter === 'all' || (filter === 'review' ? ['blocked','needs_review','needs_check','recovering'].includes(i.status) : i.status === filter)));
+            $('list').replaceChildren(...list.map(card));
+            if (!list.length) $('list').append(text('div', items.length ? '조건에 맞는 업체가 없습니다.' : '아직 분석 결과가 없습니다. 지금 분석하기를 눌러주세요.', 'pa-empty'));
+            $('count').textContent = selected.length + '개';
+            $('pending').textContent = selected.filter(i => i.status === 'pending' && Date.parse(i.expires) > Date.now()).length + '개';
+            $('applied').textContent = selected.filter(i => i.status === 'applied').length + '개';
+            $('budget').textContent = won(selected.reduce((sum,i) => sum + (i.decision.monthly_budget || 0), 0));
+            $('budget-label').textContent = placeAdsKey ? '업체 월예산' : '전체 월예산';
+            updateBulkButton();
+        }
+        function eligibleApprovals() {
+            return items.filter(i => i.status === 'pending' && Date.parse(i.expires) > Date.now() && !i.decision.blocked && !i.decision.pause && i.decision.action !== 'PAUSE');
+        }
+        function updateBulkButton() {
+            const count = Math.min(100, eligibleApprovals().length);
+            $('approve-all').hidden = Boolean(placeAdsKey);
+            $('approve-all').disabled = busy || loading || !count;
+            $('approve-all').textContent = '모두 승인 (' + count + '개)';
+            $('batch-results').hidden = Boolean(placeAdsKey) || !batchReport;
+        }
+        async function refresh() {
+            if (!token || loading) return;
+            loading = true; $('refresh').disabled = true; $('updated').textContent = '분석 결과를 불러오는 중입니다.';
+            const version = generation;
+            try {
+                const data = await call('dashboard');
+                if (version !== generation || !token) return;
+                if (!data || !Array.isArray(data.items)) throw new Error('분석 데이터 형식을 확인하세요.');
+                items = data.items; loaded = true;
+                buildPlaceAdsCompanies(items.map(i => ({key:i.key,name:i.name})));
+                $('updated').textContent = data.lastAnalysis ? '최근 분석 ' + dateLabel(data.lastAnalysis) + ' · 한국 시간' : '첫 분석을 기다리고 있습니다.';
+                $('errors').textContent = (data.errors || []).filter(e => !items.some(i => i.key === e.key && Date.parse(i.created) > Date.parse(e.time))).map(e => e.name + ': ' + e.message).join('\n');
+                const jobs = /^https:\/\/github\.com\/[\w.-]+\/[\w.-]+\/actions$/.test(data.actionsUrl || '') ? data.actionsUrl : null;
+                if (jobs) $('jobs').href = jobs; else $('jobs').removeAttribute('href');
+                render(); $('login').hidden = true; $('app').hidden = false;
+            } catch(e) {
+                if (version === generation) { $('updated').textContent = loaded ? '갱신 실패 · 이전에 조회한 결과입니다.' : '결과를 불러오지 못했습니다.'; notify(e.message); }
+                else if (!token) notify(e.message);
+            } finally { loading = false; $('refresh').disabled = busy; updateBulkButton(); }
+        }
+        function select() {
+            $('search').value = ''; filter = 'all'; filters().forEach(b => b.classList.toggle('active', b.dataset.paFilter === 'all'));
+            if (token) { if (loaded) render(); else refresh(); }
+        }
+        function confirmAction(message, targets = null) {
+            return new Promise(resolve => {
+                const dialog = $('confirm'); $('confirm-message').textContent = message;
+                $('confirm-items').replaceChildren(); $('confirm-items').hidden = !targets;
+                dialog.classList.toggle('pa-batch-dialog', Boolean(targets));
+                $('accept').textContent = targets ? targets.length + '개 승인하고 적용' : '확인하고 진행';
+                if (targets) {
+                    const table = text('table', '', 'pa-batch-table'), head = document.createElement('thead'), row = document.createElement('tr'), body = document.createElement('tbody');
+                    row.append(text('th','업체'),text('th','입찰가 제안'),text('th','하루예산')); head.append(row);
+                    for (const item of targets) {
+                        const r = document.createElement('tr');
+                        r.append(text('td',item.name),text('td',won(item.decision.current_bid) + ' → ' + won(item.decision.proposed_bid)),text('td',won(item.decision.daily_budget))); body.append(r);
+                    }
+                    table.append(head,body); $('confirm-items').append(table);
+                }
+                const finish = value => { dialog.close(); $('confirm-items').replaceChildren(); resolve(value); };
+                $('cancel').onclick = () => finish(false); $('accept').onclick = () => finish(true);
+                dialog.oncancel = e => { e.preventDefault(); finish(false); }; dialog.showModal();
+            });
+        }
+        function setBusy(value) { busy = value; buttons().forEach(b => { b.disabled = value; }); updateBulkButton(); }
+        async function bulkApprove() {
+            if (busy || loading || placeAdsKey || !token) return;
+            const eligible = eligibleApprovals(), targets = eligible.slice(0,100).map(i => ({id:i.id,name:i.name,decision:{current_bid:i.decision.current_bid,proposed_bid:i.decision.proposed_bid,daily_budget:i.decision.daily_budget}}));
+            if (!targets.length) { render(); notify('지금 승인할 수 있는 제안이 없습니다.'); return; }
+            setBusy(true);
+            try {
+                $('cancel').disabled = false; $('accept').disabled = false;
+                const message = '아래 ' + targets.length + '개 업체의 제안을 한 번에 승인하고 적용할까요? 검색·필터와 관계없이 전체 승인 대기 제안이 대상입니다. 보류·만료·이미 처리 중인 제안은 제외합니다.' + (eligible.length > 100 ? ' 한 번에 최대 100개를 승인하며 남은 제안은 이어서 승인할 수 있습니다.' : '');
+                if (!await confirmAction(message,targets)) return;
+                $('cancel').disabled = true; $('accept').disabled = true;
+                const result = await call('approveMany', {ids:targets.map(i => i.id)});
+                batchReport = result; const report = $('batch-results');
+                report.replaceChildren(text('h3','일괄 승인 처리 결과'),text('p',result.message));
+                for (const row of result.results || []) report.append(text('p',row.name + ' · ' + (row.status === 'approved' ? '승인 저장' : '제외') + ' · ' + row.message,row.status === 'skipped' ? 'pa-skipped' : ''));
+                if (result.dispatch && !result.dispatch.ok && result.approved) report.append(text('p',result.dispatch.message,'pa-skipped'));
+                notify(result.message); await refresh();
+            } catch(e) { notify(e.message); await refresh(); }
+            finally { setBusy(false); }
+        }
+        async function act(action, item) {
+            if (busy || loading) return;
+            setBusy(true);
+            try {
+                const message = action === 'approve'
+                    ? item.name + '의 입찰가 ' + won(item.decision.proposed_bid) + ', 하루예산 ' + won(item.decision.daily_budget) + ' 제안을 승인하고 적용할까요?'
+                    : action === 'reject' ? item.name + '의 이번 제안을 거절할까요? 기존 광고는 계속 운영됩니다.'
+                    : item.name + '의 현재 네이버 설정을 확인하고 오늘 추가 적용을 보류할까요? 광고 설정은 변경하지 않습니다.';
+                $('cancel').disabled = false; $('accept').disabled = false;
+                if (!await confirmAction(message)) return;
+                $('cancel').disabled = true; $('accept').disabled = true;
+                const result = await call(action, {id:item.id}); notify(result.message); await refresh();
+            } catch(e) { notify(e.message); await refresh(); }
+            finally { setBusy(false); }
+        }
+        $('loginform').onsubmit = async e => {
+            e.preventDefault(); if (busy) return; setBusy(true); $('loginerror').textContent = ''; notify('');
+            try { token = await call('login', {accessKey:$('key').value}); generation++; $('key').value = ''; saveSession(); await refresh(); }
+            catch(err) { $('loginerror').textContent = err.message; }
+            finally { setBusy(false); }
+        };
+        $('refresh').onclick = () => { if (!busy) { notify(''); refresh(); } };
+        $('search').oninput = render;
+        $('approve-all').onclick = bulkApprove;
+        filters().forEach(b => b.onclick = () => { filter = b.dataset.paFilter; filters().forEach(x => x.classList.toggle('active', x === b)); render(); });
+        $('analyze').onclick = async () => {
+            if (busy || loading) return; setBusy(true);
+            try { const result = await call('requestAnalysis'); notify(result.message + ' 분석 완료 후 새로고침으로 결과를 확인하세요.'); }
+            catch(e) { notify(e.message); } finally { setBusy(false); }
+        };
+        $('logout').onclick = () => { if (!busy) { clearSession(); notify('로그아웃했습니다.'); } };
+        setInterval(() => {
+            if (placeAdsActive && token && !busy && !loading && !document.hidden && items.some(i => ['approved','applying','recovering'].includes(i.status))) refresh();
+        }, 20000);
+        return {select,refresh};
+    })();
+    // PLACE_ADS_HOST_END
 
     initDashboard();
 
