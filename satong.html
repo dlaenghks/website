@@ -2525,6 +2525,19 @@ async function checkNoticeBadgeOnStart() {
             if (ai.plan && ai.plan.next_check) details.append(text('p', '다음 확인: ' + ai.plan.next_check));
             details.append(text('p', '모델 ' + (ai.model || 'gpt-6-sol') + ' · 추론 ' + (ai.reasoning_effort || 'high') + ' · ' + (ai.message || ai.status || '기록 없음')));
             for (const note of d.notes || []) details.append(text('p', note));
+            if (d.delivery_history && d.delivery_history.length) {
+                const delivery = document.createElement('details');
+                delivery.append(text('summary', '예산·중단 관측 기록 (최근 7개 수집일)'));
+                delivery.append(text('p', '실제 조회 시각의 기록입니다. 정확한 중단 시각·지속시간은 알 수 없으며, 제한 미확인은 하루 종일 정상이라는 의미가 아닙니다.'));
+                const reasons = {GROUP_LIMITED_BY_BUDGET:'그룹 예산 도달',CAMPAIGN_LIMITED_BY_BUDGET:'캠페인 예산 도달',GROUP_PAUSED:'그룹 수동 중지',CAMPAIGN_PAUSED:'캠페인 수동 중지',LACK_OF_ACCOUNT_BALANCE:'충전 잔액 부족',ELIGIBLE:'조회 당시 노출 가능'};
+                const label = code => reasons[code] || (code ? '기타 사유: ' + code : '사유 미제공');
+                for (const day of d.delivery_history) {
+                    delivery.append(text('strong', day.date + ' · ' + (day.budget_limited === true ? '예산 제한 관측됨' : '예산 제한 미확인')));
+                    delivery.append(text('p', '확정 클릭 ' + num(day.clicks) + '회 · 소진 ' + won(day.spend) + ' · 수집 ' + num(day.observation_count) + '회'));
+                    for (const o of day.observations || []) delivery.append(text('p', dateLabel(o.observed_at) + ' · 그룹 예산 ' + (o.group_daily_budget == null ? '미사용/미확인' : won(o.group_daily_budget)) + ' · ' + label(o.group_reason) + ' / 캠페인 예산 ' + (o.campaign_daily_budget == null ? '미사용/미확인' : won(o.campaign_daily_budget)) + ' · ' + label(o.campaign_reason)));
+                }
+                details.append(delivery);
+            }
             reason.append(details); el.append(reason);
             if (item.result) {
                 const result = text('div', '', 'pa-result'); result.append(text('strong', '실제 적용 결과'), text('p', item.result.message || labels[item.status] || ''));
