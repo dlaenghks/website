@@ -546,6 +546,8 @@
 #place-ads-view .pa-badge.blocked,#place-ads-view .pa-badge.needs_check,#place-ads-view .pa-badge.needs_review{background:#ffeded;color:#a63e3e}
 #place-ads-view .pa-date{font-size:12px;color:#64748b;padding:0 20px}
 #place-ads-view .pa-cardbudget{padding:17px 20px;border-bottom:1px solid #edf1f5}
+#place-ads-view .pa-cardbudget .pa-progress{margin-bottom:10px}
+#place-ads-view .pa-cardbudget .pa-row{margin-bottom:0}
 #place-ads-view .pa-row{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:12px;margin-bottom:10px;color:#64748b}
 #place-ads-view .pa-progress{height:5px;border-radius:6px;overflow:hidden;background:#edf1f6}
 #place-ads-view .pa-progress i{display:block;height:100%;background:#3498db}
@@ -555,10 +557,13 @@
 #place-ads-view .pa-before{font-size:15px;font-weight:normal;color:#64748b}
 #place-ads-view .pa-arrow{font-size:17px;color:#8da0b6}
 #place-ads-view .pa-click-progress{padding:14px 20px;border-bottom:1px solid #edf1f5}
-#place-ads-view .pa-click-progress .pa-row{margin-bottom:8px}
+#place-ads-view .pa-click-line{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;font-size:11px;color:#64748b}
+#place-ads-view .pa-click-benchmarks,#place-ads-view .pa-click-values{white-space:nowrap}
+#place-ads-view .pa-click-values{margin-left:auto;text-align:right}
+#place-ads-view .pa-divider{color:#a2afbe;margin:0 3px}
 #place-ads-view .pa-current-clicks{color:#247bb5}
 #place-ads-view .pa-forecast-clicks{color:#aa6715}
-#place-ads-view .pa-click-track{position:relative;height:7px}
+#place-ads-view .pa-click-track{position:relative;height:7px;margin-bottom:10px}
 #place-ads-view .pa-forecast-marker{position:absolute;top:0;height:100%;width:3px;transform:translateX(-50%);background:#d68a29}
 #place-ads-view .pa-reason,#place-ads-view .pa-result{background:#f8fafc;margin:0 20px 16px;padding:13px 15px;border-radius:6px;font-size:13px;line-height:1.75;overflow-wrap:anywhere}
 #place-ads-view .pa-reason strong,#place-ads-view .pa-result strong{color:#416184;font-size:12px}
@@ -587,9 +592,8 @@
 #place-ads-view .pa-batch-results h3{font-size:15px;margin:0 0 8px;color:#2c3e50}
 #place-ads-view .pa-batch-results p{margin:5px 0;overflow-wrap:anywhere}
 #place-ads-view .pa-batch-results .pa-skipped{color:#926319}
-@media(max-width:1100px){#pa-list{grid-template-columns:1fr}#place-ads-view .pa-stat strong{font-size:21px}}
+@media(max-width:1320px){#pa-list{grid-template-columns:1fr}#place-ads-view .pa-stat strong{font-size:21px}}
 @media(max-width:700px){#place-ads-view .pa-stats{grid-template-columns:repeat(2,minmax(0,1fr))}#place-ads-view .pa-toolbar input{max-width:none}#place-ads-view .pa-stat{padding:14px}#place-ads-view .pa-login{margin:20px auto;padding:24px}#place-ads-view .pa-amount{font-size:20px}#place-ads-view .pa-top .pa-actions{width:100%}}
-
 </style>
 </head>
 <body>
@@ -2454,9 +2458,9 @@ async function checkNoticeBadgeOnStart() {
             const percent = n => n == null || !goal ? null : n / goal * 100;
             const label = n => n == null ? '—' : n.toLocaleString('ko-KR', {maximumFractionDigits:1}) + '%';
             const currentPercent = percent(current), forecastPercent = percent(forecast);
-            const section = text('div', '', 'pa-click-progress'), top = text('div', '', 'pa-row'), values = text('div', '', 'pa-row');
-            top.append(text('span','전월 ' + num(d.previous_month_clicks) + '회'),text('span',goal ? '목표 ' + num(goal) + '회 · 100%' : '목표 미설정'));
-            values.append(text('span','누적 클릭 ' + num(current) + '회 · ' + label(currentPercent),'pa-current-clicks'),text('span','월말 예상 ' + num(forecast) + '회 · ' + label(forecastPercent),'pa-forecast-clicks'));
+            const section = text('div', '', 'pa-click-progress'), row = text('div', '', 'pa-click-line'), benchmarks = text('span', '', 'pa-click-benchmarks'), values = text('span', '', 'pa-click-values');
+            benchmarks.append(text('span','전월 ' + num(d.previous_month_clicks) + '회'),text('span',' / ','pa-divider'),text('span',goal ? '목표 ' + num(goal) + '회 · 100%' : '목표 미설정'));
+            values.append(text('span','누적 클릭 ' + num(current) + '회 · ' + label(currentPercent),'pa-current-clicks'),text('span',' / ','pa-divider'),text('span','월말 예상 ' + num(forecast) + '회 · ' + label(forecastPercent),'pa-forecast-clicks'));
             const track = text('div', '', 'pa-progress pa-click-track'), fill = document.createElement('i'), marker = text('span', '', 'pa-forecast-marker');
             fill.style.width = Math.min(100, Math.max(0, currentPercent || 0)) + '%';
             marker.hidden = forecastPercent == null; marker.style.left = Math.min(100, Math.max(0, forecastPercent || 0)) + '%';
@@ -2466,8 +2470,18 @@ async function checkNoticeBadgeOnStart() {
                 track.setAttribute('aria-valuemin','0'); track.setAttribute('aria-valuemax',String(goal));
                 track.setAttribute('aria-valuenow',String(Math.min(goal,current))); track.setAttribute('aria-valuetext',num(current) + '회, 목표 대비 ' + label(currentPercent));
             }
-            track.append(fill,marker); section.append(top,values,track); return section;
+            track.append(fill,marker); row.append(benchmarks,values); section.append(track,row); return section;
         }
+        function shortReason(d) {
+            const ai = d.codex || {};
+            const supplied = !d.blocked && ai.accepted !== false && (d.reason_summary || ai.plan && ai.plan.summary);
+            let value = String(supplied || d.reason || '상세 분석 근거를 확인하세요.').replace(/\s+/g,' ').trim();
+            if (!supplied && value.includes(' / Codex:')) value = value.split(' / Codex:')[0];
+            value = value.replace(/^Codex:\s*/,'');
+            const brief = value.split(/(?<=[.!?])\s+/).slice(0,2).join(' ');
+            return brief.length > 140 ? brief.slice(0,137) + '…' : brief;
+        }
+        function previousBudget(d) { return d.current_daily_budget_enabled === false ? '미설정' : won(d.current_daily_budget); }
         function notify(message) { $('message').textContent = message; $('message').hidden = !message; }
         function clearSession() {
             generation++; token = null; items = []; loaded = false; batchReport = null; saveSession();
@@ -2506,20 +2520,24 @@ async function checkNoticeBadgeOnStart() {
             row.append(text('span', '월예산 ' + won(d.monthly_budget)), text('span', '어제까지 소진 ' + won(d.month_spend)));
             const bar = text('div', '', 'pa-progress'), barValue = document.createElement('i');
             barValue.style.width = Math.min(100, Math.max(0, (d.month_spend || 0) / (d.monthly_budget || 1) * 100)) + '%';
-            bar.append(barValue); budget.append(row, bar); el.append(budget,clickProgress(d));
+            bar.append(barValue); budget.append(bar,row); el.append(budget,clickProgress(d));
             const numbers = text('div', '', 'pa-numbers');
-            for (const [title,before,after] of [['입찰가 제안',d.current_bid,d.proposed_bid],['승인 하루예산',null,d.daily_budget]]) {
+            for (const [title,before,after] of [['입찰가 제안',d.current_bid,d.proposed_bid],['승인 하루예산',d.current_daily_budget,d.daily_budget]]) {
                 const box = document.createElement('div'), amount = text('div', '', 'pa-amount');
                 box.append(text('div', title, 'pa-label'));
-                if (before != null) amount.append(text('span', won(before), 'pa-before'), text('span', ' → ', 'pa-arrow'));
+                if (before != null || title === '승인 하루예산') amount.append(text('span', title === '승인 하루예산' ? previousBudget(d) : won(before), 'pa-before'), text('span', ' → ', 'pa-arrow'));
+                if (title === '승인 하루예산') amount.title = '분석 당시 설정 → 승인 후 적용할 예산';
                 amount.append(document.createTextNode(won(after))); box.append(amount); numbers.append(box);
             }
             el.append(numbers);
             const reason = text('div', '', 'pa-reason');
-            reason.append(text('strong', ({INCREASE:'입찰 인상',DECREASE:'입찰 인하',HOLD:'입찰 유지'})[d.action] || '분석 결과'), text('p', d.reason || '분석 근거를 확인하세요.'));
+            reason.append(text('strong', ({INCREASE:'입찰 인상',DECREASE:'입찰 인하',HOLD:'입찰 유지'})[d.action] || '분석 결과'), text('p', shortReason(d), 'pa-reason-summary'));
             const ai = d.codex || {}, details = document.createElement('details');
             details.append(text('summary', 'AI 분석과 추가 근거'));
             const analysis = ai.plan && ai.plan.analysis || ai.reason || ai.message || '분석 기록 없음';
+            const original = String(d.reason || '');
+            const extraReason = typeof analysis === 'string' && original.includes(analysis) ? original.replace(analysis,'').replace(/\s*\/?\s*Codex:\s*$/,'').trim() : original;
+            if (extraReason && extraReason !== analysis) details.append(text('p', '판단 근거: ' + extraReason));
             details.append(text('p', typeof analysis === 'string' ? analysis : JSON.stringify(analysis)));
             if (ai.plan && ai.plan.budget_plan) details.append(text('p', '예산 계획: ' + ai.plan.budget_plan));
             if (ai.plan && ai.plan.next_check) details.append(text('p', '다음 확인: ' + ai.plan.next_check));
@@ -2613,7 +2631,7 @@ async function checkNoticeBadgeOnStart() {
                     row.append(text('th','업체'),text('th','입찰가 제안'),text('th','하루예산')); head.append(row);
                     for (const item of targets) {
                         const r = document.createElement('tr');
-                        r.append(text('td',item.name),text('td',won(item.decision.current_bid) + ' → ' + won(item.decision.proposed_bid)),text('td',won(item.decision.daily_budget))); body.append(r);
+                        r.append(text('td',item.name),text('td',won(item.decision.current_bid) + ' → ' + won(item.decision.proposed_bid)),text('td',previousBudget(item.decision) + ' → ' + won(item.decision.daily_budget))); body.append(r);
                     }
                     table.append(head,body); $('confirm-items').append(table);
                 }
@@ -2625,7 +2643,7 @@ async function checkNoticeBadgeOnStart() {
         function setBusy(value) { busy = value; buttons().forEach(b => { b.disabled = value; }); updateBulkButton(); }
         async function bulkApprove() {
             if (busy || loading || placeAdsKey || !token) return;
-            const eligible = eligibleApprovals(), targets = eligible.slice(0,100).map(i => ({id:i.id,name:i.name,decision:{current_bid:i.decision.current_bid,proposed_bid:i.decision.proposed_bid,daily_budget:i.decision.daily_budget}}));
+            const eligible = eligibleApprovals(), targets = eligible.slice(0,100).map(i => ({id:i.id,name:i.name,decision:{current_bid:i.decision.current_bid,proposed_bid:i.decision.proposed_bid,current_daily_budget:i.decision.current_daily_budget,current_daily_budget_enabled:i.decision.current_daily_budget_enabled,daily_budget:i.decision.daily_budget}}));
             if (!targets.length) { render(); notify('지금 승인할 수 있는 제안이 없습니다.'); return; }
             setBusy(true);
             try {
