@@ -564,6 +564,33 @@
 #place-ads-view .pa-current-clicks{color:#247bb5}
 #place-ads-view .pa-forecast-clicks{color:#aa6715}
 #place-ads-view .pa-click-track{position:relative;height:7px;margin-bottom:10px}
+#place-ads-view.pa-company-mode .pa-stats,#place-ads-view.pa-company-mode .pa-toolbar{display:none}
+#place-ads-view.pa-company-mode #pa-list{grid-template-columns:1fr}
+#place-ads-view .pa-company-panel{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:22px;margin-bottom:18px;min-width:0}
+#place-ads-view .pa-company-panel h3,#place-ads-view .pa-latest-title{margin:0 0 12px;font-size:17px;color:#2c3e50}
+#place-ads-view .pa-company-note{font-size:12px;color:#64748b;line-height:1.7;margin:8px 0;overflow-wrap:anywhere}
+#place-ads-view .pa-periods{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+#place-ads-view .pa-performance-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:16px 0}
+#place-ads-view .pa-performance-stat{background:#f8fafc;border-radius:8px;padding:15px;min-width:0}
+#place-ads-view .pa-performance-stat .pa-label{margin-bottom:10px}
+#place-ads-view .pa-performance-stat strong{display:block;font-size:20px;color:#2c3e50;overflow-wrap:anywhere}
+#place-ads-view .pa-performance-delta{font-size:12px;color:#247bb5;margin-top:8px;line-height:1.7}
+#place-ads-view .pa-chart{display:block;width:100%;height:auto;margin-top:15px}
+#place-ads-view .pa-chart rect.pa-day-hit{cursor:pointer}
+#place-ads-view .pa-chart .pa-day-hit:hover,#place-ads-view .pa-chart .pa-day-hit:focus{fill:#3498db18;outline:none}
+#place-ads-view .pa-chart-key{display:flex;gap:15px;flex-wrap:wrap;font-size:12px;color:#64748b}
+#place-ads-view .pa-chart-key span::before{content:'';display:inline-block;width:9px;height:9px;background:#3498db;margin-right:5px;border-radius:2px}
+#place-ads-view .pa-chart-key .pa-average-key::before{background:#5265b7;height:3px;vertical-align:middle}
+#place-ads-view .pa-chart-key .pa-limit-key::before{background:#dc951e;border-radius:50%}
+#place-ads-view .pa-chart-key .pa-change-key::before{background:#416184;transform:rotate(45deg)}
+#place-ads-view .pa-day-picker{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:14px;font-size:13px;color:#43556a}
+#place-ads-view .pa-day-picker select{font:inherit;padding:8px;border:1px solid #dbe3ec;border-radius:6px;background:white;color:#43556a;max-width:100%}
+#place-ads-view .pa-day-detail{background:#f8fafc;padding:12px 15px;border-radius:6px;font-size:13px;line-height:1.8;margin-top:10px;color:#43556a;overflow-wrap:anywhere}
+#place-ads-view .pa-change-item{border-top:1px solid #edf1f5;padding:14px 0}
+#place-ads-view .pa-change-item:first-of-type{border-top:0}
+#place-ads-view .pa-change-item h4{font-size:14px;color:#416184;margin:0 0 7px}
+#place-ads-view .pa-change-item p,#place-ads-view .pa-insight p{font-size:13px;color:#43556a;line-height:1.8;margin:6px 0;overflow-wrap:anywhere;white-space:pre-wrap}
+#place-ads-view .pa-followup{background:#f8fafc;border-radius:6px;padding:10px 13px;margin-top:10px}
 #place-ads-view .pa-forecast-marker{position:absolute;top:0;height:100%;width:3px;transform:translateX(-50%);background:#d68a29}
 #place-ads-view .pa-reason,#place-ads-view .pa-result{background:#f8fafc;margin:0 20px 16px;padding:13px 15px;border-radius:6px;font-size:13px;line-height:1.75;overflow-wrap:anywhere}
 #place-ads-view .pa-reason strong,#place-ads-view .pa-result strong{color:#416184;font-size:12px}
@@ -594,6 +621,7 @@
 #place-ads-view .pa-batch-results .pa-skipped{color:#926319}
 @media(max-width:1320px){#pa-list{grid-template-columns:1fr}#place-ads-view .pa-stat strong{font-size:21px}}
 @media(max-width:700px){#place-ads-view .pa-stats{grid-template-columns:repeat(2,minmax(0,1fr))}#place-ads-view .pa-toolbar input{max-width:none}#place-ads-view .pa-stat{padding:14px}#place-ads-view .pa-login{margin:20px auto;padding:24px}#place-ads-view .pa-amount{font-size:20px}#place-ads-view .pa-top .pa-actions{width:100%}}
+@media(max-width:700px){#place-ads-view .pa-performance-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}#place-ads-view .pa-company-panel{padding:16px}#place-ads-view .pa-performance-stat{padding:12px}#place-ads-view .pa-performance-stat strong{font-size:18px}}
 </style>
 </head>
 <body>
@@ -777,6 +805,7 @@
             <button id="pa-analyze" type="button" class="pa-primary">지금 분석하기</button><button id="pa-approve-all" type="button" class="pa-primary" title="검색·필터와 관계없이 승인 가능한 전체 제안을 확인하고 승인합니다." hidden disabled>모두 승인 (0개)</button>
         </div></div>
         <div class="pa-notice">승인한 제안만 광고에 반영됩니다. 대기·거절 중에도 기존 광고는 계속 운영됩니다. 하루예산은 충전 잔액이 아닌 월예산을 기준으로 계산합니다.</div>
+        <div id="pa-company" hidden></div>
         <div class="pa-stats" aria-label="광고 운영 요약">
             <div class="pa-stat"><span>관리 업체</span><strong id="pa-count">0개</strong></div>
             <div class="pa-stat"><span>승인 대기</span><strong id="pa-pending">0개</strong></div>
@@ -787,6 +816,7 @@
             <button type="button" class="active" data-pa-filter="all">전체</button><button type="button" data-pa-filter="pending">승인 대기</button><button type="button" data-pa-filter="applied">적용 확인</button><button type="button" data-pa-filter="review">확인 필요</button>
         </div></div>
         <section id="pa-batch-results" class="pa-batch-results" aria-live="polite" hidden></section>
+        <h3 id="pa-latest-title" class="pa-latest-title" hidden>최신 제안과 적용 상태</h3>
         <div id="pa-list" aria-label="업체별 광고 제안"></div><p id="pa-errors" class="pa-error" role="alert"></p>
         <p class="pa-foot">전월 클릭수 · 클릭 목표 · 예상 클릭은 조회된 실적 기준입니다. 실제 적용 여부는 네이버 재조회 결과로 확인합니다. <a id="pa-jobs" target="_blank" rel="noopener noreferrer">GitHub 실행 내역 ↗</a></p>
     </div>
@@ -2439,6 +2469,7 @@ async function checkNoticeBadgeOnStart() {
         const won = n => n == null ? '—' : Number(n).toLocaleString('ko-KR') + '원';
         const num = n => n == null ? '—' : Number(n).toLocaleString('ko-KR');
         let token = null, items = [], filter = 'all', busy = false, loading = false, loaded = false, generation = 0, batchReport = null, lastRefreshAt = 0;
+        const selectedDays = new Map();
         try { token = JSON.parse(sessionStorage.getItem(storageKey) || 'null'); } catch(e) {}
         function saveSession() {
             try { if (token) sessionStorage.setItem(storageKey, JSON.stringify(token)); else sessionStorage.removeItem(storageKey); } catch(e) {}
@@ -2485,8 +2516,10 @@ async function checkNoticeBadgeOnStart() {
         function notify(message) { $('message').textContent = message; $('message').hidden = !message; }
         function clearSession() {
             generation++; token = null; items = []; loaded = false; batchReport = null; saveSession();
+            selectedDays.clear();
             $('key').value = ''; $('app').hidden = true; $('login').hidden = false;
             $('list').replaceChildren(); $('errors').textContent = ''; $('jobs').removeAttribute('href');
+            $('company').replaceChildren(); $('company').hidden = true; $('latest-title').hidden = true; root.classList.remove('pa-company-mode');
             $('batch-results').replaceChildren(); $('batch-results').hidden = true;
             buildPlaceAdsCompanies([]);
         }
@@ -2574,8 +2607,136 @@ async function checkNoticeBadgeOnStart() {
             else actions.append(text('span', expired && item.status === 'pending' ? '만료 · 다시 분석하세요' : labels[item.status] || '', 'pa-label'));
             foot.append(actions); el.append(foot); return el;
         }
+        const metric = n => typeof n === 'number' && Number.isFinite(n) && n >= 0 ? n : null;
+        const rangeLabel = p => p ? p.start + ' ~ ' + p.end : '기록 없음';
+        function changeLabel(c) {
+            const label = c.field === 'bid' ? '입찰가' : '하루예산';
+            const before = c.field === 'budget' && c.before_enabled === false ? '미설정' : won(c.before);
+            const after = c.field === 'budget' && c.after_enabled === false ? '미설정' : won(c.after);
+            return label + ' ' + before + ' → ' + after;
+        }
+        function delta(before, after) {
+            if (metric(before) == null || metric(after) == null) return '비교 자료 부족';
+            if (!before) return after ? '직전 값 0 · 증감률 계산 제외' : '변화 없음';
+            const percent = (after / before - 1) * 100;
+            return (percent > 0 ? '+' : '') + percent.toLocaleString('ko-KR',{maximumFractionDigits:1}) + '% · 직전 7일 대비';
+        }
+        function performanceSummary(p) {
+            const panel = text('section','','pa-company-panel'), current = p.recent || {}, previous = p.previous || {};
+            panel.append(text('h3','최근 7일 성과'),text('p','확정 실적 ' + (p.data_through || '—') + '까지 · 저장 ' + dateLabel(p.as_of),'pa-company-note'));
+            const periods = text('div','','pa-periods pa-company-note');
+            periods.append(text('span','직전: ' + rangeLabel(previous)),text('span','최근: ' + rangeLabel(current))); panel.append(periods);
+            const stats = text('div','','pa-performance-stats');
+            for (const [label,key,format] of [['클릭','clicks',n=>num(n)+'회'],['평균 CPC','cpc',won],['소진액','spend',won],['예산 제한 관측','limited_days',n=>num(n)+'일']]) {
+                const box = text('div','','pa-performance-stat');
+                const a = previous.complete || key === 'limited_days' ? previous[key] : null;
+                const b = current.complete || key === 'limited_days' ? current[key] : null;
+                box.append(text('div',label,'pa-label'),text('strong',format(b)));
+                box.append(text('div',key === 'limited_days' ? '직전 ' + format(a) + ' · 최근 ' + num(current.observed_days) + '/' + num(current.days) + '일 관측' : '직전 ' + format(a) + ' → 최근 ' + format(b),'pa-company-note'));
+                if (key !== 'limited_days') box.append(text('div',delta(a,b),'pa-performance-delta')); stats.append(box);
+            }
+            panel.append(stats);
+            if (!current.complete || !previous.complete) panel.append(text('p','일별 자료가 부족한 기간은 합계와 증감률을 표시하지 않습니다. 최근 ' + num(current.available_days) + '/' + num(current.days) + '일, 직전 ' + num(previous.available_days) + '/' + num(previous.days) + '일 확보.','pa-company-note'));
+            const from = previous.start || '', to = current.end || '';
+            const changed = (p.changes || []).some(c=>c.date>=from && c.date<=to);
+            const caps = new Set((p.series || []).filter(d=>d.date>=from && d.date<=to).flatMap(d=>d.group_budgets || []));
+            const campaignCaps = new Set((p.series || []).filter(d=>d.date>=from && d.date<=to).flatMap(d=>d.campaign_budgets || []));
+            if (changed || caps.size > 1 || campaignCaps.size > 1) panel.append(text('p','비교 기간에 입찰 또는 예산 조건 변화가 있습니다. 클릭·비용·제한 관측을 함께 확인하세요.','pa-company-note'));
+            panel.append(text('p','CPC는 기간 소진액 ÷ 클릭수(VAT 포함)입니다. 제한 미관측은 하루 종일 정상이라는 의미가 아닙니다.','pa-company-note'));
+            return panel;
+        }
+        function performanceChart(p) {
+            const panel = text('section','','pa-company-panel'), series = (p.series || []).slice(-28), changes = p.changes || [];
+            panel.append(text('h3','최근 28일 클릭 흐름'));
+            const legend = text('div','','pa-chart-key');
+            for (const [label,cls] of [['일별 클릭',''],['7일 평균','pa-average-key'],['예산 제한 관측','pa-limit-key'],['실제 설정 변경','pa-change-key']]) legend.append(text('span',label,cls)); panel.append(legend);
+            const svg = (tag,attrs={},content=null) => {
+                const el = document.createElementNS('http://www.w3.org/2000/svg',tag);
+                for (const [key,value] of Object.entries(attrs)) el.setAttribute(key,String(value));
+                if (content != null) el.textContent = content; return el;
+            };
+            const chart = svg('svg',{viewBox:'0 0 900 235',class:'pa-chart',role:'img','aria-label':'어제까지 최근 28일의 일별 클릭과 7일 평균. 아래 날짜 선택에서 실적과 변경을 확인할 수 있습니다.'});
+            const width=830,left=45,top=20,height=155,baseline=top+height,step=width/Math.max(1,series.length);
+            const peak=Math.max(1,...series.flatMap(d=>[metric(d.clicks)||0,metric(d.average_clicks)||0]));
+            const maximum=Math.ceil(peak/5)*5, x=i=>left+(i+.5)*step, y=n=>baseline-n/maximum*height;
+            for (const value of [0,maximum/2,maximum]) {
+                chart.append(svg('line',{x1:left,y1:y(value),x2:left+width,y2:y(value),stroke:'#edf1f5'}));
+                chart.append(svg('text',{x:left-8,y:y(value)+4,'text-anchor':'end',fill:'#64748b','font-size':12},num(value)));
+            }
+            const picker = text('div','','pa-day-picker'), label = text('label','날짜별 상세'), select = document.createElement('select'), detail = text('div','','pa-day-detail');
+            select.id='pa-day-select'; label.setAttribute('for',select.id); select.setAttribute('aria-label','확정 실적 날짜 선택'); picker.append(label,select);
+            function showDay(day) {
+                selectedDays.set(p.key,day.date);
+                select.value=day.date; detail.replaceChildren();
+                const clicks=metric(day.clicks), spend=metric(day.spend);
+                detail.append(text('strong',day.date),text('div','클릭 ' + num(clicks) + '회 · 노출 ' + num(metric(day.impressions)) + '회 · 소진 ' + won(spend) + ' · 평균 CPC ' + won(clicks && spend != null ? Math.round(spend/clicks*10)/10 : null)));
+                if (clicks == null) detail.append(text('div','확정 실적 자료 없음 · 0회로 간주하지 않습니다.'));
+                const count=day.observation_count || 0;
+                detail.append(text('div',day.budget_limited === true ? '예산 제한 관측됨 · 수집 ' + num(count) + '회' : count ? '예산 제한 미확인 · 수집 ' + num(count) + '회' : '상태·예산 관측 없음'));
+                const caps = values => values && values.length ? values.map(won).join(' / ') : '미사용/미확인';
+                detail.append(text('div','관측 당시 그룹 하루예산 ' + caps(day.group_budgets) + ' · 캠페인 하루예산 ' + caps(day.campaign_budgets)));
+                detail.append(text('div','관측 당시 입찰가 ' + (day.observed_bids && day.observed_bids.length ? day.observed_bids.map(won).join(' / ') : '미확인')));
+                for (const change of changes.filter(c=>c.date===day.date)) for (const setting of change.settings || []) detail.append(text('div','실제 변경: ' + changeLabel(setting)));
+            }
+            let path='';
+            series.forEach((day,i)=>{
+                const value=metric(day.clicks),avg=metric(day.average_clicks);
+                if (value != null) chart.append(svg('rect',{x:x(i)-step*.3,y:y(value),width:step*.6,height:baseline-y(value),rx:2,fill:'#3498db'}));
+                if (avg != null) path+=(i && metric(series[i-1].average_clicks)!=null?' L':' M')+x(i)+' '+y(avg);
+                if (day.budget_limited === true) chart.append(svg('circle',{cx:x(i),cy:baseline+12,r:4,fill:'#dc951e'}));
+                if (changes.some(c=>c.date===day.date)) chart.append(svg('path',{d:'M'+x(i)+' '+(baseline+20)+' l-4 6 h8 z',fill:'#416184'}));
+                if (i%7===0 || i===series.length-1) chart.append(svg('text',{x:x(i),y:baseline+48,'text-anchor':'middle',fill:'#64748b','font-size':12},String(day.date).slice(5).replace('-','/')));
+                const hit=svg('rect',{x:left+i*step,y:top,width:step,height:height+28,fill:'transparent',class:'pa-day-hit',tabindex:'0',role:'button','aria-label':day.date+' · 클릭 '+num(value)+'회'});
+                hit.append(svg('title',{},day.date+' · 클릭 '+num(value)+'회')); hit.onclick=()=>showDay(day);
+                hit.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();showDay(day);}}; chart.append(hit);
+                const option=text('option',day.date + (value == null ? ' · 자료 없음' : ' · ' + num(value) + '회')); option.value=day.date; select.append(option);
+            });
+            chart.append(svg('path',{d:path,fill:'none',stroke:'#5265b7','stroke-width':2.5,'pointer-events':'none'}));
+            select.onchange=()=>{const day=series.find(d=>d.date===select.value);if(day)showDay(day);};
+            panel.append(chart,text('p','막대를 누르거나 날짜를 선택하면 해당 일의 실적·관측 예산·실제 변경을 확인할 수 있습니다. 7일 평균은 온전한 7일 자료가 있을 때만 표시합니다.','pa-company-note'),picker,detail);
+            if (series.length) showDay(series.find(d=>d.date===selectedDays.get(p.key)) || series[series.length-1]); else detail.append(text('div','아직 일별 실적이 없습니다.'));
+            return panel;
+        }
+        function performanceChanges(p) {
+            const panel=text('section','','pa-company-panel'), changes=(p.changes || []).slice(-8).reverse();
+            panel.append(text('h3','실제 변경 내역'),text('p','프로그램이 재조회로 확인한 변경입니다. 최근 28일과 오늘의 변경 중 최신 8개 적용일을 보여줍니다. 변경일의 혼합 실적은 전후 비교에서 제외합니다.','pa-company-note'));
+            if (!changes.length) panel.append(text('p','확인된 입찰·하루예산 변경 기록이 없습니다. 제안·승인 대기는 실제 변경에 포함하지 않습니다.','pa-company-note'));
+            const older=document.createElement('details'); older.append(text('summary','이전 변경 ' + Math.max(0,changes.length-3) + '개 더 보기'));
+            changes.forEach((change,index)=>{
+                const entry=text('article','','pa-change-item'); entry.append(text('h4',change.date+' · 적용 확인'));
+                for (const setting of change.settings || []) entry.append(text('p',changeLabel(setting)));
+                const before=change.before,after=change.after,follow=text('div','','pa-followup');
+                if (!before || !after || !after.complete || !before.complete || change.observation_days < 3) follow.append(text('p','관찰 중 · 전후 비교에는 변경 전 7일과 변경 후 온전한 최소 3일의 확정 실적이 필요합니다. 변경 후 지난 날짜 ' + num(change.observation_days || 0) + '일 · 실적 확보 ' + num(after && after.available_days) + '/' + num(after && after.days) + '일.'));
+                else {
+                    const average=(period,key)=>period[key]/period.days;
+                    const round=n=>Math.round(n*10)/10;
+                    follow.append(text('p','변경 전 ' + rangeLabel(before) + ' ('+before.days+'일) / 변경 후 '+rangeLabel(after)+' ('+after.days+'일)'));
+                    follow.append(text('p','하루 평균 클릭 '+num(round(average(before,'clicks')))+'회 → '+num(round(average(after,'clicks')))+'회 · CPC '+won(before.cpc)+' → '+won(after.cpc)));
+                    follow.append(text('p','하루 평균 소진 '+won(round(average(before,'spend')))+' → '+won(round(average(after,'spend')))+' · 예산 제한 관측 '+before.limited_days+'일 → '+after.limited_days+'일'));
+                    follow.append(text('p',change.other_changes ? '관찰 기간에 추가 설정 변경이 있어 이 변경의 효과를 따로 판단하기 어렵습니다.' : '기간·요일·경쟁 상황이 달라질 수 있습니다. 전후 수치는 변경 효과를 확정하는 결과가 아닙니다.'));
+                }
+                entry.append(follow); if(index<3)panel.append(entry);else older.append(entry);
+            });
+            if(changes.length>3)panel.append(older);
+            panel.append(text('p','새로 적용한 변경은 다음 분석의 성과 기록에 반영됩니다. 아래 최신 제안에서 현재 적용 상태를 확인할 수 있습니다.','pa-company-note')); return panel;
+        }
+        function renderCompany(item) {
+            const container=$('company'); container.replaceChildren(); container.hidden=!placeAdsKey; $('latest-title').hidden=!placeAdsKey;
+            root.classList.toggle('pa-company-mode',Boolean(placeAdsKey));
+            if (!placeAdsKey || !item) return;
+            const p=item.performance;
+            if (p && p.version===1 && p.key===item.key) container.append(performanceSummary(p),performanceChart(p),performanceChanges(p));
+            else {
+                const empty=text('section','','pa-company-panel'); empty.append(text('h3','업체 성과 기록 준비 중'),text('p','업데이트 후 다음 분석부터 최근 성과와 그래프를 표시합니다. 기존 제안 확인과 승인은 아래에서 사용할 수 있습니다.','pa-company-note')); container.append(empty);
+            }
+            const insight=text('section','','pa-company-panel pa-insight'),ai=item.decision.codex || {};
+            insight.append(text('h3','현재 주목할 점'),text('p',shortReason(item.decision)));
+            if (ai.plan && ai.plan.next_check) insight.append(text('p','다음 확인: '+ai.plan.next_check));
+            insight.append(text('p','기존 AI 분석 기준 ' + (item.decision.data_through || item.decision.date || item.date || '—') + ' · 상세 분석은 아래 최신 제안에서 확인합니다.','pa-company-note')); container.append(insight);
+        }
         function render() {
             const selected = items.filter(i => !placeAdsKey || i.key === placeAdsKey), query = $('search').value.trim().toLowerCase();
+            renderCompany(selected[0]);
             const list = selected.filter(i => i.name.toLowerCase().includes(query) && (filter === 'all' || (filter === 'review' ? ['blocked','needs_review','needs_check','recovering'].includes(i.status) : i.status === filter)));
             $('list').replaceChildren(...list.map(card));
             if (!list.length) $('list').append(text('div', items.length ? '조건에 맞는 업체가 없습니다.' : '아직 분석 결과가 없습니다. 지금 분석하기를 눌러주세요.', 'pa-empty'));
