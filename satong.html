@@ -623,6 +623,75 @@
 @media(max-width:700px){#place-ads-view .pa-stats{grid-template-columns:repeat(2,minmax(0,1fr))}#place-ads-view .pa-toolbar input{max-width:none}#place-ads-view .pa-stat{padding:14px}#place-ads-view .pa-login{margin:20px auto;padding:24px}#place-ads-view .pa-amount{font-size:20px}#place-ads-view .pa-top .pa-actions{width:100%}}
 @media(max-width:700px){#place-ads-view .pa-performance-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}#place-ads-view .pa-company-panel{padding:16px}#place-ads-view .pa-performance-stat{padding:12px}#place-ads-view .pa-performance-stat strong{font-size:18px}}
 </style>
+<style>
+#place-schedule-view { display:none; padding-bottom:30px; }
+#place-schedule-view * { box-sizing:border-box; }
+#place-schedule-view [hidden] { display:none !important; }
+.ps-card { background:#fff; border:1px solid #e1e7ed; border-radius:12px; padding:16px; margin-bottom:14px; }
+.ps-toolbar,.ps-month-nav,.ps-login-fields,.ps-detail-head,.ps-event-row,.ps-form-actions { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.ps-toolbar { justify-content:space-between; margin-bottom:12px; }
+.ps-month-nav strong { font-size:19px; min-width:128px; text-align:center; }
+#place-schedule-view button,.ps-dialog button { cursor:pointer; border:1px solid #cbd5e1; background:#fff; border-radius:6px; padding:8px 12px; color:#334155; font:inherit; font-size:13px; }
+#place-schedule-view button:disabled,.ps-dialog button:disabled { opacity:.5;cursor:default; }
+#place-schedule-view .ps-primary,.ps-dialog .ps-primary { background:#2381c5; border-color:#2381c5; color:white; font-weight:700; }
+#place-schedule-view .ps-danger,.ps-dialog .ps-danger { color:#c12c39; border-color:#f2bcc2; }
+#place-schedule-view input,#place-schedule-view select,.ps-dialog input,.ps-dialog select,.ps-dialog textarea { border:1px solid #cbd5e1; border-radius:6px; padding:8px; font:inherit; font-size:14px; background:white; color:#243349; }
+.ps-login-fields label { display:flex; flex-direction:column; gap:5px; font-size:12px; color:#59677a; }
+.ps-login-fields input { width:210px; max-width:100%; }
+.ps-note { margin:8px 0; color:#64748b; font-size:12px; line-height:1.7; }
+.ps-message { padding:10px 12px; border-radius:7px; background:#eef5ff; color:#245d8d; font-size:13px; white-space:pre-wrap; margin-bottom:12px; }
+.ps-message.ps-error { background:#fff0f2; color:#ad2838; }
+.ps-week,.ps-grid { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:5px; }
+.ps-week span { padding:8px; text-align:center; color:#64748b; font-size:12px; font-weight:bold; }
+.ps-week span:first-child { color:#d44848; }
+.ps-week span:last-child { color:#2781c1; }
+#place-schedule-view .ps-day { display:flex; flex-direction:column; align-items:stretch; text-align:left; min-height:108px; padding:8px; border:1px solid #e4e9ef; border-radius:8px; background:#fff; overflow:hidden; }
+#place-schedule-view .ps-day.ps-outside { background:#f8fafc; color:#a8b2bf; }
+#place-schedule-view .ps-day.ps-today { border-color:#2393d1; }
+#place-schedule-view .ps-day.ps-selected { outline:2px solid #2381c5;outline-offset:-2px; background:#f2f8ff; }
+.ps-day-number { display:flex;align-items:center;justify-content:space-between;font-weight:bold;font-size:13px; }
+.ps-today-tag { font-size:9px; font-weight:normal;color:#2381c5; }
+.ps-day-event { display:block; font-size:11px; line-height:1.4; padding:4px; margin-top:5px; background:#eff6ff; color:#345778; border-radius:4px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.ps-day-event.ps-closed { background:#fff2f3; color:#a53640; }
+.ps-more { font-size:11px;color:#718096;margin-top:4px; }
+.ps-detail-head { justify-content:space-between; margin-bottom:10px; }
+.ps-detail-head h3 { margin:0;font-size:16px; }
+.ps-event-row { justify-content:space-between; padding:12px 0; border-top:1px solid #edf0f3; }
+.ps-event-info { flex:1; min-width:160px; }
+.ps-event-info strong { display:block;font-size:14px;margin-bottom:5px; }
+.ps-badge { display:inline-block; padding:3px 7px; border-radius:4px; font-size:11px; font-weight:700; background:#edf1f5; color:#627080; }
+.ps-badge.match { background:#e8f7ef; color:#237647; }
+.ps-badge.mismatch,.ps-badge.error { background:#fff0f1; color:#be3742; }
+.ps-badge.stale { background:#fff6df;color:#916415; }
+.ps-results-wrap { overflow-x:auto; }
+#place-schedule-view table { min-width:680px; table-layout:auto;box-shadow:none; }
+#place-schedule-view th { position:static; }
+#place-schedule-view td,#place-schedule-view th { white-space:normal; font-size:12px; padding:9px; }
+#place-schedule-view td.ps-raw { max-width:250px;white-space:pre-wrap; }
+.ps-dialog { width:min(470px,calc(100vw - 24px)); max-height:90dvh; overflow:auto; border:0; border-radius:14px; padding:22px; box-shadow:0 15px 60px #0003; }
+.ps-dialog::backdrop { background:#182a4466; }
+.ps-dialog h3 { margin:0 0 16px; }
+.ps-dialog label { display:flex;flex-direction:column; gap:6px;margin-bottom:14px;font-size:13px;color:#516277; }
+.ps-time-grid { display:grid;grid-template-columns:1fr 1fr;gap:12px; }
+.ps-dialog textarea { resize:vertical;min-height:75px; }
+.ps-form-actions { justify-content:flex-end;margin-top:16px; }
+.ps-progress { width:100%; height:7px; background:#e4ecf4; border-radius:6px; overflow:hidden; margin:8px 0; }
+.ps-progress i { display:block;height:100%;background:#2381c5; }
+.ps-session { display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:13px; }
+@media(max-width:768px) {
+  .ps-card { padding:12px; }
+  .ps-toolbar { align-items:flex-start; }
+  .ps-week,.ps-grid { gap:3px; }
+  #place-schedule-view .ps-day { min-height:77px; padding:5px 3px; }
+  .ps-day-number { font-size:12px; }
+  .ps-day-event { font-size:10px;padding:3px 2px; }
+  .ps-today-tag { display:none; }
+  .ps-login-fields { align-items:stretch; }
+  .ps-login-fields label,.ps-login-fields input { width:100%; }
+  .ps-month-nav { gap:5px; }
+}
+
+</style>
 </head>
 <body>
 
@@ -793,6 +862,46 @@
         </div>
 
         <div id="notice-card-view" class="notice-container"></div>
+<section id="place-schedule-view" aria-label="네이버 플레이스 일정">
+  <div id="ps-message" class="ps-message" role="status" aria-live="polite" hidden></div>
+  <div class="ps-card" id="ps-login">
+    <form id="ps-login-form" class="ps-login-fields">
+      <label>계정 코드<input id="ps-account" autocomplete="username" required maxlength="100"></label>
+      <label>일정 관리자 키<input id="ps-key" type="password" autocomplete="current-password" required></label>
+      <button class="ps-primary" type="submit">로그인</button>
+    </form>
+    <p class="ps-note">로그인하면 등록 일정을 불러오고 휴진·진료시간 변경을 저장할 수 있습니다.</p>
+  </div>
+  <div id="ps-session" class="ps-card ps-session" hidden><span id="ps-account-label"></span><button id="ps-logout" type="button">로그아웃</button></div>
+  <div class="ps-card">
+    <div class="ps-toolbar">
+      <div class="ps-month-nav"><button id="ps-prev" type="button" aria-label="이전 달">‹</button><strong id="ps-month"></strong><button id="ps-next" type="button" aria-label="다음 달">›</button><button id="ps-current" type="button">이번 달</button></div>
+      <div class="ps-month-nav"><select id="ps-company-filter" aria-label="표시할 업체"><option value="">전체 업체</option></select><button id="ps-check" class="ps-primary" type="button" disabled>일정 확인</button><button id="ps-refresh" type="button" disabled>새로고침</button></div>
+    </div>
+    <p id="ps-range" class="ps-note"></p>
+    <div id="ps-job" hidden><div id="ps-job-text" class="ps-note" aria-live="polite"></div><div class="ps-progress"><i id="ps-progress-bar"></i></div><a id="ps-run-url" target="_blank" rel="noopener noreferrer" hidden>GitHub 실행 보기</a></div>
+    <div class="ps-week" aria-hidden="true"><span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span></div>
+    <div id="ps-calendar" class="ps-grid" aria-label="월 달력"></div>
+  </div>
+  <div class="ps-card">
+    <div class="ps-detail-head"><h3 id="ps-selected-date"></h3><button id="ps-add" class="ps-primary" type="button" disabled>일정 추가</button></div>
+    <div id="ps-day-events"></div>
+  </div>
+  <div class="ps-card"><h3 style="margin:0 0 8px;font-size:16px">오늘부터 7일의 등록 일정</h3><p id="ps-updated" class="ps-note"></p><div id="ps-results" class="ps-results-wrap"></div></div>
+  <dialog id="ps-editor" class="ps-dialog">
+    <form id="ps-event-form">
+      <h3 id="ps-editor-title">일정 추가</h3>
+      <label>날짜<input id="ps-date" type="date" min="2000-01-01" max="2100-12-31" required></label>
+      <label>업체<select id="ps-event-company" required></select></label>
+      <label>일정 종류<select id="ps-type"><option value="closed">휴진</option><option value="hours">진료시간 변경</option></select></label>
+      <div id="ps-time-fields" class="ps-time-grid" hidden><label>진료 시작<input id="ps-open" type="time" step="60"></label><label>진료 마감<input id="ps-close" type="time" step="60"></label></div>
+      <label>메모 (선택)<textarea id="ps-memo" maxlength="500" placeholder="예: 공휴일 단축 진료"></textarea></label>
+      <div id="ps-form-error" class="ps-message ps-error" role="alert" hidden></div>
+      <div class="ps-form-actions"><button id="ps-cancel" type="button">취소</button><button id="ps-save" class="ps-primary" type="submit">저장</button></div>
+    </form>
+  </dialog>
+</section>
+
         <section id="place-ads-view" aria-label="플레이스 광고 관리">
     <div id="pa-message" class="pa-message" role="status" hidden></div>
     <form id="pa-loginform"><div id="pa-login" class="pa-login">
@@ -858,7 +967,7 @@
 
     let dataCache = { 
         review: {}, rank: null, power: null, bookmark: null, integrated: null, 
-        marketing: { "네이버 검색량 조회": [], "네이버 공지사항": [] } 
+        marketing: { "네이버 검색량 조회": [], "네이버 공지사항": [], "네이버 플레이스 일정": [] } 
     };
 
     let orderCache = { review: [], rank: [], power: [], integrated: [] };
@@ -1089,6 +1198,7 @@ function showNewBadgeOnMenu() {
     }
 
     async function initDashboard(isRefresh = false) {
+        if (placeScheduleUI.isActive() && isRefresh) { await placeScheduleUI.refresh(); return; }
         if (placeAdsActive && isRefresh) { sendPlaceAds('place-ads-refresh'); return; }
         const urlParams = new URLSearchParams(window.location.search);
         const userKey = urlParams.get('id');
@@ -1101,12 +1211,12 @@ function showNewBadgeOnMenu() {
         if (!hasCachedReview) showOverlay("데이터 로딩 중...");
         try {
             await loadReviewData(userKey, { forceNetwork: isRefresh });
-            if (!placeAdsActive) toggleGroup('review', true);
+            if (!placeAdsActive && !placeScheduleUI.isActive()) toggleGroup('review', true);
             buildSidebar('marketing', dataCache.marketing, orderCache.marketing);
             checkNoticeBadgeOnStart();
         } catch (e) {
             console.error('초기 데이터 로드 실패:', e);
-            if (!placeAdsActive) document.getElementById('page-title').innerText = '데이터를 불러오지 못했습니다.';
+            if (!placeAdsActive && !placeScheduleUI.isActive()) document.getElementById('page-title').innerText = '데이터를 불러오지 못했습니다.';
         } finally {
             hideOverlay();
         }
@@ -1375,7 +1485,9 @@ function buildSidebar(mode, data, order) {
     }
 
     function selectIntegratedClinic(baseName, sheetNames, isInitialLoad = false) {
-        if (isInitialLoad && placeAdsActive) return;
+        if (isInitialLoad && placeScheduleUI.isActive()) return;
+        placeScheduleUI.hide();
+        if (isInitialLoad && (placeAdsActive || placeScheduleUI.isActive())) return;
         hidePlaceAds();
         document.querySelectorAll('.submenu-item').forEach(el => el.classList.remove('active'));
         const currentItem = document.getElementById(`nav-group-${baseName}`);
@@ -1570,6 +1682,7 @@ function buildSidebar(mode, data, order) {
 
 
     function renderContent(mode, rows, sheetName) {
+        placeScheduleUI.hide();
         hidePlaceAds();
         const keywordContainer = document.getElementById('keyword-container');
         const tableContainer = document.getElementById('table-container');
@@ -1594,6 +1707,9 @@ function buildSidebar(mode, data, order) {
 
             if (sheetName === '네이버 검색량 조회') {
                 if(searchView) searchView.style.display = "flex";
+            } else if (sheetName === '네이버 플레이스 일정') {
+                document.getElementById('notice-box').textContent = '달력에 휴진·진료시간 변경을 저장하고, 오늘 포함 7일의 네이버 반영 여부를 확인합니다.';
+                placeScheduleUI.show();
             } else if (sheetName === '네이버 공지사항') {
                 if(noticeView) {
                     noticeView.style.display = "grid";
@@ -2450,6 +2566,7 @@ async function checkNoticeBadgeOnStart() {
         highlightPlaceAds();
     }
     function selectPlaceAds(key = '', isHistorySkip = false) {
+        placeScheduleUI.hide();
         const entering = !placeAdsActive;
         placeAdsKey = placeAdsCompanies.some(c => c.key === key) ? key : '';
         placeAdsActive = true;
@@ -2858,6 +2975,183 @@ async function checkNoticeBadgeOnStart() {
     })();
     // PLACE_ADS_HOST_END
 
+// 운영 HTML에서는 이 설정의 webappUrl에 전용 Apps Script /exec URL만 입력하세요.
+const PLACE_SCHEDULE_CONFIG = {webappUrl:'', accountId:'main', demo:false};
+const placeScheduleUI = (() => {
+  const root=document.getElementById('place-schedule-view'),$=name=>document.getElementById('ps-'+name);
+  const labels={match:'일치',mismatch:'불일치',error:'확인 실패',unverified:'미확인',stale:'재확인 필요',waiting:'확인 가능일 대기',past:'지난 일정'};
+  const jobLabels={queued:'확인 대기',running:'확인 중',completed:'확인 완료',partial_failed:'일부 확인 실패',failed:'확인 실패',dispatch_failed:'실행 요청 실패'};
+  const kst=()=>new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+  const addDays=(value,n)=>{const d=new Date(value+'T00:00:00Z');d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10);};
+  const monthOf=value=>value.slice(0,7);
+  const localTime=value=>value?new Date(value).toLocaleString('ko-KR',{timeZone:'Asia/Seoul',month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}):'—';
+  const node=(tag,text,cls)=>{const e=document.createElement(tag);if(text!=null)e.textContent=text;if(cls)e.className=cls;return e;};
+  let month=monthOf(kst()),selected=kst(),active=false,busy=false,loading=false,epoch=0,edit=null,poll=null;
+  let session=null,companies=[],events=[],results=[],job={},latest={};
+  const storageKey='placeScheduleSession:'+PLACE_SCHEDULE_CONFIG.webappUrl;
+  try{session=JSON.parse(sessionStorage.getItem(storageKey)||'null');}catch(e){}
+  if(session&&session.expires<=Date.now())session=null;
+  $('account').value=PLACE_SCHEDULE_CONFIG.accountId||'main';
+  function saveSession(){try{if(session)sessionStorage.setItem(storageKey,JSON.stringify(session));else sessionStorage.removeItem(storageKey);}catch(e){}}
+  function message(text,error=false){$('message').textContent=text;$('message').hidden=!text;$('message').classList.toggle('ps-error',error);}
+  function clear(){epoch++;session=null;companies=[];events=[];results=[];job={};latest={};saveSession();$('key').value='';if($('editor').open)$('editor').close();render();}
+  async function call(action,extra={}){
+    if(PLACE_SCHEDULE_CONFIG.demo)return demoCall(action,extra);
+    const url=PLACE_SCHEDULE_CONFIG.webappUrl;
+    if(!/^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec$/.test(url))throw new Error('일정 서버 연결이 필요합니다. 설정 가이드에 따라 Apps Script를 배포하고 HTML에 웹앱 주소를 입력하세요.');
+    const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),65000);
+    let data;
+    try{
+      const response=await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},credentials:'omit',redirect:'follow',cache:'no-store',signal:controller.signal,body:JSON.stringify({kind:'place-schedule-v1',action,token:session&&session.token,...extra})});
+      try{data=await response.json();}catch(e){throw new Error('서버 응답을 읽지 못했습니다. /exec 주소와 웹앱 접근 권한을 확인하세요.');}
+      if(!response.ok||typeof data.ok!=='boolean')throw new Error('일정 서버 응답 형식이 올바르지 않습니다.');
+    }catch(e){if(e.name==='AbortError'||e instanceof TypeError)throw new Error('서버 응답을 받지 못했습니다. 저장·실행 결과는 새로고침으로 확인한 후 다시 요청하세요.');throw e;}
+    finally{clearTimeout(timer);}
+    if(data.authRequired){clear();throw new Error(data.error||'다시 로그인하세요.');}
+    if(!data.ok)throw new Error(data.error||'요청 실패');
+    return data.data;
+  }
+  function company(id){return companies.find(c=>c.company_id===id);}
+  function resultFor(event){return results.filter(r=>r.event_id===event.event_id).sort((a,b)=>Date.parse(b.checked_at)-Date.parse(a.checked_at))[0];}
+  function status(event){
+    const today=kst();
+    if(event.date>addDays(today,6))return 'waiting';
+    const r=resultFor(event);
+    if(r&&Number(r.event_revision)!==Number(event.revision))return 'stale';
+    if(r)return r.status;
+    return event.date<today?'past':'unverified';
+  }
+  const expected=event=>event.type==='closed'?'휴진':event.open_time+' ~ '+event.close_time;
+  function actualText(result){const a=result&&result.actual;if(!a)return '—';return a.state==='closed'?'휴무':a.state==='hours'?a.open_time+' ~ '+a.close_time:'확인 불가';}
+  function badge(event){const state=status(event);return node('span',labels[state]||state,'ps-badge '+state);}
+  function enabled(){
+    const ready=Boolean(session)&&!busy&&!loading;
+    $('check').disabled=!ready||['queued','running'].includes(job.status);
+    $('refresh').disabled=!ready;$('add').disabled=!ready||!companies.length;
+    $('login-form').querySelector('button').disabled=busy||loading;
+    $('logout').disabled=busy;
+    root.querySelectorAll('[data-ps-edit]').forEach(b=>b.disabled=!ready);
+    root.querySelectorAll('[data-ps-delete]').forEach(b=>b.disabled=!ready);
+  }
+  function render(){
+    const today=kst();$('month').textContent=month.replace('-','년 ')+'월';
+    $('range').textContent=`확인 범위: ${today} ~ ${addDays(today,6)} · 오늘 포함 7일의 등록 일정 전체를 확인합니다.`;
+    $('login').hidden=Boolean(session);$('session').hidden=!session;
+    $('account-label').textContent=session?'계정: '+session.account_id+(PLACE_SCHEDULE_CONFIG.demo?' · 화면 체험 모드':''):'';
+    const filter=$('company-filter').value;
+    const opts=[node('option','전체 업체')];opts[0].value='';
+    companies.forEach(c=>{const o=node('option',c.name);o.value=c.company_id;opts.push(o);});
+    $('company-filter').replaceChildren(...opts);$('company-filter').value=companies.some(c=>c.company_id===filter)?filter:'';
+    const shown=events.filter(e=>!$('company-filter').value||e.company_id===$('company-filter').value);
+    const first=month+'-01',start=addDays(first,-new Date(first+'T00:00:00Z').getUTCDay());
+    $('calendar').replaceChildren();
+    for(let i=0;i<42;i++){
+      const date=addDays(start,i),items=shown.filter(e=>e.date===date),button=node('button',null,'ps-day');
+      button.type='button';button.dataset.date=date;button.classList.toggle('ps-outside',monthOf(date)!==month);button.classList.toggle('ps-today',date===today);button.classList.toggle('ps-selected',date===selected);
+      button.setAttribute('aria-label',date+': '+items.length+'개 일정');button.setAttribute('aria-pressed',String(date===selected));
+      const number=node('span',String(Number(date.slice(8))),'ps-day-number');if(date===today)number.append(node('span','오늘','ps-today-tag'));button.append(number);
+      items.slice(0,2).forEach(e=>{const row=node('span',(company(e.company_id)||{}).name+' · '+expected(e),'ps-day-event'+(e.type==='closed'?' ps-closed':''));row.title=row.textContent+' · '+labels[status(e)];button.append(row);});
+      if(items.length>2)button.append(node('span','+'+(items.length-2)+'개','ps-more'));
+      button.onclick=()=>{selected=date;if(monthOf(date)!==month){month=monthOf(date);refresh();}render();};
+      $('calendar').append(button);
+    }
+    $('selected-date').textContent=selected+' 일정';$('day-events').replaceChildren();
+    const dayEvents=shown.filter(e=>e.date===selected);
+    if(!dayEvents.length)$('day-events').append(node('p',session?'등록된 일정이 없습니다. 일정 추가 버튼으로 등록하세요.':'로그인하면 등록 일정을 확인할 수 있습니다.','ps-note'));
+    dayEvents.forEach(e=>{
+      const row=node('div',null,'ps-event-row'),info=node('div',null,'ps-event-info');
+      info.append(node('strong',(company(e.company_id)||{}).name||e.company_id),node('span',expected(e)+' '),badge(e));
+      if(e.memo)info.append(node('p',e.memo,'ps-note'));row.append(info);
+      const editButton=node('button','수정');editButton.type='button';editButton.dataset.psEdit=e.event_id;editButton.onclick=()=>openEditor(e);
+      const remove=node('button','삭제','ps-danger');remove.type='button';remove.dataset.psDelete=e.event_id;remove.onclick=()=>deleteEvent(e);row.append(editButton,remove);$('day-events').append(row);
+    });
+    const weekly=shown.filter(e=>e.date>=today&&e.date<=addDays(today,6)).sort((a,b)=>a.date.localeCompare(b.date)||a.company_id.localeCompare(b.company_id));
+    $('results').replaceChildren();
+    if(!weekly.length)$('results').append(node('p','확인 기간 안에 등록된 일정이 없습니다.','ps-note'));
+    else{
+      const table=node('table'),head=node('thead'),tr=node('tr'),body=node('tbody');['업체','날짜','등록 일정','네이버 표시','결과','확인 시각'].forEach(t=>tr.append(node('th',t)));head.append(tr);
+      weekly.forEach(e=>{const r=resultFor(e),c=company(e.company_id)||{},row=node('tr'),cell=node('td');
+        const link=node('a',c.name||e.company_id);if(/^\d+$/.test(String(c.place_id))){link.href='https://map.naver.com/p/entry/place/'+c.place_id;link.target='_blank';link.rel='noopener noreferrer';}cell.append(link);row.append(cell,node('td',e.date),node('td',expected(e)));
+        const raw=node('td',actualText(r),'ps-raw');if(r&&r.actual&&r.actual.raw)raw.append(node('p',r.actual.raw,'ps-note'));row.append(raw);
+        const outcome=node('td');outcome.append(badge(e));if(r&&r.reason)outcome.append(node('p',r.reason,'ps-note'));row.append(outcome,node('td',r?localTime(r.checked_at):'—'));body.append(row);
+      });table.append(head,body);$('results').append(table);
+    }
+    const display=job.job_id?job:latest;$('job').hidden=!display.job_id;
+    $('job-text').textContent=display.job_id?`${jobLabels[display.status]||display.status} · ${Number(display.done||0)}/${Number(display.total||0)}개`+(display.error?' · '+display.error:''):'';
+    $('progress-bar').style.width=(Number(display.total)?Math.min(100,Number(display.done||0)/Number(display.total)*100):0)+'%';
+    const validUrl=/^https:\/\/github\.com\/[\w.-]+\/[\w.-]+\/actions\/runs\/\d+$/.test(display.run_url||'');$('run-url').hidden=!validUrl;if(validUrl)$('run-url').href=display.run_url;else $('run-url').removeAttribute('href');
+    $('updated').textContent=latest.finished_at?'최근 확인 작업 '+localTime(latest.finished_at)+' · 한국 시간':'등록한 휴진·진료시간 변경만 확인합니다.';
+    enabled();schedulePoll();
+  }
+  function schedulePoll(){clearTimeout(poll);if(active&&session&&!document.hidden&&['queued','running'].includes(job.status))poll=setTimeout(()=>refresh(),8000);}
+  async function refresh(){
+    if(!session||loading)return;loading=true;enabled();const version=epoch,requestedMonth=month;
+    try{const data=await call('dashboard',{month:requestedMonth});if(version!==epoch)return;
+      companies=data.companies||[];events=data.events||[];results=data.results||[];job=data.active_job||{};latest=data.latest_job||{};render();
+    }catch(e){message(e.message,true);}
+    finally{loading=false;enabled();schedulePoll();if(session&&month!==requestedMonth&&version===epoch)refresh();}
+  }
+  function timeFields(){const hours=$('type').value==='hours';$('time-fields').hidden=!hours;$('open').required=hours;$('close').required=hours;}
+  function openEditor(event=null){
+    if(!session||busy||loading||!companies.length)return;
+    edit=event;$('editor-title').textContent=event?'일정 수정':'일정 추가';$('date').value=event?event.date:selected;
+    $('event-company').replaceChildren(...companies.map(c=>{const o=node('option',c.name);o.value=c.company_id;return o;}));
+    $('event-company').value=event?event.company_id:($('company-filter').value||companies[0].company_id);
+    $('type').value=event?event.type:'closed';$('open').value=event&&event.open_time||'09:00';$('close').value=event&&event.close_time||'16:00';$('memo').value=event&&event.memo||'';
+    $('form-error').hidden=true;timeFields();$('editor').showModal();
+  }
+  async function deleteEvent(event){
+    if(!window.confirm(`${(company(event.company_id)||{}).name}의 ${event.date} ${expected(event)} 일정을 삭제할까요?`))return;
+    busy=true;enabled();
+    try{await call('deleteEvent',{event_id:event.event_id,revision:event.revision});message('일정을 삭제했습니다.');await refresh();}
+    catch(e){message(e.message,true);}finally{busy=false;enabled();}
+  }
+  $('event-form').onsubmit=async e=>{
+    e.preventDefault();if(busy)return;
+    const event={event_id:edit&&edit.event_id||'',revision:edit&&edit.revision||0,date:$('date').value,company_id:$('event-company').value,type:$('type').value,open_time:$('open').value,close_time:$('close').value,memo:$('memo').value};
+    if(event.type==='hours'&&event.open_time>=event.close_time){$('form-error').textContent='진료 시작은 마감 시간보다 빨라야 합니다.';$('form-error').hidden=false;return;}
+    busy=true;enabled();$('save').disabled=true;$('cancel').disabled=true;
+    try{await call('saveEvent',{event});selected=event.date;month=monthOf(event.date);$('editor').close();message('일정을 저장했습니다. 네이버 반영 여부는 일정 확인 버튼으로 확인하세요.');await refresh();}
+    catch(err){$('form-error').textContent=err.message;$('form-error').hidden=false;}
+    finally{busy=false;$('save').disabled=false;$('cancel').disabled=false;enabled();}
+  };
+  $('editor').addEventListener('cancel',e=>{if(busy)e.preventDefault();});$('cancel').onclick=()=>$('editor').close();$('type').onchange=timeFields;$('add').onclick=()=>openEditor();
+  $('login-form').onsubmit=async e=>{
+    e.preventDefault();if(busy)return;busy=true;enabled();
+    try{const data=await call('login',{account_id:$('account').value.trim(),access_key:$('key').value});session=data;epoch++;$('key').value='';saveSession();message('');render();await refresh();}
+    catch(err){message(err.message,true);}finally{busy=false;enabled();}
+  };
+  $('logout').onclick=()=>{clear();message('로그아웃했습니다.');};$('refresh').onclick=()=>refresh();$('company-filter').onchange=render;
+  function move(delta){const d=new Date(month+'-01T00:00:00Z');d.setUTCMonth(d.getUTCMonth()+delta);const next=d.toISOString().slice(0,7);if(next<'2000-01'||next>'2100-12')return;month=next;selected=month+'-01';render();refresh();}
+  $('prev').onclick=()=>move(-1);$('next').onclick=()=>move(1);$('current').onclick=()=>{month=monthOf(kst());selected=kst();render();refresh();};
+  $('check').onclick=async()=>{
+    if(busy||loading)return;busy=true;enabled();
+    try{const data=await call('requestCheck');if(data.job){job=data.job;latest=data.job;}message(data.message||'확인을 요청했습니다.',data.job&&data.job.status==='dispatch_failed');render();await refresh();}
+    catch(e){message(e.message,true);}finally{busy=false;enabled();schedulePoll();}
+  };
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)clearTimeout(poll);else if(active)refresh();});
+  // Standalone preview only. It saves locally and does not claim to verify Naver.
+  function demoCall(action,extra){
+    const key='placeSchedulePreviewEvents';let rows;try{rows=JSON.parse(localStorage.getItem(key)||'[]');}catch(e){rows=[];}
+    if(action==='login')return Promise.resolve({token:'preview-only',account_id:'체험',expires:Date.now()+86400000});
+    if(action==='dashboard')return Promise.resolve({companies:[{company_id:'yonsei-child',name:'연세우리아동발달클리닉',place_id:'2056728323'},{company_id:'bareunmom',name:'바른몸한방병원',place_id:'38221131'}],events:rows,results:[],active_job:{},latest_job:{}});
+    if(action==='requestCheck')return Promise.reject(new Error('체험 화면에서는 네이버 확인을 실행하지 않습니다. 운영 HTML에 Apps Script를 연결해 주세요.'));
+    if(action==='saveEvent'){
+      const input=extra.event,old=rows.find(e=>e.event_id===input.event_id);
+      if(rows.some(e=>e.company_id===input.company_id&&e.date===input.date&&e!==old))return Promise.reject(new Error('같은 업체·날짜의 일정이 있습니다. 기존 일정을 수정하세요.'));
+      const next={...input,event_id:old?old.event_id:crypto.randomUUID(),revision:old?Number(old.revision)+1:1};rows=rows.filter(e=>e!==old);rows.push(next);localStorage.setItem(key,JSON.stringify(rows));return Promise.resolve({event:next});
+    }
+    if(action==='deleteEvent'){localStorage.setItem(key,JSON.stringify(rows.filter(e=>e.event_id!==extra.event_id)));return Promise.resolve({deleted:true});}
+    return Promise.reject(new Error('지원하지 않는 체험 요청입니다.'));
+  }
+  function show(){active=true;root.style.display='block';render();if(PLACE_SCHEDULE_CONFIG.demo){message('화면 체험 모드 · 일정은 이 브라우저에만 저장됩니다. 실제 네이버 검증은 운영 설정 후 사용할 수 있습니다.');if(!session){session={token:'preview-only',account_id:'체험',expires:Date.now()+86400000};}}else if(!PLACE_SCHEDULE_CONFIG.webappUrl)message('일정 서버 연결이 필요합니다. 설정 가이드에 따라 Apps Script 웹앱 주소를 입력하세요.');refresh();}
+  function hide(){active=false;root.style.display='none';clearTimeout(poll);if($('editor').open)$('editor').close();}
+  render();return {show,hide,refresh,isActive:()=>active};
+})();
+
+
+    // Marketing menu remains available even if review data is unavailable.
+    buildSidebar('marketing', dataCache.marketing, orderCache.marketing);
     initDashboard();
 
     window.addEventListener('popstate', function(event) {
