@@ -642,14 +642,21 @@
 .ps-message { padding:10px 12px; border-radius:7px; background:#eef5ff; color:#245d8d; font-size:13px; white-space:pre-wrap; margin-bottom:12px; }
 .ps-message.ps-error { background:#fff0f2; color:#ad2838; }
 .ps-week,.ps-grid { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:5px; }
+.ps-grid { grid-template-rows:repeat(6,108px); transition:grid-template-rows .32s ease; }
+.ps-compact .ps-grid { grid-template-rows:repeat(6,54px); }
 .ps-week span { padding:8px; text-align:center; color:#64748b; font-size:12px; font-weight:bold; }
 .ps-week span:first-child { color:#d44848; }
 .ps-week span:last-child { color:#2781c1; }
-#place-schedule-view .ps-day { display:flex; flex-direction:column; align-items:stretch; text-align:left; min-height:108px; padding:8px; border:1px solid #e4e9ef; border-radius:8px; background:#fff; overflow:hidden; }
+#place-schedule-view .ps-day { display:flex; flex-direction:column; align-items:stretch; text-align:left; min-height:0; padding:8px; border:1px solid #e4e9ef; border-radius:8px; background:#fff; overflow:hidden; }
 #place-schedule-view .ps-day.ps-outside { background:#f8fafc; color:#a8b2bf; }
 #place-schedule-view .ps-day.ps-today { border-color:#2393d1; }
 #place-schedule-view .ps-day.ps-selected { outline:2px solid #2381c5;outline-offset:-2px; background:#f2f8ff; }
 .ps-day-number { display:flex;align-items:center;justify-content:space-between;font-weight:bold;font-size:13px; }
+.ps-day-markers { display:flex;align-items:center;gap:4px;min-width:0; }
+.ps-day-count { display:none; font-size:10px;line-height:16px;font-weight:normal;min-width:16px;text-align:center;background:#e5eff9;color:#245d8d;border-radius:8px;padding:0 4px; }
+.ps-compact .ps-day-count { display:inline-block; }
+.ps-compact .ps-day-event,.ps-compact .ps-more { display:none; }
+#place-schedule-view .ps-compact .ps-day { justify-content:center; }
 .ps-today-tag { font-size:9px; font-weight:normal;color:#2381c5; }
 .ps-day-event { display:block; font-size:11px; line-height:1.4; padding:4px; margin-top:5px; background:#eff6ff; color:#345778; border-radius:4px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .ps-day-event.ps-closed { background:#fff2f3; color:#a53640; }
@@ -677,18 +684,24 @@
 .ps-form-actions { justify-content:flex-end;margin-top:16px; }
 .ps-progress { width:100%; height:7px; background:#e4ecf4; border-radius:6px; overflow:hidden; margin:8px 0; }
 .ps-progress i { display:block;height:100%;background:#2381c5; }
-.ps-session { display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:13px; }
 @media(max-width:768px) {
   .ps-card { padding:12px; }
   .ps-toolbar { align-items:flex-start; }
   .ps-week,.ps-grid { gap:3px; }
-  #place-schedule-view .ps-day { min-height:77px; padding:5px 3px; }
+  .ps-grid { grid-template-rows:repeat(6,77px); }
+  .ps-compact .ps-grid { grid-template-rows:repeat(6,42px); }
+  #place-schedule-view .ps-day { padding:5px 3px; }
   .ps-day-number { font-size:12px; }
   .ps-day-event { font-size:10px;padding:3px 2px; }
   .ps-today-tag { display:none; }
   .ps-login-fields { align-items:stretch; }
   .ps-login-fields label,.ps-login-fields input { width:100%; }
   .ps-month-nav { gap:5px; }
+  .ps-month-nav strong { min-width:100px; font-size:17px; }
+  #place-schedule-view .ps-month-nav button { padding:6px 9px; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .ps-grid { transition:none; }
 }
 
 </style>
@@ -872,22 +885,24 @@
     </form>
     <p class="ps-note">로그인하면 등록 일정을 불러오고 휴진·진료시간 변경을 저장할 수 있습니다.</p>
   </div>
-  <div id="ps-session" class="ps-card ps-session" hidden><span id="ps-account-label"></span><button id="ps-logout" type="button">로그아웃</button></div>
-  <div class="ps-card">
+  <div class="ps-card" id="ps-calendar-card">
     <div class="ps-toolbar">
-      <div class="ps-month-nav"><button id="ps-prev" type="button" aria-label="이전 달">‹</button><strong id="ps-month"></strong><button id="ps-next" type="button" aria-label="다음 달">›</button><button id="ps-current" type="button">이번 달</button></div>
-      <div class="ps-month-nav"><select id="ps-company-filter" aria-label="표시할 업체"><option value="">전체 업체</option></select><button id="ps-check" class="ps-primary" type="button" disabled>일정 확인</button><button id="ps-refresh" type="button" disabled>새로고침</button></div>
+      <div class="ps-month-nav"><button id="ps-prev" type="button" aria-label="이전 달">‹</button><strong id="ps-month"></strong><button id="ps-next" type="button" aria-label="다음 달">›</button><button id="ps-current" type="button">이번 달</button><button id="ps-calendar-toggle" type="button" aria-controls="ps-calendar" aria-expanded="true">달력 접기</button></div>
+      <div class="ps-month-nav"><select id="ps-company-filter" aria-label="표시할 업체"><option value="">전체 업체</option></select><button id="ps-check" class="ps-primary" type="button" disabled>일정 확인</button></div>
     </div>
-    <p id="ps-range" class="ps-note"></p>
-    <div id="ps-job" hidden><div id="ps-job-text" class="ps-note" aria-live="polite"></div><div class="ps-progress"><i id="ps-progress-bar"></i></div><a id="ps-run-url" target="_blank" rel="noopener noreferrer" hidden>GitHub 실행 보기</a></div>
     <div class="ps-week" aria-hidden="true"><span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span></div>
     <div id="ps-calendar" class="ps-grid" aria-label="월 달력"></div>
   </div>
-  <div class="ps-card">
+  <div class="ps-card" id="ps-details">
     <div class="ps-detail-head"><h3 id="ps-selected-date"></h3><button id="ps-add" class="ps-primary" type="button" disabled>일정 추가</button></div>
     <div id="ps-day-events"></div>
   </div>
-  <div class="ps-card"><h3 style="margin:0 0 8px;font-size:16px">오늘부터 7일의 등록 일정</h3><p id="ps-updated" class="ps-note"></p><div id="ps-results" class="ps-results-wrap"></div></div>
+  <div class="ps-card" id="ps-weekly-card">
+    <h3 style="margin:0 0 8px;font-size:16px">오늘부터 7일의 등록 일정</h3>
+    <p id="ps-range" class="ps-note"></p>
+    <div id="ps-job" hidden><div id="ps-job-text" class="ps-note" aria-live="polite"></div><div class="ps-progress"><i id="ps-progress-bar"></i></div><a id="ps-run-url" target="_blank" rel="noopener noreferrer" hidden>GitHub 실행 보기</a></div>
+    <p id="ps-updated" class="ps-note"></p><div id="ps-results" class="ps-results-wrap"></div>
+  </div>
   <dialog id="ps-editor" class="ps-dialog">
     <form id="ps-event-form">
       <h3 id="ps-editor-title">일정 추가</h3>
@@ -901,6 +916,8 @@
     </form>
   </dialog>
 </section>
+
+
 
         <section id="place-ads-view" aria-label="플레이스 광고 관리">
     <div id="pa-message" class="pa-message" role="status" hidden></div>
@@ -2986,7 +3003,7 @@ const placeScheduleUI = (() => {
   const monthOf=value=>value.slice(0,7);
   const localTime=value=>value?new Date(value).toLocaleString('ko-KR',{timeZone:'Asia/Seoul',month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}):'—';
   const node=(tag,text,cls)=>{const e=document.createElement(tag);if(text!=null)e.textContent=text;if(cls)e.className=cls;return e;};
-  let month=monthOf(kst()),selected=kst(),active=false,busy=false,loading=false,epoch=0,edit=null,poll=null;
+  let month=monthOf(kst()),selected=kst(),compact=false,active=false,busy=false,loading=false,epoch=0,edit=null,poll=null;
   let session=null,companies=[],events=[],results=[],job={},latest={};
   const storageKey='placeScheduleSession:'+PLACE_SCHEDULE_CONFIG.webappUrl;
   try{session=JSON.parse(sessionStorage.getItem(storageKey)||'null');}catch(e){}
@@ -3027,17 +3044,16 @@ const placeScheduleUI = (() => {
   function enabled(){
     const ready=Boolean(session)&&!busy&&!loading;
     $('check').disabled=!ready||['queued','running'].includes(job.status);
-    $('refresh').disabled=!ready;$('add').disabled=!ready||!companies.length;
+    $('add').disabled=!ready||!companies.length;
     $('login-form').querySelector('button').disabled=busy||loading;
-    $('logout').disabled=busy;
     root.querySelectorAll('[data-ps-edit]').forEach(b=>b.disabled=!ready);
     root.querySelectorAll('[data-ps-delete]').forEach(b=>b.disabled=!ready);
   }
   function render(){
     const today=kst();$('month').textContent=month.replace('-','년 ')+'월';
     $('range').textContent=`확인 범위: ${today} ~ ${addDays(today,6)} · 오늘 포함 7일의 등록 일정 전체를 확인합니다.`;
-    $('login').hidden=Boolean(session);$('session').hidden=!session;
-    $('account-label').textContent=session?'계정: '+session.account_id+(PLACE_SCHEDULE_CONFIG.demo?' · 화면 체험 모드':''):'';
+    $('login').hidden=Boolean(session);
+    calendarSize();
     const filter=$('company-filter').value;
     const opts=[node('option','전체 업체')];opts[0].value='';
     companies.forEach(c=>{const o=node('option',c.name);o.value=c.company_id;opts.push(o);});
@@ -3049,10 +3065,13 @@ const placeScheduleUI = (() => {
       const date=addDays(start,i),items=shown.filter(e=>e.date===date),button=node('button',null,'ps-day');
       button.type='button';button.dataset.date=date;button.classList.toggle('ps-outside',monthOf(date)!==month);button.classList.toggle('ps-today',date===today);button.classList.toggle('ps-selected',date===selected);
       button.setAttribute('aria-label',date+': '+items.length+'개 일정');button.setAttribute('aria-pressed',String(date===selected));
-      const number=node('span',String(Number(date.slice(8))),'ps-day-number');if(date===today)number.append(node('span','오늘','ps-today-tag'));button.append(number);
+      const number=node('span',String(Number(date.slice(8))),'ps-day-number'),markers=node('span',null,'ps-day-markers');
+      if(date===today)markers.append(node('span','오늘','ps-today-tag'));
+      if(items.length){const count=node('span',String(items.length),'ps-day-count');count.setAttribute('aria-hidden','true');markers.append(count);}
+      number.append(markers);button.append(number);
       items.slice(0,2).forEach(e=>{const row=node('span',(company(e.company_id)||{}).name+' · '+expected(e),'ps-day-event'+(e.type==='closed'?' ps-closed':''));row.title=row.textContent+' · '+labels[status(e)];button.append(row);});
       if(items.length>2)button.append(node('span','+'+(items.length-2)+'개','ps-more'));
-      button.onclick=()=>{selected=date;if(monthOf(date)!==month){month=monthOf(date);refresh();}render();};
+      button.onclick=()=>{selected=date;compact=true;const moved=monthOf(date)!==month;if(moved)month=monthOf(date);render();$('calendar').querySelector(`[data-date="${date}"]`).focus({preventScroll:true});if(moved)refresh();};
       $('calendar').append(button);
     }
     $('selected-date').textContent=selected+' 일정';$('day-events').replaceChildren();
@@ -3083,6 +3102,11 @@ const placeScheduleUI = (() => {
     $('updated').textContent=latest.finished_at?'최근 확인 작업 '+localTime(latest.finished_at)+' · 한국 시간':'등록한 휴진·진료시간 변경만 확인합니다.';
     enabled();schedulePoll();
   }
+  function calendarSize(){
+    $('calendar-card').classList.toggle('ps-compact',compact);
+    $('calendar-toggle').textContent=compact?'달력 펼치기':'달력 접기';
+    $('calendar-toggle').setAttribute('aria-expanded',String(!compact));
+  }
   function schedulePoll(){clearTimeout(poll);if(active&&session&&!document.hidden&&['queued','running'].includes(job.status))poll=setTimeout(()=>refresh(),8000);}
   async function refresh(){
     if(!session||loading)return;loading=true;enabled();const version=epoch,requestedMonth=month;
@@ -3111,7 +3135,7 @@ const placeScheduleUI = (() => {
     const event={event_id:edit&&edit.event_id||'',revision:edit&&edit.revision||0,date:$('date').value,company_id:$('event-company').value,type:$('type').value,open_time:$('open').value,close_time:$('close').value,memo:$('memo').value};
     if(event.type==='hours'&&event.open_time>=event.close_time){$('form-error').textContent='진료 시작은 마감 시간보다 빨라야 합니다.';$('form-error').hidden=false;return;}
     busy=true;enabled();$('save').disabled=true;$('cancel').disabled=true;
-    try{await call('saveEvent',{event});selected=event.date;month=monthOf(event.date);$('editor').close();message('일정을 저장했습니다. 네이버 반영 여부는 일정 확인 버튼으로 확인하세요.');await refresh();}
+    try{await call('saveEvent',{event});selected=event.date;month=monthOf(event.date);compact=true;$('editor').close();message('일정을 저장했습니다. 네이버 반영 여부는 일정 확인 버튼으로 확인하세요.');await refresh();}
     catch(err){$('form-error').textContent=err.message;$('form-error').hidden=false;}
     finally{busy=false;$('save').disabled=false;$('cancel').disabled=false;enabled();}
   };
@@ -3121,9 +3145,10 @@ const placeScheduleUI = (() => {
     try{const data=await call('login',{account_id:$('account').value.trim(),access_key:$('key').value});session=data;epoch++;$('key').value='';saveSession();message('');render();await refresh();}
     catch(err){message(err.message,true);}finally{busy=false;enabled();}
   };
-  $('logout').onclick=()=>{clear();message('로그아웃했습니다.');};$('refresh').onclick=()=>refresh();$('company-filter').onchange=render;
-  function move(delta){const d=new Date(month+'-01T00:00:00Z');d.setUTCMonth(d.getUTCMonth()+delta);const next=d.toISOString().slice(0,7);if(next<'2000-01'||next>'2100-12')return;month=next;selected=month+'-01';render();refresh();}
-  $('prev').onclick=()=>move(-1);$('next').onclick=()=>move(1);$('current').onclick=()=>{month=monthOf(kst());selected=kst();render();refresh();};
+  $('company-filter').onchange=render;
+  $('calendar-toggle').onclick=()=>{compact=!compact;calendarSize();};
+  function move(delta){const d=new Date(month+'-01T00:00:00Z');d.setUTCMonth(d.getUTCMonth()+delta);const next=d.toISOString().slice(0,7);if(next<'2000-01'||next>'2100-12')return;month=next;selected=month+'-01';compact=false;render();refresh();}
+  $('prev').onclick=()=>move(-1);$('next').onclick=()=>move(1);$('current').onclick=()=>{month=monthOf(kst());selected=kst();compact=false;render();refresh();};
   $('check').onclick=async()=>{
     if(busy||loading)return;busy=true;enabled();
     try{const data=await call('requestCheck');if(data.job){job=data.job;latest=data.job;}message(data.message||'확인을 요청했습니다.',data.job&&data.job.status==='dispatch_failed');render();await refresh();}
@@ -3144,11 +3169,10 @@ const placeScheduleUI = (() => {
     if(action==='deleteEvent'){localStorage.setItem(key,JSON.stringify(rows.filter(e=>e.event_id!==extra.event_id)));return Promise.resolve({deleted:true});}
     return Promise.reject(new Error('지원하지 않는 체험 요청입니다.'));
   }
-  function show(){active=true;root.style.display='block';render();if(PLACE_SCHEDULE_CONFIG.demo){message('화면 체험 모드 · 일정은 이 브라우저에만 저장됩니다. 실제 네이버 검증은 운영 설정 후 사용할 수 있습니다.');if(!session){session={token:'preview-only',account_id:'체험',expires:Date.now()+86400000};}}else if(!PLACE_SCHEDULE_CONFIG.webappUrl)message('일정 서버 연결이 필요합니다. 설정 가이드에 따라 Apps Script 웹앱 주소를 입력하세요.');refresh();}
+  function show(){active=true;compact=false;root.style.display='block';render();if(PLACE_SCHEDULE_CONFIG.demo){message('화면 체험 모드 · 일정은 이 브라우저에만 저장됩니다. 실제 네이버 검증은 운영 설정 후 사용할 수 있습니다.');if(!session){session={token:'preview-only',account_id:'체험',expires:Date.now()+86400000};render();}}else if(!PLACE_SCHEDULE_CONFIG.webappUrl)message('일정 서버 연결이 필요합니다. 설정 가이드에 따라 Apps Script 웹앱 주소를 입력하세요.');refresh();}
   function hide(){active=false;root.style.display='none';clearTimeout(poll);if($('editor').open)$('editor').close();}
   render();return {show,hide,refresh,isActive:()=>active};
 })();
-
 
     // Marketing menu remains available even if review data is unavailable.
     buildSidebar('marketing', dataCache.marketing, orderCache.marketing);
