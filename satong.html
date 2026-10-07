@@ -682,9 +682,36 @@
 .ps-dialog::backdrop { background:#182a4466; }
 .ps-dialog h3 { margin:0 0 16px; }
 .ps-dialog label { display:flex;flex-direction:column; gap:6px;margin-bottom:14px;font-size:13px;color:#516277; }
-.ps-time-grid { display:grid;grid-template-columns:1fr 1fr;gap:12px; }
+.ps-time-grid { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px; }
+.ps-time-grid label { min-width:0; }
+.ps-time-grid input { min-width:0;width:100%; }
 .ps-dialog textarea { resize:vertical;min-height:75px; }
+#ps-event-form { display:flex;flex-direction:column;max-height:calc(90dvh - 44px); }
+.ps-editor-scroll { min-width:0;min-height:0;overflow-y:auto;flex:0 1 auto;scrollbar-width:thin; }
+.ps-editor-fields { border:0;padding:0 2px 0 0;margin:0;min-width:0; }
+.ps-dialog h3,#ps-form-error { flex-shrink:0; }
+#ps-form-error { max-height:140px;overflow-y:auto; }
+.ps-date-fields { border:0;padding:0;margin:0 0 14px;min-width:0; }
+.ps-date-fields legend { padding:0;margin-bottom:6px;font-size:13px;color:#516277; }
+.ps-date-modes { display:flex;gap:5px;margin-bottom:10px; }
+.ps-dialog .ps-date-modes label { display:block;flex:1;position:relative;margin:0;cursor:pointer; }
+.ps-date-modes input { position:absolute;opacity:0;width:1px;height:1px; }
+.ps-date-modes span { display:block;padding:8px 4px;border:1px solid #d4dde8;border-radius:6px;text-align:center; }
+.ps-date-modes input:checked + span { background:#eef6ff;color:#17699e;border-color:#2381c5;font-weight:700; }
+.ps-date-modes input:focus-visible + span { outline:2px solid #2381c5;outline-offset:2px; }
+#ps-single-date input { width:100%; }
+.ps-picker-head { display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:4px; }
+.ps-picker-head strong { font-size:14px; }
+.ps-picker-grid { display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px; }
+#place-schedule-view .ps-picker-day { padding:0;height:32px;min-width:0;border:1px solid #e1e7ed;border-radius:6px;font-size:12px; }
+#place-schedule-view .ps-picker-day.ps-picker-outside { color:#94a3b8;background:#f8fafc; }
+#place-schedule-view .ps-picker-day[aria-pressed="true"] { color:#fff;background:#2381c5;border-color:#2381c5;font-weight:700; }
+#ps-date-range { margin-top:6px; }
+#ps-date-range label { margin:0;min-width:0; }
+#ps-date-range input { width:100%;min-width:0; }
+.ps-date-summary-error { color:#ad2838; }
 .ps-form-actions { justify-content:flex-end;margin-top:16px; }
+.ps-dialog .ps-form-actions { flex-shrink:0;padding-top:12px;border-top:1px solid #edf0f3;margin-top:12px; }
 .ps-progress { width:100%; height:7px; background:#e4ecf4; border-radius:6px; overflow:hidden; margin:8px 0; }
 .ps-progress i { display:block;height:100%;background:#2381c5; }
 .ps-job-head { display:flex;align-items:center;gap:10px;flex-wrap:wrap; }
@@ -920,11 +947,34 @@
   <dialog id="ps-editor" class="ps-dialog">
     <form id="ps-event-form">
       <h3 id="ps-editor-title">일정 추가</h3>
-      <label>날짜<input id="ps-date" type="date" min="2000-01-01" max="2100-12-31" required></label>
+      <div class="ps-editor-scroll">
+      <fieldset id="ps-editor-fields" class="ps-editor-fields">
       <label>업체<select id="ps-event-company" required></select></label>
+      <fieldset class="ps-date-fields">
+        <legend>날짜</legend>
+        <div id="ps-date-modes" class="ps-date-modes">
+          <label><input type="radio" name="ps-date-mode" value="single" checked><span>하루</span></label>
+          <label><input type="radio" name="ps-date-mode" value="multiple"><span>여러 날짜</span></label>
+          <label><input type="radio" name="ps-date-mode" value="range"><span>기간</span></label>
+        </div>
+        <div id="ps-single-date"><input id="ps-date" type="date" aria-label="날짜" min="2000-01-01" max="2100-12-31" required></div>
+        <div id="ps-multiple-dates" hidden>
+          <div class="ps-picker-head"><button id="ps-picker-prev" type="button" aria-label="날짜 선택 이전 달">‹</button><strong id="ps-picker-month"></strong><button id="ps-picker-next" type="button" aria-label="날짜 선택 다음 달">›</button></div>
+          <div class="ps-week" aria-hidden="true"><span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span></div>
+          <div id="ps-picker-calendar" class="ps-picker-grid" aria-label="등록할 날짜 선택"></div>
+          <p class="ps-note">날짜를 누르면 선택되고, 다시 누르면 해제됩니다.</p>
+        </div>
+        <div id="ps-date-range" class="ps-time-grid" hidden>
+          <label>시작일<input id="ps-date-start" type="date" min="2000-01-01" max="2100-12-31"></label>
+          <label>종료일<input id="ps-date-end" type="date" min="2000-01-01" max="2100-12-31"></label>
+        </div>
+        <p id="ps-date-summary" class="ps-note" aria-live="polite"></p>
+      </fieldset>
       <label>일정 종류<select id="ps-type"><option value="closed">휴진</option><option value="hours">진료시간 변경</option></select></label>
       <div id="ps-time-fields" class="ps-time-grid" hidden><label>진료 시작<input id="ps-open" type="time" step="60"></label><label>진료 마감<input id="ps-close" type="time" step="60"></label></div>
       <label>메모 (선택)<textarea id="ps-memo" maxlength="500" placeholder="예: 공휴일 단축 진료"></textarea></label>
+      </fieldset>
+      </div>
       <div id="ps-form-error" class="ps-message ps-error" role="alert" hidden></div>
       <div class="ps-form-actions"><button id="ps-cancel" type="button">취소</button><button id="ps-save" class="ps-primary" type="submit">저장</button></div>
     </form>
@@ -3019,6 +3069,8 @@ const placeScheduleUI = (() => {
   const node=(tag,text,cls)=>{const e=document.createElement(tag);if(text!=null)e.textContent=text;if(cls)e.className=cls;return e;};
   let month=monthOf(kst()),selected=kst(),compact=false,active=false,busy=false,loading=false,epoch=0,edit=null,poll=null;
   let session=null,companies=[],events=[],results=[],job={},latest={};
+  let dateMode='single',pickerMonth=month,pickedDates=new Set();
+  const maxDates=31;
   const storageKey='placeScheduleSession:'+PLACE_SCHEDULE_CONFIG.webappUrl;
   try{session=JSON.parse(sessionStorage.getItem(storageKey)||'null');}catch(e){}
   if(session&&session.expires<=Date.now())session=null;
@@ -3123,7 +3175,7 @@ const placeScheduleUI = (() => {
     $('calendar-toggle').textContent=compact?'달력 펼치기':'달력 접기';
     $('calendar-toggle').setAttribute('aria-expanded',String(!compact));
   }
-  function schedulePoll(){clearTimeout(poll);if(active&&session&&!document.hidden&&['queued','running'].includes(job.status))poll=setTimeout(()=>refresh(),8000);}
+  function schedulePoll(){clearTimeout(poll);if(active&&session&&!busy&&!document.hidden&&['queued','running'].includes(job.status))poll=setTimeout(()=>refresh(),8000);}
   async function refresh(){
     if(!session||loading)return;loading=true;enabled();const version=epoch,requestedMonth=month;
     try{const data=await call('dashboard',{month:requestedMonth});if(version!==epoch)return;
@@ -3132,13 +3184,78 @@ const placeScheduleUI = (() => {
     finally{loading=false;enabled();schedulePoll();if(session&&month!==requestedMonth&&version===epoch)refresh();}
   }
   function timeFields(){const hours=$('type').value==='hours';$('time-fields').hidden=!hours;$('open').required=hours;$('close').required=hours;}
+  function validDate(date){return /^\d{4}-\d{2}-\d{2}$/.test(date)&&date>='2000-01-01'&&date<='2100-12-31'&&!isNaN(Date.parse(date+'T00:00:00Z'))&&new Date(date+'T00:00:00Z').toISOString().slice(0,10)===date;}
+  function editorDates(){
+    let dates;
+    if(dateMode==='multiple')dates=Array.from(pickedDates).sort();
+    else if(dateMode==='range'){
+      const start=$('date-start').value,end=$('date-end').value;
+      if(!validDate(start)||!validDate(end))throw new Error('시작일과 종료일을 선택하세요.');
+      if(end<start)throw new Error('종료일은 시작일보다 빠를 수 없습니다.');
+      const length=(Date.parse(end+'T00:00:00Z')-Date.parse(start+'T00:00:00Z'))/86400000+1;
+      if(length>maxDates)throw new Error(`한 번에 최대 ${maxDates}일을 등록할 수 있습니다.`);
+      dates=Array.from({length},(_,i)=>addDays(start,i));
+    }else dates=[$('date').value];
+    if(!dates.length)throw new Error('등록할 날짜를 선택하세요.');
+    if(dates.length>maxDates)throw new Error(`한 번에 최대 ${maxDates}일을 등록할 수 있습니다.`);
+    if(!dates.every(validDate))throw new Error('날짜를 올바르게 선택하세요.');
+    return dates;
+  }
+  function dateSummary(){
+    try{
+      const dates=editorDates();
+      const text=dateMode==='range'?`${dates[0]} ~ ${dates[dates.length-1]}`:dates.join(', ');
+      $('date-summary').textContent=`${dates.length}일 선택 · ${text}`;
+      $('date-summary').classList.remove('ps-date-summary-error');
+      if(!busy){$('save').textContent=dates.length>1?`${dates.length}일 일정 저장`:'저장';$('save').disabled=false;}
+    }catch(e){$('date-summary').textContent=e.message;$('date-summary').classList.add('ps-date-summary-error');if(!busy){$('save').textContent='저장';$('save').disabled=true;}}
+  }
+  function pickerCalendar(){
+    $('picker-month').textContent=pickerMonth.replace('-','년 ')+'월';
+    const first=pickerMonth+'-01',offset=new Date(first+'T00:00:00Z').getUTCDay(),start=addDays(first,-offset);
+    const length=new Date(Number(pickerMonth.slice(0,4)),Number(pickerMonth.slice(5)),0).getDate(),cells=Math.ceil((offset+length)/7)*7;
+    $('picker-calendar').replaceChildren();
+    for(let i=0;i<cells;i++){
+      const date=addDays(start,i),button=node('button',String(Number(date.slice(8))),'ps-picker-day');
+      button.type='button';button.dataset.pickDate=date;button.disabled=!validDate(date);button.classList.toggle('ps-picker-outside',monthOf(date)!==pickerMonth);
+      button.setAttribute('aria-label',date);button.setAttribute('aria-pressed',String(pickedDates.has(date)));
+      button.onclick=()=>{
+        if(pickedDates.has(date))pickedDates.delete(date);
+        else if(pickedDates.size>=maxDates){$('form-error').textContent=`한 번에 최대 ${maxDates}일을 선택할 수 있습니다.`;$('form-error').hidden=false;return;}
+        else pickedDates.add(date);
+        pickerMonth=monthOf(date);$('form-error').hidden=true;pickerCalendar();dateSummary();
+        $('picker-calendar').querySelector(`[data-pick-date="${date}"]`).focus({preventScroll:true});
+      };
+      $('picker-calendar').append(button);
+    }
+    $('picker-prev').disabled=pickerMonth<='2000-01';$('picker-next').disabled=pickerMonth>='2100-12';
+  }
+  function dateFields(){
+    $('single-date').hidden=dateMode!=='single';$('date').required=dateMode==='single';$('date').disabled=dateMode!=='single';
+    $('multiple-dates').hidden=dateMode!=='multiple';$('date-range').hidden=dateMode!=='range';
+    ['date-start','date-end'].forEach(id=>{$(id).required=dateMode==='range';$(id).disabled=dateMode!=='range';});
+    if(dateMode==='multiple')pickerCalendar();dateSummary();
+  }
+  $('date-modes').querySelectorAll('input').forEach(input=>input.onchange=()=>{
+    let previous=[];try{previous=editorDates();}catch(e){}
+    dateMode=input.value;
+    if(previous.length){
+      pickedDates=new Set(previous);$('date').value=previous[0];$('date-start').value=previous[0];$('date-end').value=previous[previous.length-1];pickerMonth=monthOf(previous[0]);
+    }
+    $('form-error').hidden=true;dateFields();
+  });
+  ['date','date-start','date-end'].forEach(id=>$(id).oninput=dateSummary);
+  function pickerMove(delta){const d=new Date(pickerMonth+'-01T00:00:00Z');d.setUTCMonth(d.getUTCMonth()+delta);const next=d.toISOString().slice(0,7);if(next<'2000-01'||next>'2100-12')return;pickerMonth=next;pickerCalendar();}
+  $('picker-prev').onclick=()=>pickerMove(-1);$('picker-next').onclick=()=>pickerMove(1);
   function openEditor(event=null){
     if(!session||busy||loading||!companies.length)return;
     edit=event;$('editor-title').textContent=event?'일정 수정':'일정 추가';$('date').value=event?event.date:selected;
+    dateMode='single';pickedDates=new Set([$('date').value]);pickerMonth=monthOf($('date').value);$('date-start').value=$('date').value;$('date-end').value=$('date').value;
+    $('date-modes').hidden=Boolean(event);$('date-modes').querySelectorAll('input').forEach(input=>input.checked=input.value==='single');$('editor-fields').disabled=false;
     $('event-company').replaceChildren(...companies.map(c=>{const o=node('option',c.name);o.value=c.company_id;return o;}));
     $('event-company').value=event?event.company_id:($('company-filter').value||companies[0].company_id);
     $('type').value=event?event.type:'closed';$('open').value=event&&event.open_time||'09:00';$('close').value=event&&event.close_time||'16:00';$('memo').value=event&&event.memo||'';
-    $('form-error').hidden=true;timeFields();$('editor').showModal();
+    $('form-error').hidden=true;timeFields();dateFields();$('editor').showModal();
   }
   async function deleteEvent(event){
     if(!window.confirm(`${(company(event.company_id)||{}).name}의 ${event.date} ${expected(event)} 일정을 삭제할까요?`))return;
@@ -3148,12 +3265,42 @@ const placeScheduleUI = (() => {
   }
   $('event-form').onsubmit=async e=>{
     e.preventDefault();if(busy)return;
-    const event={event_id:edit&&edit.event_id||'',revision:edit&&edit.revision||0,date:$('date').value,company_id:$('event-company').value,type:$('type').value,open_time:$('open').value,close_time:$('close').value,memo:$('memo').value};
-    if(event.type==='hours'&&event.open_time>=event.close_time){$('form-error').textContent='진료 시작은 마감 시간보다 빨라야 합니다.';$('form-error').hidden=false;return;}
-    busy=true;enabled();$('save').disabled=true;$('cancel').disabled=true;
-    try{await call('saveEvent',{event});selected=event.date;month=monthOf(event.date);compact=true;$('editor').close();message('일정을 저장했습니다. 네이버 반영 여부는 일정 확인 버튼으로 확인하세요.');await refresh();}
-    catch(err){$('form-error').textContent=err.message;$('form-error').hidden=false;}
-    finally{busy=false;$('save').disabled=false;$('cancel').disabled=false;enabled();}
+    let dates;try{dates=editorDates();}catch(err){$('form-error').textContent=err.message;$('form-error').hidden=false;return;}
+    const template={event_id:edit&&edit.event_id||'',revision:edit&&edit.revision||0,company_id:$('event-company').value,type:$('type').value,open_time:$('open').value,close_time:$('close').value,memo:$('memo').value};
+    if(template.type==='hours'&&template.open_time>=template.close_time){$('form-error').textContent='진료 시작은 마감 시간보다 빨라야 합니다.';$('form-error').hidden=false;return;}
+    busy=true;enabled();clearTimeout(poll);$('editor-fields').disabled=true;$('save').disabled=true;$('cancel').disabled=true;$('form-error').hidden=true;
+    const saved=[];
+    try{
+      if(!edit){
+        let existing=events;
+        if(dates.length>1){
+          $('save').textContent='등록 일정 확인 중…';existing=[];
+          for(const targetMonth of new Set(dates.map(monthOf))){const data=await call('dashboard',{month:targetMonth});existing.push(...(data.events||[]));}
+        }
+        const conflicts=dates.filter(date=>existing.some(row=>row.company_id===template.company_id&&row.date===date));
+        if(conflicts.length)throw new Error(`${conflicts.join(', ')}에 이미 일정이 있습니다. 해당 날짜를 제외하거나 기존 일정을 수정하세요.`);
+      }
+      for(const date of dates){
+        $('save').textContent=`저장 중 ${saved.length+1}/${dates.length}…`;
+        const data=await call('saveEvent',{event:{...template,date}});
+        if(!data||!data.event||!data.event.event_id||data.event.date!==date||data.event.company_id!==template.company_id)throw new Error('저장 결과를 확인하지 못했습니다. 새로고침으로 저장 여부를 확인한 후 다시 요청하세요.');
+        saved.push(date);
+        if(data.event){events=events.filter(row=>row.event_id!==data.event.event_id);events.push(data.event);}
+      }
+      selected=dates[0];month=monthOf(selected);compact=true;$('editor').close();
+      message(dates.length>1?`${dates.length}일의 일정을 저장했습니다. 네이버 반영 여부는 일정 확인 버튼으로 확인하세요.`:'일정을 저장했습니다. 네이버 반영 여부는 일정 확인 버튼으로 확인하세요.');await refresh();
+    }catch(err){
+      let error=err.message;
+      if(saved.length){
+        const remaining=dates.filter(date=>!saved.includes(date));
+        dateMode='multiple';pickedDates=new Set(remaining);pickerMonth=monthOf(remaining[0]);$('date-modes').hidden=false;
+        $('date-modes').querySelectorAll('input').forEach(input=>input.checked=input.value==='multiple');dateFields();
+        selected=saved[0];month=monthOf(selected);compact=true;
+        error=`${saved.length}/${dates.length}일 저장 완료. 남은 ${remaining.length}일은 선택된 상태로 남겨 두었습니다.\n${err.message}`;
+        message(error,true);await refresh();
+      }
+      $('form-error').textContent=error;$('form-error').hidden=false;
+    }finally{busy=false;$('editor-fields').disabled=false;$('cancel').disabled=false;dateSummary();enabled();schedulePoll();}
   };
   $('editor').addEventListener('cancel',e=>{if(busy)e.preventDefault();});$('cancel').onclick=()=>$('editor').close();$('type').onchange=timeFields;$('add').onclick=()=>openEditor();
   $('login-form').onsubmit=async e=>{
