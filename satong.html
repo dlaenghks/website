@@ -945,6 +945,7 @@
       <div class="ps-month-nav"><button id="ps-prev" type="button" aria-label="이전 달">‹</button><strong id="ps-month"></strong><button id="ps-next" type="button" aria-label="다음 달">›</button><button id="ps-current" type="button">이번 달</button><button id="ps-calendar-toggle" type="button" aria-controls="ps-calendar" aria-expanded="true">달력 접기</button></div>
       <div class="ps-month-nav"><select id="ps-company-filter" aria-label="표시할 업체"><option value="">전체 업체</option></select><button id="ps-check" class="ps-primary" type="button" disabled>일정 확인</button></div>
     </div>
+    <p id="ps-sync-info" class="ps-note" role="status" aria-live="polite" hidden></p>
     <div class="ps-calendar-legend"><span><i class="ps-legend-event"></i>일정</span><span><i class="ps-legend-note"></i>메모</span></div>
     <div class="ps-week" aria-hidden="true"><span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span></div>
     <div id="ps-calendar" class="ps-grid" aria-label="월 달력"></div>
@@ -3099,18 +3100,67 @@ const placeScheduleUI = (() => {
   let month=monthOf(kst()),selected=kst(),compact=false,active=false,busy=false,loading=false,epoch=0,edit=null,poll=null;
   let session=null,companies=[],events=[],notes=[],results=[],job={},latest={};
   let hasData=false,refreshRun=null,refreshWarning='';
+  let dataMonth='',cachedView=false,syncedAt=0;
+  const calendarCacheTTL=12*60*60*1000,calendarCacheLimit=6;
   let noteEdit=null,noteDate=selected;
   let dateMode='single',pickerMonth=month,pickedDates=new Set();
   const maxDates=31;
   const storageKey='placeScheduleSession:'+PLACE_SCHEDULE_CONFIG.webappUrl;
   try{session=JSON.parse(sessionStorage.getItem(storageKey)||'null');}catch(e){}
-  if(session&&session.expires<=Date.now())session=null;
+  if(session&&!usableSession(session))session=null;
   $('account').value=PLACE_SCHEDULE_CONFIG.accountId||'main';
   function saveSession(){try{if(session)sessionStorage.setItem(storageKey,JSON.stringify(session));else sessionStorage.removeItem(storageKey);}catch(e){}}
+  function usableSession(value=session){return Boolean(value)&&typeof value.account_id==='string'&&Boolean(value.account_id)&&typeof value.token==='string'&&Boolean(value.token)&&Number.isFinite(value.expires)&&value.expires>Date.now();}
+  function calendarCacheKey(account=session&&session.account_id){return 'placeScheduleCalendar:v1:'+PLACE_SCHEDULE_CONFIG.webappUrl+':'+encodeURIComponent(account||'');}
+  function readCalendarCache(){
+    const empty={account_id:session&&session.account_id,months:{}};
+    if(PLACE_SCHEDULE_CONFIG.demo||!usableSession())return empty;
+    try{const data=JSON.parse(localStorage.getItem(calendarCacheKey())||'null');return data&&data.account_id===session.account_id&&data.months&&typeof data.months==='object'&&!Array.isArray(data.months)?data:empty;}catch(e){return empty;}
+  }
+  function validCacheEntry(entry){
+    if(!entry||!Number.isFinite(entry.savedAt)||entry.savedAt>Date.now()||Date.now()-entry.savedAt>calendarCacheTTL||entry.today!==kst())return false;
+    try{validateDashboard(entry.value);return true;}catch(e){return false;}
+  }
+  function writeCalendarCache(data){
+    if(PLACE_SCHEDULE_CONFIG.demo||!usableSession())return;
+    try{data.months=Object.fromEntries(Object.entries(data.months).filter(([key,value])=>/^\d{4}-\d{2}$/.test(key)&&validCacheEntry(value)).sort((a,b)=>b[1].savedAt-a[1].savedAt).slice(0,calendarCacheLimit));localStorage.setItem(calendarCacheKey(),JSON.stringify(data));}catch(e){}
+  }
+  function cacheSnapshot(targetMonth,data){
+    if(PLACE_SCHEDULE_CONFIG.demo||!usableSession())return;
+    const cache=readCalendarCache();
+    cache.months[targetMonth]={savedAt:Date.now(),today:kst(),value:{companies:data.companies,events:data.events,notes:data.notes===undefined?notes:data.notes,results:data.results,active_job:data.active_job,latest_job:data.latest_job}};
+    writeCalendarCache(cache);
+  }
+  function restoreCalendarCache(){
+    if(PLACE_SCHEDULE_CONFIG.demo||!usableSession()||(hasData&&dataMonth===month))return false;
+    const entry=readCalendarCache().months[month];if(!validCacheEntry(entry))return false;
+    const data=entry.value;companies=data.companies;events=data.events;notes=data.notes||[];results=data.results;job=data.active_job;latest=data.latest_job;
+    hasData=true;dataMonth=month;cachedView=true;syncedAt=entry.savedAt;return true;
+  }
+  function patchCalendarCache(kind,id,row=null){
+    if(PLACE_SCHEDULE_CONFIG.demo||!usableSession())return;
+    const cache=readCalendarCache(),idKey=kind==='notes'?'note_id':'event_id';
+    Object.entries(cache.months).forEach(([targetMonth,entry])=>{
+      if(!validCacheEntry(entry))return;
+      const rows=entry.value[kind]||[],index=rows.findIndex(item=>item[idKey]===id);
+      entry.value[kind]=rows.filter(item=>item[idKey]!==id);
+      if(row&&(monthOf(row.date)===targetMonth||(kind==='events'&&row.date>=entry.today&&row.date<=addDays(entry.today,6))))entry.value[kind].splice(index<0?entry.value[kind].length:Math.min(index,entry.value[kind].length),0,row);
+      if(kind==='events'&&!row)entry.value.results=entry.value.results.filter(result=>result.event_id!==id);
+    });
+    writeCalendarCache(cache);
+  }
+  function cacheJob(next){
+    if(PLACE_SCHEDULE_CONFIG.demo||!usableSession())return;
+    const cache=readCalendarCache();Object.values(cache.months).forEach(entry=>{if(validCacheEntry(entry)){entry.value.active_job=['queued','running'].includes(next.status)?next:{};entry.value.latest_job=next;}});writeCalendarCache(cache);
+  }
+  function syncInfo(){
+    $('sync-info').hidden=!cachedView;
+    $('sync-info').textContent=cachedView?'이전에 불러온 일정 · '+(loading?'최신 내용을 확인하는 중…':localTime(syncedAt)+' 기준'):'';
+  }
   function message(text,error=false){$('message').textContent=text;$('message').hidden=!text;$('message').classList.toggle('ps-error',error);}
   function stopRefresh(){const run=refreshRun;refreshRun=null;loading=false;if(run)run.controller.abort();}
   function beginWrite(){stopRefresh();clearTimeout(poll);busy=true;enabled();}
-  function clear(){epoch++;stopRefresh();hasData=false;refreshWarning='';session=null;companies=[];events=[];notes=[];results=[];job={};latest={};saveSession();$('key').value='';if($('editor').open)$('editor').close();if($('note-editor').open)$('note-editor').close();render();}
+  function clear(){epoch++;stopRefresh();try{if(!PLACE_SCHEDULE_CONFIG.demo&&session)localStorage.removeItem(calendarCacheKey());}catch(e){}hasData=false;dataMonth='';cachedView=false;syncedAt=0;refreshWarning='';session=null;companies=[];events=[];notes=[];results=[];job={};latest={};saveSession();$('key').value='';if($('editor').open)$('editor').close();if($('note-editor').open)$('note-editor').close();render();}
   function responseError(text){const error=new Error(text);error.retryable=true;return error;}
   async function call(action,extra={},signal){
     if(PLACE_SCHEDULE_CONFIG.demo)return demoCall(action,extra);
@@ -3144,6 +3194,7 @@ const placeScheduleUI = (() => {
   function actualText(result){const a=result&&result.actual;if(!a)return '—';return a.state==='closed'?'휴무':a.state==='hours'?a.open_time+' ~ '+a.close_time:'확인 불가';}
   function badge(event){const state=status(event);return node('span',labels[state]||state,'ps-badge '+state);}
   function enabled(){
+    syncInfo();
     const ready=Boolean(session)&&hasData&&!busy;
     $('check').disabled=!ready||['queued','running'].includes(job.status);
     $('add').disabled=!ready||!companies.length;
@@ -3180,7 +3231,7 @@ const placeScheduleUI = (() => {
       visibleNotes.forEach(n=>{const row=node('span','메모 · '+(n.company_id?(company(n.company_id)||{}).name||n.company_id:'일반')+' · '+n.content,'ps-day-event ps-day-note');row.title=row.textContent;button.append(row);});
       const more=items.length+dayNotes.length-visibleEvents.length-visibleNotes.length;
       if(more>0)button.append(node('span','+'+more+'개','ps-more'));
-      button.onclick=()=>{compact=!(compact&&selected===date);selected=date;const moved=monthOf(date)!==month;if(moved)month=monthOf(date);render();$('calendar').querySelector(`[data-date="${date}"]`).focus({preventScroll:true});if(moved)refresh();};
+      button.onclick=()=>{compact=!(compact&&selected===date);selected=date;const moved=monthOf(date)!==month;if(moved){month=monthOf(date);restoreCalendarCache();}render();$('calendar').querySelector(`[data-date="${date}"]`).focus({preventScroll:true});if(moved)refresh();};
       $('calendar').append(button);
     }
     $('selected-date').textContent=selected+' 일정';$('day-events').replaceChildren();
@@ -3251,7 +3302,7 @@ const placeScheduleUI = (() => {
           const data=await call('dashboard',{month:run.month},run.controller.signal);
           if(!currentRefresh(run))return false;
           validateDashboard(data);
-          companies=data.companies;events=data.events;notes=data.notes===undefined?notes:data.notes;results=data.results;job=data.active_job;latest=data.latest_job;hasData=true;render();
+          companies=data.companies;events=data.events;notes=data.notes===undefined?notes:data.notes;results=data.results;job=data.active_job;latest=data.latest_job;hasData=true;dataMonth=run.month;cachedView=false;syncedAt=Date.now();cacheSnapshot(run.month,data);render();
           if(refreshWarning&&$('message').textContent===refreshWarning)message(success);
           refreshWarning='';return true;
         }catch(error){
@@ -3342,7 +3393,7 @@ const placeScheduleUI = (() => {
     if(!session||busy||!hasData)return;
     if(!window.confirm(`${(company(event.company_id)||{}).name}의 ${event.date} ${expected(event)} 일정을 삭제할까요?`))return;
     beginWrite();let deleted=false;
-    try{await call('deleteEvent',{event_id:event.event_id,revision:event.revision});events=events.filter(row=>row.event_id!==event.event_id);results=results.filter(row=>row.event_id!==event.event_id);render();message('일정을 삭제했습니다.');deleted=true;}
+    try{await call('deleteEvent',{event_id:event.event_id,revision:event.revision});events=events.filter(row=>row.event_id!==event.event_id);results=results.filter(row=>row.event_id!==event.event_id);patchCalendarCache('events',event.event_id);render();message('일정을 삭제했습니다.');deleted=true;}
     catch(e){message(e.message,true);}finally{busy=false;enabled();schedulePoll();}
     if(deleted)refresh({success:'일정을 삭제했습니다.'});
   }
@@ -3368,7 +3419,7 @@ const placeScheduleUI = (() => {
         const data=await call('saveEvent',{event:{...template,date}});
         if(!data||!data.event||!data.event.event_id||data.event.date!==date||data.event.company_id!==template.company_id)throw new Error('저장 결과를 확인하지 못했습니다. 새로고침으로 저장 여부를 확인한 후 다시 요청하세요.');
         saved.push(date);
-        if(data.event){events=events.filter(row=>row.event_id!==data.event.event_id);events.push(data.event);}
+        if(data.event){events=events.filter(row=>row.event_id!==data.event.event_id);events.push(data.event);patchCalendarCache('events',data.event.event_id,data.event);}
       }
       selected=dates[0];month=monthOf(selected);compact=true;$('editor').close();
       render();savedMessage=dates.length>1?`${dates.length}일의 일정을 저장했습니다. 네이버 반영 여부는 일정 확인 버튼으로 확인하세요.`:'일정을 저장했습니다. 네이버 반영 여부는 일정 확인 버튼으로 확인하세요.';message(savedMessage);
@@ -3407,6 +3458,7 @@ const placeScheduleUI = (() => {
       const data=await call('saveNote',{note});
       if(!data||!data.note||!data.note.note_id||data.note.date!==note.date||data.note.company_id!==note.company_id)throw new Error('메모 저장 결과를 확인하지 못했습니다. 새로고침으로 확인하세요.');
       if(notes.some(row=>row.note_id===data.note.note_id))notes=notes.map(row=>row.note_id===data.note.note_id?data.note:row);else notes.push(data.note);
+      patchCalendarCache('notes',data.note.note_id,data.note);
       selected=note.date;month=monthOf(selected);compact=true;render();$('note-editor').close();message('메모를 저장했습니다.');saved=true;
     }catch(error){$('note-error').textContent=noteError(error);$('note-error').hidden=false;}
     finally{busy=false;$('note-fields').disabled=false;$('note-save').disabled=false;$('note-cancel').disabled=false;$('note-save').textContent='메모 저장';enabled();schedulePoll();}
@@ -3416,24 +3468,24 @@ const placeScheduleUI = (() => {
     if(!session||busy||!hasData)return;
     if(!window.confirm(note.date+' 메모를 삭제할까요?'))return;
     beginWrite();let deleted=false;
-    try{await call('deleteNote',{note_id:note.note_id,revision:note.revision});notes=notes.filter(row=>row.note_id!==note.note_id);render();message('메모를 삭제했습니다.');deleted=true;}
+    try{await call('deleteNote',{note_id:note.note_id,revision:note.revision});notes=notes.filter(row=>row.note_id!==note.note_id);patchCalendarCache('notes',note.note_id);render();message('메모를 삭제했습니다.');deleted=true;}
     catch(error){message(noteError(error),true);}finally{busy=false;enabled();schedulePoll();}
     if(deleted)refresh({success:'메모를 삭제했습니다.'});
   }
   $('add-note').onclick=()=>openNote();$('note-cancel').onclick=()=>$('note-editor').close();$('note-editor').addEventListener('cancel',e=>{if(busy)e.preventDefault();});
   $('login-form').onsubmit=async e=>{
     e.preventDefault();if(busy)return;beginWrite();let loggedIn=false;
-    try{const data=await call('login',{account_id:$('account').value.trim(),access_key:$('key').value});session=data;epoch++;$('key').value='';saveSession();message('');render();loggedIn=true;}
+    try{const data=await call('login',{account_id:$('account').value.trim(),access_key:$('key').value});if(!usableSession(data))throw new Error('로그인 응답 형식이 올바르지 않습니다.');session=data;epoch++;$('key').value='';saveSession();message('');restoreCalendarCache();render();loggedIn=true;}
     catch(err){message(err.message,true);}finally{busy=false;enabled();}
     if(loggedIn)refresh();
   };
   $('company-filter').onchange=render;
   $('calendar-toggle').onclick=()=>{compact=!compact;calendarSize();};
-  function move(delta){const d=new Date(month+'-01T00:00:00Z');d.setUTCMonth(d.getUTCMonth()+delta);const next=d.toISOString().slice(0,7);if(next<'2000-01'||next>'2100-12')return;month=next;selected=month+'-01';compact=false;render();refresh();}
-  $('prev').onclick=()=>move(-1);$('next').onclick=()=>move(1);$('current').onclick=()=>{month=monthOf(kst());selected=kst();compact=false;render();refresh();};
+  function move(delta){const d=new Date(month+'-01T00:00:00Z');d.setUTCMonth(d.getUTCMonth()+delta);const next=d.toISOString().slice(0,7);if(next<'2000-01'||next>'2100-12')return;month=next;selected=month+'-01';compact=false;restoreCalendarCache();render();refresh();}
+  $('prev').onclick=()=>move(-1);$('next').onclick=()=>move(1);$('current').onclick=()=>{month=monthOf(kst());selected=kst();compact=false;restoreCalendarCache();render();refresh();};
   $('check').onclick=async()=>{
     if(busy||!hasData)return;beginWrite();let requested=false;
-    try{const data=await call('requestCheck');if(data.job){job=data.job;latest=data.job;}message(data.message||'확인을 요청했습니다.',data.job&&data.job.status==='dispatch_failed');render();requested=true;}
+    try{const data=await call('requestCheck');if(data.job){job=data.job;latest=data.job;cacheJob(data.job);}message(data.message||'확인을 요청했습니다.',data.job&&data.job.status==='dispatch_failed');render();requested=true;}
     catch(e){message(e.message,true);}finally{busy=false;enabled();schedulePoll();}
     if(requested)refresh({success:'확인을 요청했습니다.'});
   };
@@ -3459,7 +3511,7 @@ const placeScheduleUI = (() => {
     if(action==='deleteEvent'){localStorage.setItem(key,JSON.stringify(rows.filter(e=>e.event_id!==extra.event_id)));return Promise.resolve({deleted:true});}
     return Promise.reject(new Error('지원하지 않는 체험 요청입니다.'));
   }
-  function show(){active=true;compact=false;root.style.display='block';render();if(PLACE_SCHEDULE_CONFIG.demo){message('화면 체험 모드 · 일정은 이 브라우저에만 저장됩니다. 실제 네이버 검증은 운영 설정 후 사용할 수 있습니다.');if(!session){session={token:'preview-only',account_id:'체험',expires:Date.now()+86400000};render();}}else if(!PLACE_SCHEDULE_CONFIG.webappUrl)message('일정 서버 연결이 필요합니다. 설정 가이드에 따라 Apps Script 웹앱 주소를 입력하세요.');refresh();}
+  function show(){active=true;compact=false;root.style.display='block';restoreCalendarCache();render();if(PLACE_SCHEDULE_CONFIG.demo){message('화면 체험 모드 · 일정은 이 브라우저에만 저장됩니다. 실제 네이버 검증은 운영 설정 후 사용할 수 있습니다.');if(!session){session={token:'preview-only',account_id:'체험',expires:Date.now()+86400000};render();}}else if(!PLACE_SCHEDULE_CONFIG.webappUrl)message('일정 서버 연결이 필요합니다. 설정 가이드에 따라 Apps Script 웹앱 주소를 입력하세요.');refresh();}
   function hide(){active=false;root.style.display='none';clearTimeout(poll);if($('editor').open)$('editor').close();if($('note-editor').open)$('note-editor').close();}
   render();return {show,hide,refresh,isActive:()=>active};
 })();
