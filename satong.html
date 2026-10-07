@@ -630,6 +630,13 @@
 .ps-card { background:#fff; border:1px solid #e1e7ed; border-radius:12px; padding:16px; margin-bottom:14px; }
 .ps-toolbar,.ps-month-nav,.ps-login-fields,.ps-detail-head,.ps-event-row,.ps-form-actions { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
 .ps-toolbar { justify-content:space-between; margin-bottom:12px; }
+.ps-detail-actions { display:flex;align-items:center;gap:8px; }
+.ps-calendar-legend { display:flex;gap:12px;font-size:11px;color:#64748b;margin-bottom:4px; }
+.ps-calendar-legend span { display:flex;align-items:center;gap:4px; }
+.ps-calendar-legend i { width:8px;height:8px;border-radius:2px; }
+.ps-legend-event { background:#c62828; }
+.ps-legend-note { background:#e5aa27; }
+#place-schedule-view .ps-note-button { background:#fff3c4;border-color:#e4b743;color:#79530c;font-weight:700; }
 .ps-month-nav strong { font-size:19px; min-width:128px; text-align:center; }
 #place-schedule-view button,.ps-dialog button { cursor:pointer; border:1px solid #cbd5e1; background:#fff; border-radius:6px; padding:8px 12px; color:#334155; font:inherit; font-size:13px; }
 #place-schedule-view button:disabled,.ps-dialog button:disabled { opacity:.5;cursor:default; }
@@ -654,12 +661,18 @@
 .ps-day-number { display:flex;align-items:center;justify-content:space-between;font-weight:bold;font-size:13px; }
 .ps-day-markers { display:flex;align-items:center;gap:4px;min-width:0; }
 .ps-day-count { display:none; font-size:10px;line-height:16px;font-weight:700;min-width:16px;text-align:center;background:#c62828;color:#fff;border-radius:4px;padding:0 4px; }
+.ps-day-count.ps-day-note-count { background:#ffe69a;color:#79530c; }
 .ps-compact .ps-day-count { display:inline-block; }
 .ps-compact .ps-day-event,.ps-compact .ps-more { display:none; }
 #place-schedule-view .ps-compact .ps-day { justify-content:center; }
 .ps-today-tag { font-size:9px; font-weight:normal;color:#2381c5; }
 .ps-day-event { display:block; font-size:11px; line-height:1.4; padding:4px; margin-top:5px; background:#eff6ff; color:#345778; border-radius:4px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .ps-day-event.ps-closed { background:#fff2f3; color:#a53640; }
+.ps-day-event.ps-day-note { background:#fff3c4;color:#79530c; }
+.ps-note-row { border-left:3px solid #e4b743;background:#fffbeb;border-radius:6px;padding:12px;margin-top:8px; }
+.ps-note-info { flex:1 1 240px;min-width:0; }
+.ps-note-info strong { display:block;font-size:13px;color:#79530c; }
+.ps-note-text { margin:5px 0 0;white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px;line-height:1.6; }
 .ps-more { font-size:11px;color:#718096;margin-top:4px; }
 .ps-detail-head { justify-content:space-between; margin-bottom:10px; }
 .ps-detail-head h3 { margin:0;font-size:16px; }
@@ -686,6 +699,7 @@
 .ps-time-grid label { min-width:0; }
 .ps-time-grid input { min-width:0;width:100%; }
 .ps-dialog textarea { resize:vertical;min-height:75px; }
+#ps-note-content { min-height:150px; }
 #ps-event-form { display:flex;flex-direction:column;max-height:calc(90dvh - 44px); }
 .ps-editor-scroll { min-width:0;min-height:0;overflow-y:auto;flex:0 1 auto;scrollbar-width:thin; }
 .ps-editor-fields { border:0;padding:0 2px 0 0;margin:0;min-width:0; }
@@ -735,6 +749,9 @@
   .ps-month-nav strong { min-width:100px; font-size:17px; }
   #place-schedule-view .ps-month-nav button { padding:6px 9px; }
   .ps-event-info { flex-basis:100%; }
+  .ps-compact .ps-has-both .ps-day-number { flex-direction:column;align-items:flex-start;gap:1px; }
+  .ps-compact .ps-has-both .ps-day-markers { gap:2px; }
+  .ps-compact .ps-has-both .ps-day-count { font-size:9px;line-height:14px;min-width:12px;padding:0 2px; }
   .ps-job-head { gap:8px; }
   #place-schedule-view .ps-run-button { font-size:12px;padding:6px 9px; }
 }
@@ -928,11 +945,12 @@
       <div class="ps-month-nav"><button id="ps-prev" type="button" aria-label="이전 달">‹</button><strong id="ps-month"></strong><button id="ps-next" type="button" aria-label="다음 달">›</button><button id="ps-current" type="button">이번 달</button><button id="ps-calendar-toggle" type="button" aria-controls="ps-calendar" aria-expanded="true">달력 접기</button></div>
       <div class="ps-month-nav"><select id="ps-company-filter" aria-label="표시할 업체"><option value="">전체 업체</option></select><button id="ps-check" class="ps-primary" type="button" disabled>일정 확인</button></div>
     </div>
+    <div class="ps-calendar-legend"><span><i class="ps-legend-event"></i>일정</span><span><i class="ps-legend-note"></i>메모</span></div>
     <div class="ps-week" aria-hidden="true"><span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span></div>
     <div id="ps-calendar" class="ps-grid" aria-label="월 달력"></div>
   </div>
   <div class="ps-card" id="ps-details">
-    <div class="ps-detail-head"><h3 id="ps-selected-date"></h3><button id="ps-add" class="ps-primary" type="button" disabled>일정 추가</button></div>
+    <div class="ps-detail-head"><h3 id="ps-selected-date"></h3><div class="ps-detail-actions"><button id="ps-add" class="ps-primary" type="button" disabled>일정 추가</button><button id="ps-add-note" class="ps-note-button" type="button" disabled>메모 추가</button></div></div>
     <div id="ps-day-events"></div>
   </div>
   <div class="ps-card" id="ps-weekly-card">
@@ -977,6 +995,17 @@
       </div>
       <div id="ps-form-error" class="ps-message ps-error" role="alert" hidden></div>
       <div class="ps-form-actions"><button id="ps-cancel" type="button">취소</button><button id="ps-save" class="ps-primary" type="submit">저장</button></div>
+    </form>
+  </dialog>
+  <dialog id="ps-note-editor" class="ps-dialog">
+    <form id="ps-note-form">
+      <h3 id="ps-note-title">메모 추가</h3>
+      <fieldset id="ps-note-fields" class="ps-editor-fields">
+        <label>업체 (선택)<select id="ps-note-company"><option value="">일반 메모 (업체 선택 안 함)</option></select></label>
+        <label>메모<textarea id="ps-note-content" maxlength="2000" required placeholder="이 날짜에 기록할 내용을 입력하세요."></textarea></label>
+      </fieldset>
+      <div id="ps-note-error" class="ps-message ps-error" role="alert" hidden></div>
+      <div class="ps-form-actions"><button id="ps-note-cancel" type="button">취소</button><button id="ps-note-save" class="ps-note-button" type="submit">메모 저장</button></div>
     </form>
   </dialog>
 </section>
@@ -3068,7 +3097,8 @@ const placeScheduleUI = (() => {
   const localTime=value=>value?new Date(value).toLocaleString('ko-KR',{timeZone:'Asia/Seoul',month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}):'—';
   const node=(tag,text,cls)=>{const e=document.createElement(tag);if(text!=null)e.textContent=text;if(cls)e.className=cls;return e;};
   let month=monthOf(kst()),selected=kst(),compact=false,active=false,busy=false,loading=false,epoch=0,edit=null,poll=null;
-  let session=null,companies=[],events=[],results=[],job={},latest={};
+  let session=null,companies=[],events=[],notes=[],results=[],job={},latest={};
+  let noteEdit=null,noteDate=selected;
   let dateMode='single',pickerMonth=month,pickedDates=new Set();
   const maxDates=31;
   const storageKey='placeScheduleSession:'+PLACE_SCHEDULE_CONFIG.webappUrl;
@@ -3077,7 +3107,7 @@ const placeScheduleUI = (() => {
   $('account').value=PLACE_SCHEDULE_CONFIG.accountId||'main';
   function saveSession(){try{if(session)sessionStorage.setItem(storageKey,JSON.stringify(session));else sessionStorage.removeItem(storageKey);}catch(e){}}
   function message(text,error=false){$('message').textContent=text;$('message').hidden=!text;$('message').classList.toggle('ps-error',error);}
-  function clear(){epoch++;session=null;companies=[];events=[];results=[];job={};latest={};saveSession();$('key').value='';if($('editor').open)$('editor').close();render();}
+  function clear(){epoch++;session=null;companies=[];events=[];notes=[];results=[];job={};latest={};saveSession();$('key').value='';if($('editor').open)$('editor').close();if($('note-editor').open)$('note-editor').close();render();}
   async function call(action,extra={}){
     if(PLACE_SCHEDULE_CONFIG.demo)return demoCall(action,extra);
     const url=PLACE_SCHEDULE_CONFIG.webappUrl;
@@ -3111,9 +3141,11 @@ const placeScheduleUI = (() => {
     const ready=Boolean(session)&&!busy&&!loading;
     $('check').disabled=!ready||['queued','running'].includes(job.status);
     $('add').disabled=!ready||!companies.length;
+    $('add-note').disabled=!ready;
     $('login-form').querySelector('button').disabled=busy||loading;
     root.querySelectorAll('[data-ps-edit]').forEach(b=>b.disabled=!ready);
     root.querySelectorAll('[data-ps-delete]').forEach(b=>b.disabled=!ready);
+    root.querySelectorAll('[data-ps-note-edit],[data-ps-note-delete]').forEach(b=>b.disabled=!ready);
   }
   function render(){
     const today=kst();$('month').textContent=month.replace('-','년 ')+'월';
@@ -3125,24 +3157,30 @@ const placeScheduleUI = (() => {
     companies.forEach(c=>{const o=node('option',c.name);o.value=c.company_id;opts.push(o);});
     $('company-filter').replaceChildren(...opts);$('company-filter').value=companies.some(c=>c.company_id===filter)?filter:'';
     const shown=events.filter(e=>!$('company-filter').value||e.company_id===$('company-filter').value);
+    const shownNotes=notes.filter(n=>!$('company-filter').value||!n.company_id||n.company_id===$('company-filter').value);
     const first=month+'-01',start=addDays(first,-new Date(first+'T00:00:00Z').getUTCDay());
     $('calendar').replaceChildren();
     for(let i=0;i<42;i++){
-      const date=addDays(start,i),items=shown.filter(e=>e.date===date),button=node('button',null,'ps-day');
+      const date=addDays(start,i),items=shown.filter(e=>e.date===date),dayNotes=shownNotes.filter(n=>n.date===date),button=node('button',null,'ps-day');
       button.type='button';button.dataset.date=date;button.classList.toggle('ps-outside',monthOf(date)!==month);button.classList.toggle('ps-today',date===today);button.classList.toggle('ps-selected',date===selected);
-      button.setAttribute('aria-label',date+': '+items.length+'개 일정');button.setAttribute('aria-pressed',String(date===selected));
+      button.setAttribute('aria-label',date+': '+items.length+'개 일정, '+dayNotes.length+'개 메모');button.setAttribute('aria-pressed',String(date===selected));button.classList.toggle('ps-has-both',Boolean(items.length&&dayNotes.length));
       const number=node('span',String(Number(date.slice(8))),'ps-day-number'),markers=node('span',null,'ps-day-markers');
       if(date===today)markers.append(node('span','오늘','ps-today-tag'));
-      if(items.length){const count=node('span',String(items.length),'ps-day-count');count.setAttribute('aria-hidden','true');markers.append(count);}
+      if(items.length){const count=node('span',String(items.length),'ps-day-count');count.title=`일정 ${items.length}개`;count.setAttribute('aria-hidden','true');markers.append(count);}
+      if(dayNotes.length){const count=node('span',String(dayNotes.length),'ps-day-count ps-day-note-count');count.title=`메모 ${dayNotes.length}개`;count.setAttribute('aria-hidden','true');markers.append(count);}
       number.append(markers);button.append(number);
-      items.slice(0,2).forEach(e=>{const row=node('span',(company(e.company_id)||{}).name+' · '+expected(e),'ps-day-event'+(e.type==='closed'?' ps-closed':''));row.title=row.textContent+' · '+labels[status(e)];button.append(row);});
-      if(items.length>2)button.append(node('span','+'+(items.length-2)+'개','ps-more'));
+      const visibleEvents=items.slice(0,dayNotes.length?1:2),visibleNotes=dayNotes.slice(0,items.length?1:2);
+      visibleEvents.forEach(e=>{const row=node('span',(company(e.company_id)||{}).name+' · '+expected(e),'ps-day-event'+(e.type==='closed'?' ps-closed':''));row.title=row.textContent+' · '+labels[status(e)];button.append(row);});
+      visibleNotes.forEach(n=>{const row=node('span','메모 · '+(n.company_id?(company(n.company_id)||{}).name||n.company_id:'일반')+' · '+n.content,'ps-day-event ps-day-note');row.title=row.textContent;button.append(row);});
+      const more=items.length+dayNotes.length-visibleEvents.length-visibleNotes.length;
+      if(more>0)button.append(node('span','+'+more+'개','ps-more'));
       button.onclick=()=>{compact=!(compact&&selected===date);selected=date;const moved=monthOf(date)!==month;if(moved)month=monthOf(date);render();$('calendar').querySelector(`[data-date="${date}"]`).focus({preventScroll:true});if(moved)refresh();};
       $('calendar').append(button);
     }
     $('selected-date').textContent=selected+' 일정';$('day-events').replaceChildren();
     const dayEvents=shown.filter(e=>e.date===selected);
-    if(!dayEvents.length)$('day-events').append(node('p',session?'등록된 일정이 없습니다. 일정 추가 버튼으로 등록하세요.':'로그인하면 등록 일정을 확인할 수 있습니다.','ps-note'));
+    const dayNotes=shownNotes.filter(n=>n.date===selected);
+    if(!dayEvents.length&&!dayNotes.length)$('day-events').append(node('p',session?'등록된 일정이 없습니다. 일정 추가 또는 메모 추가 버튼으로 등록하세요.':'로그인하면 등록 일정과 메모를 확인할 수 있습니다.','ps-note'));
     dayEvents.forEach(e=>{
       const row=node('div',null,'ps-event-row'),info=node('div',null,'ps-event-info');
       const summary=node('div',null,'ps-event-summary'),name=node('strong',(company(e.company_id)||{}).name||e.company_id,'ps-event-company'),separator=node('span','ㅣ','ps-event-separator');
@@ -3151,6 +3189,13 @@ const placeScheduleUI = (() => {
       if(e.memo)info.append(node('p',e.memo,'ps-note'));row.append(info);
       const editButton=node('button','수정');editButton.type='button';editButton.dataset.psEdit=e.event_id;editButton.onclick=()=>openEditor(e);
       const remove=node('button','삭제','ps-danger');remove.type='button';remove.dataset.psDelete=e.event_id;remove.onclick=()=>deleteEvent(e);row.append(editButton,remove);$('day-events').append(row);
+    });
+    dayNotes.forEach(n=>{
+      const row=node('div',null,'ps-event-row ps-note-row'),info=node('div',null,'ps-note-info');
+      info.append(node('strong',n.company_id?((company(n.company_id)||{}).name||n.company_id)+' ㅣ 메모':'일반 메모'),node('p',n.content,'ps-note-text'));
+      const editButton=node('button','수정');editButton.type='button';editButton.dataset.psNoteEdit=n.note_id;editButton.onclick=()=>openNote(n);
+      const remove=node('button','삭제','ps-danger');remove.type='button';remove.dataset.psNoteDelete=n.note_id;remove.onclick=()=>deleteNote(n);
+      row.append(info,editButton,remove);$('day-events').append(row);
     });
     const weekly=shown.filter(e=>e.date>=today&&e.date<=addDays(today,6)).sort((a,b)=>a.date.localeCompare(b.date)||a.company_id.localeCompare(b.company_id));
     $('results').replaceChildren();
@@ -3179,7 +3224,7 @@ const placeScheduleUI = (() => {
   async function refresh(){
     if(!session||loading)return;loading=true;enabled();const version=epoch,requestedMonth=month;
     try{const data=await call('dashboard',{month:requestedMonth});if(version!==epoch)return;
-      companies=data.companies||[];events=data.events||[];results=data.results||[];job=data.active_job||{};latest=data.latest_job||{};render();
+      companies=data.companies||[];events=data.events||[];notes=data.notes||[];results=data.results||[];job=data.active_job||{};latest=data.latest_job||{};render();
     }catch(e){message(e.message,true);}
     finally{loading=false;enabled();schedulePoll();if(session&&month!==requestedMonth&&version===epoch)refresh();}
   }
@@ -3303,6 +3348,37 @@ const placeScheduleUI = (() => {
     }finally{busy=false;$('editor-fields').disabled=false;$('cancel').disabled=false;dateSummary();enabled();schedulePoll();}
   };
   $('editor').addEventListener('cancel',e=>{if(busy)e.preventDefault();});$('cancel').onclick=()=>$('editor').close();$('type').onchange=timeFields;$('add').onclick=()=>openEditor();
+  function openNote(note=null){
+    if(!session||busy||loading)return;
+    noteEdit=note;noteDate=note?note.date:selected;
+    $('note-title').textContent=noteDate+(note?' 메모 수정':' 메모 추가');
+    const general=node('option','일반 메모 (업체 선택 안 함)');general.value='';
+    $('note-company').replaceChildren(general,...companies.map(c=>{const option=node('option',c.name);option.value=c.company_id;return option;}));
+    if(note&&note.company_id&&!companies.some(c=>c.company_id===note.company_id)){const old=node('option',note.company_id+' (현재 목록에 없는 업체)');old.value=note.company_id;$('note-company').append(old);}
+    $('note-company').value=note?note.company_id:($('company-filter').value||'');$('note-content').value=note?note.content:'';
+    $('note-fields').disabled=false;$('note-error').hidden=true;$('note-save').disabled=false;$('note-cancel').disabled=false;$('note-save').textContent='메모 저장';$('note-editor').showModal();
+  }
+  function noteError(error){return /지원하지 않는/.test(error.message)?'메모 기능을 사용하려면 수정된 Apps Script 코드를 반영하고 기존 웹앱을 새 버전으로 배포하세요.':error.message;}
+  $('note-form').onsubmit=async e=>{
+    e.preventDefault();if(busy)return;
+    const content=$('note-content').value.trim();if(!content){$('note-error').textContent='메모 내용을 입력하세요.';$('note-error').hidden=false;return;}
+    const note={note_id:noteEdit&&noteEdit.note_id||'',revision:noteEdit&&noteEdit.revision||0,date:noteDate,company_id:$('note-company').value,content};
+    busy=true;enabled();clearTimeout(poll);$('note-fields').disabled=true;$('note-save').disabled=true;$('note-cancel').disabled=true;$('note-save').textContent='저장 중…';$('note-error').hidden=true;
+    try{
+      const data=await call('saveNote',{note});
+      if(!data||!data.note||!data.note.note_id||data.note.date!==note.date||data.note.company_id!==note.company_id)throw new Error('메모 저장 결과를 확인하지 못했습니다. 새로고침으로 확인하세요.');
+      if(notes.some(row=>row.note_id===data.note.note_id))notes=notes.map(row=>row.note_id===data.note.note_id?data.note:row);else notes.push(data.note);
+      selected=note.date;month=monthOf(selected);compact=true;render();$('note-editor').close();message('메모를 저장했습니다.');await refresh();
+    }catch(error){$('note-error').textContent=noteError(error);$('note-error').hidden=false;}
+    finally{busy=false;$('note-fields').disabled=false;$('note-save').disabled=false;$('note-cancel').disabled=false;$('note-save').textContent='메모 저장';enabled();schedulePoll();}
+  };
+  async function deleteNote(note){
+    if(!window.confirm(note.date+' 메모를 삭제할까요?'))return;
+    busy=true;enabled();
+    try{await call('deleteNote',{note_id:note.note_id,revision:note.revision});notes=notes.filter(row=>row.note_id!==note.note_id);render();message('메모를 삭제했습니다.');await refresh();}
+    catch(error){message(noteError(error),true);}finally{busy=false;enabled();schedulePoll();}
+  }
+  $('add-note').onclick=()=>openNote();$('note-cancel').onclick=()=>$('note-editor').close();$('note-editor').addEventListener('cancel',e=>{if(busy)e.preventDefault();});
   $('login-form').onsubmit=async e=>{
     e.preventDefault();if(busy)return;busy=true;enabled();
     try{const data=await call('login',{account_id:$('account').value.trim(),access_key:$('key').value});session=data;epoch++;$('key').value='';saveSession();message('');render();await refresh();}
@@ -3322,7 +3398,14 @@ const placeScheduleUI = (() => {
   function demoCall(action,extra){
     const key='placeSchedulePreviewEvents';let rows;try{rows=JSON.parse(localStorage.getItem(key)||'[]');}catch(e){rows=[];}
     if(action==='login')return Promise.resolve({token:'preview-only',account_id:'체험',expires:Date.now()+86400000});
-    if(action==='dashboard')return Promise.resolve({companies:[{company_id:'yonsei-child',name:'연세우리아동발달클리닉',place_id:'2056728323'},{company_id:'bareunmom',name:'바른몸한방병원',place_id:'38221131'}],events:rows,results:[],active_job:{},latest_job:{}});
+    const noteKey='placeSchedulePreviewNotes';let noteRows;try{noteRows=JSON.parse(localStorage.getItem(noteKey)||'[]');}catch(e){noteRows=[];}
+    if(action==='dashboard')return Promise.resolve({companies:[{company_id:'yonsei-child',name:'연세우리아동발달클리닉',place_id:'2056728323'},{company_id:'bareunmom',name:'바른몸한방병원',place_id:'38221131'}],events:rows,notes:noteRows.filter(n=>monthOf(n.date)===extra.month),results:[],active_job:{},latest_job:{}});
+    if(action==='saveNote'){
+      const input=extra.note,old=noteRows.find(n=>n.note_id===input.note_id),next={...input,note_id:old?old.note_id:crypto.randomUUID(),revision:old?Number(old.revision)+1:1};
+      if(old)noteRows=noteRows.map(n=>n===old?next:n);else noteRows.push(next);
+      localStorage.setItem(noteKey,JSON.stringify(noteRows));return Promise.resolve({note:next});
+    }
+    if(action==='deleteNote'){localStorage.setItem(noteKey,JSON.stringify(noteRows.filter(n=>n.note_id!==extra.note_id)));return Promise.resolve({deleted:true});}
     if(action==='requestCheck')return Promise.reject(new Error('체험 화면에서는 네이버 확인을 실행하지 않습니다. 운영 HTML에 Apps Script를 연결해 주세요.'));
     if(action==='saveEvent'){
       const input=extra.event,old=rows.find(e=>e.event_id===input.event_id);
@@ -3333,7 +3416,7 @@ const placeScheduleUI = (() => {
     return Promise.reject(new Error('지원하지 않는 체험 요청입니다.'));
   }
   function show(){active=true;compact=false;root.style.display='block';render();if(PLACE_SCHEDULE_CONFIG.demo){message('화면 체험 모드 · 일정은 이 브라우저에만 저장됩니다. 실제 네이버 검증은 운영 설정 후 사용할 수 있습니다.');if(!session){session={token:'preview-only',account_id:'체험',expires:Date.now()+86400000};render();}}else if(!PLACE_SCHEDULE_CONFIG.webappUrl)message('일정 서버 연결이 필요합니다. 설정 가이드에 따라 Apps Script 웹앱 주소를 입력하세요.');refresh();}
-  function hide(){active=false;root.style.display='none';clearTimeout(poll);if($('editor').open)$('editor').close();}
+  function hide(){active=false;root.style.display='none';clearTimeout(poll);if($('editor').open)$('editor').close();if($('note-editor').open)$('note-editor').close();}
   render();return {show,hide,refresh,isActive:()=>active};
 })();
 
