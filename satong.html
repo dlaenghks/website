@@ -2976,7 +2976,7 @@ async function checkNoticeBadgeOnStart() {
     // PLACE_ADS_HOST_END
 
 // 운영 HTML에서는 이 설정의 webappUrl에 전용 Apps Script /exec URL만 입력하세요.
-const PLACE_SCHEDULE_CONFIG = {webappUrl:'', accountId:'main', demo:false};
+const PLACE_SCHEDULE_CONFIG = {webappUrl:'https://script.google.com/macros/s/AKfycbzp1S0FvwC2XwgeQjhT7xFN8uzrbv84VyuluNY5VO8oED0vSwBuiXPiIgn7SYv90cWD/exec', accountId:'main', demo:false};
 const placeScheduleUI = (() => {
   const root=document.getElementById('place-schedule-view'),$=name=>document.getElementById('ps-'+name);
   const labels={match:'일치',mismatch:'불일치',error:'확인 실패',unverified:'미확인',stale:'재확인 필요',waiting:'확인 가능일 대기',past:'지난 일정'};
