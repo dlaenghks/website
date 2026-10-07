@@ -653,7 +653,7 @@
 #place-schedule-view .ps-day.ps-selected { outline:2px solid #2381c5;outline-offset:-2px; background:#f2f8ff; }
 .ps-day-number { display:flex;align-items:center;justify-content:space-between;font-weight:bold;font-size:13px; }
 .ps-day-markers { display:flex;align-items:center;gap:4px;min-width:0; }
-.ps-day-count { display:none; font-size:10px;line-height:16px;font-weight:normal;min-width:16px;text-align:center;background:#e5eff9;color:#245d8d;border-radius:8px;padding:0 4px; }
+.ps-day-count { display:none; font-size:10px;line-height:16px;font-weight:700;min-width:16px;text-align:center;background:#c62828;color:#fff;border-radius:4px;padding:0 4px; }
 .ps-compact .ps-day-count { display:inline-block; }
 .ps-compact .ps-day-event,.ps-compact .ps-more { display:none; }
 #place-schedule-view .ps-compact .ps-day { justify-content:center; }
@@ -664,8 +664,11 @@
 .ps-detail-head { justify-content:space-between; margin-bottom:10px; }
 .ps-detail-head h3 { margin:0;font-size:16px; }
 .ps-event-row { justify-content:space-between; padding:12px 0; border-top:1px solid #edf0f3; }
-.ps-event-info { flex:1; min-width:160px; }
-.ps-event-info strong { display:block;font-size:14px;margin-bottom:5px; }
+.ps-event-info { flex:1 1 240px; min-width:0; }
+.ps-event-summary { display:flex;align-items:center;gap:6px;white-space:nowrap;min-width:0; }
+.ps-event-summary .ps-event-company { font-size:14px;min-width:0;overflow:hidden;text-overflow:ellipsis; }
+.ps-event-separator { color:#94a3b8;flex-shrink:0; }
+.ps-event-kind,.ps-event-summary .ps-badge { flex-shrink:0; }
 .ps-badge { display:inline-block; padding:3px 7px; border-radius:4px; font-size:11px; font-weight:700; background:#edf1f5; color:#627080; }
 .ps-badge.match { background:#e8f7ef; color:#237647; }
 .ps-badge.mismatch,.ps-badge.error { background:#fff0f1; color:#be3742; }
@@ -684,6 +687,11 @@
 .ps-form-actions { justify-content:flex-end;margin-top:16px; }
 .ps-progress { width:100%; height:7px; background:#e4ecf4; border-radius:6px; overflow:hidden; margin:8px 0; }
 .ps-progress i { display:block;height:100%;background:#2381c5; }
+.ps-job-head { display:flex;align-items:center;gap:10px;flex-wrap:wrap; }
+.ps-job-head .ps-note { margin:0; }
+#place-schedule-view .ps-run-button { display:inline-flex;align-items:center;justify-content:center;border:1px solid #2381c5;border-radius:6px;padding:8px 12px;font:inherit;font-size:13px;line-height:normal;text-decoration:none;white-space:nowrap; }
+#place-schedule-view .ps-run-button:hover { background:#1c6da8;border-color:#1c6da8; }
+#place-schedule-view .ps-run-button:focus-visible { outline:2px solid #155c92;outline-offset:2px; }
 @media(max-width:768px) {
   .ps-card { padding:12px; }
   .ps-toolbar { align-items:flex-start; }
@@ -699,6 +707,9 @@
   .ps-month-nav { gap:5px; }
   .ps-month-nav strong { min-width:100px; font-size:17px; }
   #place-schedule-view .ps-month-nav button { padding:6px 9px; }
+  .ps-event-info { flex-basis:100%; }
+  .ps-job-head { gap:8px; }
+  #place-schedule-view .ps-run-button { font-size:12px;padding:6px 9px; }
 }
 @media(prefers-reduced-motion:reduce) {
   .ps-grid { transition:none; }
@@ -900,7 +911,10 @@
   <div class="ps-card" id="ps-weekly-card">
     <h3 style="margin:0 0 8px;font-size:16px">오늘부터 7일의 등록 일정</h3>
     <p id="ps-range" class="ps-note"></p>
-    <div id="ps-job" hidden><div id="ps-job-text" class="ps-note" aria-live="polite"></div><div class="ps-progress"><i id="ps-progress-bar"></i></div><a id="ps-run-url" target="_blank" rel="noopener noreferrer" hidden>GitHub 실행 보기</a></div>
+    <div id="ps-job" hidden>
+      <div class="ps-job-head"><div id="ps-job-text" class="ps-note" aria-live="polite"></div><a id="ps-run-url" class="ps-run-button ps-primary" target="_blank" rel="noopener noreferrer" hidden>GitHub 실행 보기</a></div>
+      <div class="ps-progress"><i id="ps-progress-bar"></i></div>
+    </div>
     <p id="ps-updated" class="ps-note"></p><div id="ps-results" class="ps-results-wrap"></div>
   </div>
   <dialog id="ps-editor" class="ps-dialog">
@@ -3071,7 +3085,7 @@ const placeScheduleUI = (() => {
       number.append(markers);button.append(number);
       items.slice(0,2).forEach(e=>{const row=node('span',(company(e.company_id)||{}).name+' · '+expected(e),'ps-day-event'+(e.type==='closed'?' ps-closed':''));row.title=row.textContent+' · '+labels[status(e)];button.append(row);});
       if(items.length>2)button.append(node('span','+'+(items.length-2)+'개','ps-more'));
-      button.onclick=()=>{selected=date;compact=true;const moved=monthOf(date)!==month;if(moved)month=monthOf(date);render();$('calendar').querySelector(`[data-date="${date}"]`).focus({preventScroll:true});if(moved)refresh();};
+      button.onclick=()=>{compact=!(compact&&selected===date);selected=date;const moved=monthOf(date)!==month;if(moved)month=monthOf(date);render();$('calendar').querySelector(`[data-date="${date}"]`).focus({preventScroll:true});if(moved)refresh();};
       $('calendar').append(button);
     }
     $('selected-date').textContent=selected+' 일정';$('day-events').replaceChildren();
@@ -3079,7 +3093,9 @@ const placeScheduleUI = (() => {
     if(!dayEvents.length)$('day-events').append(node('p',session?'등록된 일정이 없습니다. 일정 추가 버튼으로 등록하세요.':'로그인하면 등록 일정을 확인할 수 있습니다.','ps-note'));
     dayEvents.forEach(e=>{
       const row=node('div',null,'ps-event-row'),info=node('div',null,'ps-event-info');
-      info.append(node('strong',(company(e.company_id)||{}).name||e.company_id),node('span',expected(e)+' '),badge(e));
+      const summary=node('div',null,'ps-event-summary'),name=node('strong',(company(e.company_id)||{}).name||e.company_id,'ps-event-company'),separator=node('span','ㅣ','ps-event-separator');
+      name.title=name.textContent;separator.setAttribute('aria-hidden','true');
+      summary.append(name,separator,node('span',expected(e),'ps-event-kind'),badge(e));info.append(summary);
       if(e.memo)info.append(node('p',e.memo,'ps-note'));row.append(info);
       const editButton=node('button','수정');editButton.type='button';editButton.dataset.psEdit=e.event_id;editButton.onclick=()=>openEditor(e);
       const remove=node('button','삭제','ps-danger');remove.type='button';remove.dataset.psDelete=e.event_id;remove.onclick=()=>deleteEvent(e);row.append(editButton,remove);$('day-events').append(row);
