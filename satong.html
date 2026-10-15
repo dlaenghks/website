@@ -626,9 +626,25 @@
 #place-ads-view .pa-feedback-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}#place-ads-view .pa-feedback-used{white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px;color:#52657a;margin:12px 0 0}#place-ads-view .pa-feedback label{font-size:14px}#place-ads-view .pa-feedback-meta{font-size:12px;color:#64748b}
 
 .sidebar a.menu-title,.sidebar a.submenu-item{color:inherit;text-decoration:none}
-.dashboard-route-links{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;padding:8px 0}
-.dashboard-route-links a{display:block;padding:16px;border:1px solid #dbe3ec;border-radius:9px;background:#fff;color:#247bb5;text-decoration:none;overflow-wrap:anywhere}
-.dashboard-route-links a:hover,.dashboard-route-links a:focus-visible{border-color:#3498db;background:#eef7ff}
+.dashboard-route-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:14px 0 22px}
+.dashboard-route-heading h3{margin:0;color:#26384c;font-size:20px;font-weight:700;letter-spacing:-.6px;line-height:1.5}
+.dashboard-route-heading p{margin:6px 0 0;font-size:13px;color:#748296;line-height:1.65;word-break:keep-all}
+.dashboard-route-count{flex-shrink:0;padding:7px 12px;border:1px solid #dce7f2;border-radius:30px;background:#eaf2fb;color:#3776aa;font-size:12px;font-weight:700}
+.dashboard-route-links{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,280px),1fr));gap:14px;padding:0 0 24px}
+.dashboard-route-links .dashboard-route-card{display:flex;align-items:center;gap:15px;min-width:0;min-height:100px;box-sizing:border-box;padding:22px 20px;border:1px solid #e5eaf0;border-radius:16px;background:#fff;color:#283c51;text-decoration:none;box-shadow:0 3px 12px rgba(31,55,83,.025);transition:border-color .18s,box-shadow .18s,transform .18s}
+.dashboard-route-symbol{display:flex;align-items:center;justify-content:center;flex-shrink:0;width:45px;height:45px;border-radius:14px;background:#edf5fc;color:#418bc1;transition:background .18s,color .18s}
+.dashboard-route-symbol svg{display:block;width:23px;height:23px}
+.dashboard-route-copy{display:flex;flex-direction:column;gap:7px;flex:1;min-width:0}
+.dashboard-route-name{font-size:15px;font-weight:700;line-height:1.55;letter-spacing:-.4px;word-break:keep-all;overflow-wrap:anywhere}
+.dashboard-route-detail{font-size:12px;color:#8592a2;line-height:1.5;word-break:keep-all;overflow-wrap:anywhere}
+.dashboard-route-arrow{flex-shrink:0;width:7px;height:7px;margin:0 3px 0 5px;border-top:1.5px solid #aab8c7;border-right:1.5px solid #aab8c7;transform:rotate(45deg);transition:border-color .18s,translate .18s}
+.dashboard-route-links .dashboard-route-card:hover{border-color:#b6d4ec;box-shadow:0 7px 20px rgba(44,107,157,.09);transform:translateY(-2px)}
+.dashboard-route-card:hover .dashboard-route-symbol{background:#358dca;color:#fff}
+.dashboard-route-card:hover .dashboard-route-arrow{border-color:#358dca;translate:3px 0}
+.dashboard-route-links .dashboard-route-card:focus-visible{outline:3px solid #91c5ee;outline-offset:3px;border-color:#358dca}
+.dashboard-route-empty{grid-column:1/-1;margin:0;padding:35px 20px;text-align:center;font-size:13px;color:#748296;background:#fff;border:1px dashed #d8e2ed;border-radius:16px}
+@media(max-width:600px){.dashboard-route-heading{margin:8px 0 18px;align-items:flex-start;gap:12px}.dashboard-route-heading h3{font-size:18px}.dashboard-route-heading p{font-size:12px}.dashboard-route-count{padding:6px 10px;font-size:11px;margin-top:4px}.dashboard-route-links{gap:11px}.dashboard-route-links .dashboard-route-card{min-height:90px;padding:18px 16px;gap:13px}.dashboard-route-symbol{width:41px;height:41px;border-radius:12px}.dashboard-route-name{font-size:14px}}
+@media(prefers-reduced-motion:reduce){.dashboard-route-links .dashboard-route-card,.dashboard-route-symbol,.dashboard-route-arrow{transition:none}.dashboard-route-links .dashboard-route-card:hover{transform:none}.dashboard-route-card:hover .dashboard-route-arrow{translate:none}}
 </style>
 <style>
 #place-schedule-view { display:none; padding-bottom:30px; }
@@ -3666,24 +3682,48 @@ const placeScheduleUI = (() => {
         }
         function normalClick(event){return !event||event.button===0&&!event.ctrlKey&&!event.metaKey&&!event.shiftKey&&!event.altKey;}
         function linkClick(event,callback){if(!normalClick(event))return;if(event)event.preventDefault();callback();}
+        function menuCard(mode,name,description){
+            const a=document.createElement('a');a.className='dashboard-route-card';
+            const badge=document.createElement('span');badge.className='dashboard-route-symbol';badge.setAttribute('aria-hidden','true');
+            const drawings={review:['M8 10h8M8 14h5','M5 4h14v14H9l-4 3V4Z'],rank:['M5 19V12M12 19V8M19 19V4'],power:['M13 3 5 14h6l-1 7 9-12h-6l0-6Z'],integrated:['M10.5 17a6.5 6.5 0 1 0 0-13 6.5 6.5 0 0 0 0 13Z','m16 16 5 5'],marketing:['M14 6 18 10M6 14l4 4','m14 3 7 7-11 11-7-7L14 3Z'],bookmark:['M6 3h12v18l-6-4-6 4V3Z']};
+            const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+            for(const [key,value] of Object.entries({viewBox:'0 0 24 24',fill:'none',stroke:'currentColor','stroke-width':'1.7','stroke-linecap':'round','stroke-linejoin':'round'}))svg.setAttribute(key,value);
+            for(const drawing of drawings[mode]||drawings.rank){const path=document.createElementNS(svg.namespaceURI,'path');path.setAttribute('d',drawing);svg.append(path);}badge.append(svg);
+            const copy=document.createElement('span');copy.className='dashboard-route-copy';
+            const title=document.createElement('span');title.className='dashboard-route-name';title.textContent=name;
+            const detail=document.createElement('span');detail.className='dashboard-route-detail';detail.textContent=description;
+            const arrow=document.createElement('span');arrow.className='dashboard-route-arrow';arrow.setAttribute('aria-hidden','true');
+            copy.append(title,detail);a.append(badge,copy,arrow);return a;
+        }
         function showMenu(mode,list,message=''){
             hidePlaceAds();placeScheduleUI.hide();renderContent('marketing',[],'');
             document.querySelectorAll('.submenu-item').forEach(el=>el.classList.remove('active'));
             document.getElementById('page-title').textContent='['+titles[mode]+'] '+(mode==='marketing'?'도구 선택':mode==='bookmark'?'바로가기':'업체 선택');
-            const notice=document.getElementById('notice-box');notice.textContent=message||(mode==='bookmark'?'즐겨찾기를 누르면 새 탭에서 열립니다.':'아래 목록 또는 왼쪽 메뉴에서 선택하세요.');notice.style.display='block';
+            const notice=document.getElementById('notice-box');notice.textContent=message;notice.style.display=message?'block':'none';
             const table=document.getElementById('table-container');table.replaceChildren();
             const links=document.createElement('div');links.className='dashboard-route-links';
             if(mode==='bookmark'){
                 for(const item of dataCache.bookmark||[]){
                     if(!item||item.name==='-'||typeof item.url!=='string')continue;
-                    const a=document.createElement('a');a.textContent=String(item.name||item.url);a.href=/^https?:\/\//i.test(item.url)?item.url:'https://'+item.url;a.target='_blank';a.rel='noopener noreferrer';links.append(a);
+                    const address=/^https?:\/\//i.test(item.url)?item.url:'https://'+item.url;
+                    let host='새 탭에서 열기';try{host=new URL(address).hostname;}catch(e){}
+                    const a=menuCard(mode,String(item.name||item.url),host);a.href=address;a.target='_blank';a.rel='noopener noreferrer';links.append(a);
                 }
             }else for(const item of list){
-                const route={mode,...(item.feature?{feature:item.feature}:{company:item.company})},a=document.createElement('a');
-                a.textContent=item.name;a.href=href(route);a.onclick=e=>linkClick(e,()=>navigate(route));links.append(a);
+                const route={mode,...(item.feature?{feature:item.feature}:{company:item.company})};
+                const descriptions={review:'리뷰 모아보기',rank:'순위 추이 확인',power:'광고 성과 확인',integrated:'노출 기록 확인'};
+                const tools={keywords:'키워드별 검색량을 확인하세요',notices:'최근 공지사항을 확인하세요',schedule:'업체별 일정과 메모를 관리하세요'};
+                const a=menuCard(mode,item.name,item.feature?tools[item.feature]:descriptions[mode]||'상세 내용 보기');
+                a.href=href(route);a.onclick=e=>linkClick(e,()=>navigate(route));links.append(a);
             }
-            if(!links.children.length){const empty=document.createElement('p');empty.textContent=message?'목록에서 올바른 주소를 선택해 주세요.':'표시할 항목이 없습니다.';links.append(empty);}
-            table.append(links);
+            const count=links.children.length,heading=document.createElement('div');heading.className='dashboard-route-heading';
+            const intro=document.createElement('div'),title=document.createElement('h3'),hint=document.createElement('p');
+            title.textContent=mode==='marketing'?'필요한 도구를 선택하세요':mode==='bookmark'?'자주 찾는 페이지':'확인할 업체를 선택하세요';
+            hint.textContent=mode==='marketing'?'자주 사용하는 마케팅 도구를 한곳에서 이용하세요.':mode==='bookmark'?'선택한 페이지는 새 탭에서 열립니다.':titles[mode]+' · 업체별 기록을 바로 확인하세요.';
+            const total=document.createElement('span');total.className='dashboard-route-count';total.textContent=count+(mode==='marketing'?'개 도구':mode==='bookmark'?'개 링크':'개 업체');
+            intro.append(title,hint);heading.append(intro,total);
+            if(!count){const empty=document.createElement('p');empty.className='dashboard-route-empty';empty.textContent=message?'목록에서 올바른 주소를 선택해 주세요.':'표시할 항목이 없습니다.';links.append(empty);}
+            table.append(heading,links);
             document.querySelectorAll('.menu-group').forEach(el=>el.classList.remove('active'));
             document.querySelectorAll('.submenu-container').forEach(el=>el.classList.remove('open'));
             document.getElementById('group-'+mode).classList.add('active');document.getElementById('submenu-'+mode).classList.add('open');
