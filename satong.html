@@ -622,6 +622,8 @@
 @media(max-width:1320px){#pa-list{grid-template-columns:1fr}#place-ads-view .pa-stat strong{font-size:21px}}
 @media(max-width:700px){#place-ads-view .pa-stats{grid-template-columns:repeat(2,minmax(0,1fr))}#place-ads-view .pa-toolbar input{max-width:none}#place-ads-view .pa-stat{padding:14px}#place-ads-view .pa-login{margin:20px auto;padding:24px}#place-ads-view .pa-amount{font-size:20px}#place-ads-view .pa-top .pa-actions{width:100%}}
 @media(max-width:700px){#place-ads-view .pa-performance-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}#place-ads-view .pa-company-panel{padding:16px}#place-ads-view .pa-performance-stat{padding:12px}#place-ads-view .pa-performance-stat strong{font-size:18px}}
+#place-ads-view .pa-feedback textarea{display:block;width:100%;box-sizing:border-box;min-height:110px;margin:10px 0;padding:12px;border:1px solid #cbd5e1;border-radius:9px;resize:vertical;font:inherit;line-height:1.7;color:#17283b;background:white}
+#place-ads-view .pa-feedback-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}#place-ads-view .pa-feedback-used{white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px;color:#52657a;margin:12px 0 0}#place-ads-view .pa-feedback label{font-size:14px}#place-ads-view .pa-feedback-meta{font-size:12px;color:#64748b}
 </style>
 <style>
 #place-schedule-view { display:none; padding-bottom:30px; }
@@ -1025,6 +1027,15 @@
             <button id="pa-analyze" type="button" class="pa-primary">지금 분석하기</button><button id="pa-approve-all" type="button" class="pa-primary" title="검색·필터와 관계없이 승인 가능한 전체 제안을 확인하고 승인합니다." hidden disabled>모두 승인 (0개)</button>
         </div></div>
         <div class="pa-notice">승인한 제안만 광고에 반영됩니다. 대기·거절 중에도 기존 광고는 계속 운영됩니다. 하루예산은 충전 잔액이 아닌 월예산을 기준으로 계산합니다.</div>
+        <section id="pa-feedback" class="pa-company-panel pa-feedback" hidden>
+            <h3 id="pa-feedback-title">AI에게 전달할 업체 의견</h3>
+            <p id="pa-feedback-help" class="pa-company-note">저장한 의견은 다음 분석에서 월예산·입찰 상한·관찰 조건 안에서 검토합니다. 실제 금액 변경은 제안을 확인한 뒤 승인합니다.</p>
+            <label for="pa-feedback-text">운영 의견 · 최대 1,000자</label>
+            <textarea id="pa-feedback-text" rows="4" maxlength="1000" aria-describedby="pa-feedback-help pa-feedback-meta" placeholder="예: 클릭 목표 미달과 예산 미소진이 지속되므로, 노출 확보를 위한 입찰 인상 실험을 우선 검토해 주세요."></textarea>
+            <div class="pa-feedback-actions"><button id="pa-feedback-save" type="button" class="pa-primary">의견 저장</button><button id="pa-feedback-reload" type="button">저장된 의견 불러오기</button><span id="pa-feedback-meta" class="pa-feedback-meta" role="status"></span></div>
+            <p class="pa-company-note">수정·삭제할 때까지 유지합니다. 입력란을 비우고 저장하면 삭제됩니다. 오늘 이미 적용한 업체는 다음 날 분석부터 확인할 수 있습니다.</p>
+            <p id="pa-feedback-used" class="pa-feedback-used"></p>
+        </section>
         <div id="pa-company" hidden></div>
         <div class="pa-stats" aria-label="광고 운영 요약">
             <div class="pa-stat"><span>관리 업체</span><strong id="pa-count">0개</strong></div>
@@ -2698,6 +2709,8 @@ async function checkNoticeBadgeOnStart() {
         const num = n => n == null ? '—' : Number(n).toLocaleString('ko-KR');
         let token = null, items = [], filter = 'all', busy = false, loading = false, loaded = false, generation = 0, batchReport = null, lastRefreshAt = 0;
         const selectedDays = new Map();
+        const feedbackDrafts = new Map();
+        let feedbackAvailable = false, feedbackError = '';
         try { token = JSON.parse(sessionStorage.getItem(storageKey) || 'null'); } catch(e) {}
         function saveSession() {
             try { if (token) sessionStorage.setItem(storageKey, JSON.stringify(token)); else sessionStorage.removeItem(storageKey); } catch(e) {}
@@ -2745,6 +2758,8 @@ async function checkNoticeBadgeOnStart() {
         function clearSession() {
             generation++; token = null; items = []; loaded = false; batchReport = null; saveSession();
             selectedDays.clear();
+            feedbackDrafts.clear(); feedbackAvailable = false; feedbackError = '';
+            $('feedback-text').value = ''; $('feedback-used').textContent = ''; $('feedback-meta').textContent = ''; $('feedback').hidden = true;
             $('key').value = ''; $('app').hidden = true; $('login').hidden = false;
             $('list').replaceChildren(); $('errors').textContent = ''; $('jobs').removeAttribute('href');
             $('company').replaceChildren(); $('company').hidden = true; $('latest-title').hidden = true; root.classList.remove('pa-company-mode');
@@ -2761,7 +2776,7 @@ async function checkNoticeBadgeOnStart() {
                     signal:controller.signal, body:JSON.stringify({kind:'place-ads-admin-v1',action,token,...extra})
                 });
             } catch(e) {
-                throw new Error(action === 'dashboard' || action === 'login'
+                throw new Error(action === 'saveFeedback' ? '의견 저장 결과를 확인하지 못했습니다. 저장된 의견을 불러와 확인하세요.' : action === 'dashboard' || action === 'login'
                     ? '연결 응답을 받지 못했습니다. 잠시 후 다시 시도해 주세요.'
                     : '요청 결과를 확인하지 못했습니다. 다시 승인하기 전에 새로고침으로 처리 상태를 확인하세요.');
             } finally { clearTimeout(timer); }
@@ -2948,7 +2963,48 @@ async function checkNoticeBadgeOnStart() {
             if(changes.length>3)panel.append(older);
             panel.append(text('p','새로 적용한 변경은 다음 분석의 성과 기록에 반영됩니다. 아래 최신 제안에서 현재 적용 상태를 확인할 수 있습니다.','pa-company-note')); return panel;
         }
+        function updateFeedbackButtons() {
+            const draft=feedbackDrafts.get(placeAdsKey),unavailable=!feedbackAvailable||!placeAdsKey||!token;
+            $('feedback-save').disabled=busy||loading||unavailable||!draft||!draft.dirty;
+            $('feedback-reload').disabled=busy||loading||unavailable;
+            $('feedback-text').disabled=busy||unavailable;
+        }
+        function renderFeedback(item) {
+            $('feedback').hidden=!placeAdsKey||!item;
+            if(!placeAdsKey||!item){updateFeedbackButtons();return;}
+            $('feedback-title').textContent=item.name+' · AI에게 전달할 의견';
+            const saved=item.feedback||{text:'',revision:0,updated_at:''};
+            let draft=feedbackDrafts.get(item.key);
+            if(!draft||!draft.dirty||saved.revision!==draft.revision&&saved.text===draft.text){
+                draft={text:saved.text,revision:saved.revision,dirty:false};feedbackDrafts.set(item.key,draft);
+            }
+            if($('feedback-text').value!==draft.text)$('feedback-text').value=draft.text;
+            const changed=saved.revision!==draft.revision;
+            $('feedback-meta').textContent=!feedbackAvailable?(feedbackError||'의견 기능을 사용하려면 Apps Script Code.gs를 최신 버전으로 배포해 주세요.'):changed?'저장된 의견이 변경되었습니다. 불러온 뒤 다시 수정하세요.':draft.dirty?'저장하지 않은 의견 · '+draft.text.length+'/1,000자':saved.updated_at?'저장 '+dateLabel(saved.updated_at)+' · '+draft.text.length+'/1,000자':'아직 저장된 의견이 없습니다.';
+            const used=item.decision.operator_feedback||'',ai=item.decision.codex||{};
+            const delivered=['completed','cached'].includes(ai.status);
+            const pending=draft.dirty||saved.text!==used||!delivered;
+            $('feedback-used').textContent=(used?'최근 제안의 의견: '+used:'최근 제안에 포함된 의견 없음')+(saved.text&&pending?'\n저장된 의견은 다음 새 분석에서 검토합니다.':'')+(used&&!delivered?'\n이번 제안은 AI 검토가 완료되지 않았습니다.':'');
+            updateFeedbackButtons();
+        }
+        async function saveCompanyFeedback() {
+            if(busy||loading||!token||!feedbackAvailable)return;
+            const key=placeAdsKey,draft=feedbackDrafts.get(key),version=generation;
+            if(!draft||!draft.dirty)return;
+            if(draft.text.length>1000){notify('업체 의견은 1,000자 이내로 입력하세요.');return;}
+            setBusy(true);updateFeedbackButtons();
+            try {
+                const result=await call('saveFeedback',{key,text:draft.text,expectedRevision:draft.revision});
+                if(version!==generation||!token)return;
+                if(!result.feedback||result.feedback.key!==key||typeof result.feedback.text!=='string'||!Number.isInteger(result.feedback.revision))throw new Error('의견 저장 결과를 확인하지 못했습니다. 저장된 의견을 불러와 확인하세요.');
+                const item=items.find(i=>i.key===key);if(item)item.feedback=result.feedback;
+                feedbackDrafts.set(key,{text:result.feedback.text,revision:result.feedback.revision,dirty:false});
+                notify(result.message);
+            }catch(e){notify(e.message);if(token)await refresh();}
+            finally{setBusy(false);renderFeedback(items.find(i=>i.key===placeAdsKey));}
+        }
         function renderCompany(item) {
+            renderFeedback(item);
             const container=$('company'); container.replaceChildren(); container.hidden=!placeAdsKey; $('latest-title').hidden=!placeAdsKey;
             root.classList.toggle('pa-company-mode',Boolean(placeAdsKey));
             if (!placeAdsKey || !item) return;
@@ -2994,6 +3050,7 @@ async function checkNoticeBadgeOnStart() {
                 if (version !== generation || !token) return;
                 if (!data || !Array.isArray(data.items)) throw new Error('분석 데이터 형식을 확인하세요.');
                 items = data.items; loaded = true;
+                feedbackAvailable=data.feedbackAvailable===true;feedbackError=data.feedbackError||'';
                 buildPlaceAdsCompanies(items.map(i => ({key:i.key,name:i.name})));
                 $('updated').textContent = data.lastAnalysis ? '최근 분석 ' + dateLabel(data.lastAnalysis) + ' · 한국 시간' : '첫 분석을 기다리고 있습니다.';
                 $('errors').textContent = (data.errors || []).filter(e => !items.some(i => i.key === e.key && Date.parse(i.created) > Date.parse(e.time))).map(e => e.name + ': ' + e.message).join('\n');
@@ -3003,7 +3060,7 @@ async function checkNoticeBadgeOnStart() {
             } catch(e) {
                 if (version === generation) { $('updated').textContent = loaded ? '갱신 실패 · 이전에 조회한 결과입니다.' : '결과를 불러오지 못했습니다.'; notify(e.message); }
                 else if (!token) notify(e.message);
-            } finally { loading = false; updateBulkButton(); }
+            } finally { loading = false; updateBulkButton(); updateFeedbackButtons(); }
         }
         function select(entering = false) {
             $('search').value = ''; filter = 'all'; filters().forEach(b => b.classList.toggle('active', b.dataset.paFilter === 'all'));
@@ -3029,7 +3086,7 @@ async function checkNoticeBadgeOnStart() {
                 dialog.oncancel = e => { e.preventDefault(); finish(false); }; dialog.showModal();
             });
         }
-        function setBusy(value) { busy = value; buttons().forEach(b => { b.disabled = value; }); updateBulkButton(); }
+        function setBusy(value) { busy = value; buttons().forEach(b => { b.disabled = value; }); updateBulkButton(); updateFeedbackButtons(); }
         async function bulkApprove() {
             if (busy || loading || placeAdsKey || !token) return;
             const eligible = eligibleApprovals(), targets = eligible.slice(0,100).map(i => ({id:i.id,name:i.name,decision:{current_bid:i.decision.current_bid,proposed_bid:i.decision.proposed_bid,current_daily_budget:i.decision.current_daily_budget,current_daily_budget_enabled:i.decision.current_daily_budget_enabled,daily_budget:i.decision.daily_budget}}));
@@ -3071,6 +3128,15 @@ async function checkNoticeBadgeOnStart() {
             finally { setBusy(false); }
         };
         $('search').oninput = render;
+        $('feedback-text').oninput=()=>{
+            const draft=feedbackDrafts.get(placeAdsKey);if(!draft)return;
+            draft.text=$('feedback-text').value;draft.dirty=true;renderFeedback(items.find(i=>i.key===placeAdsKey));
+        };
+        $('feedback-save').onclick=saveCompanyFeedback;
+        $('feedback-reload').onclick=async()=>{
+            if(busy||loading)return;
+            feedbackDrafts.delete(placeAdsKey);renderFeedback(items.find(i=>i.key===placeAdsKey));await refresh();
+        };
         $('approve-all').onclick = bulkApprove;
         filters().forEach(b => b.onclick = () => { filter = b.dataset.paFilter; filters().forEach(x => x.classList.toggle('active', x === b)); render(); });
         $('analyze').onclick = async () => {
