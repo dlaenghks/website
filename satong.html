@@ -624,6 +624,11 @@
 @media(max-width:700px){#place-ads-view .pa-performance-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}#place-ads-view .pa-company-panel{padding:16px}#place-ads-view .pa-performance-stat{padding:12px}#place-ads-view .pa-performance-stat strong{font-size:18px}}
 #place-ads-view .pa-feedback textarea{display:block;width:100%;box-sizing:border-box;min-height:110px;margin:10px 0;padding:12px;border:1px solid #cbd5e1;border-radius:9px;resize:vertical;font:inherit;line-height:1.7;color:#17283b;background:white}
 #place-ads-view .pa-feedback-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}#place-ads-view .pa-feedback-used{white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px;color:#52657a;margin:12px 0 0}#place-ads-view .pa-feedback label{font-size:14px}#place-ads-view .pa-feedback-meta{font-size:12px;color:#64748b}
+
+.sidebar a.menu-title,.sidebar a.submenu-item{color:inherit;text-decoration:none}
+.dashboard-route-links{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;padding:8px 0}
+.dashboard-route-links a{display:block;padding:16px;border:1px solid #dbe3ec;border-radius:9px;background:#fff;color:#247bb5;text-decoration:none;overflow-wrap:anywhere}
+.dashboard-route-links a:hover,.dashboard-route-links a:focus-visible{border-color:#3498db;background:#eef7ff}
 </style>
 <style>
 #place-schedule-view { display:none; padding-bottom:30px; }
@@ -785,34 +790,34 @@
     <nav class="sidebar">
         <div class="sidebar-header">통합 관리 대시보드</div>
         <div class="menu-group" id="group-review">
-            <div class="menu-title" onclick="toggleGroup('review')">플레이스 리뷰 <span class="icon">▼</span></div>
+            <a class="menu-title" href="#reviews" onclick="openDashboardMenu('review',event)">플레이스 리뷰 <span class="icon">▼</span></a>
             <div class="submenu-container" id="submenu-review"></div>
         </div>
         <div class="menu-group" id="group-rank">
-            <div class="menu-title" onclick="toggleGroup('rank')">플레이스 순위 <span class="icon">▼</span></div>
+            <a class="menu-title" href="#rankings" onclick="openDashboardMenu('rank',event)">플레이스 순위 <span class="icon">▼</span></a>
             <div class="submenu-container" id="submenu-rank"></div>
         </div>
         <div class="menu-group" id="group-place-ads">
-            <div class="menu-title" onclick="toggleGroup('place-ads')">플레이스 광고 <span class="icon">▼</span></div>
+            <a class="menu-title" href="#place-ads" onclick="openDashboardMenu('place-ads',event)">플레이스 광고 <span class="icon">▼</span></a>
             <div class="submenu-container" id="submenu-place-ads">
-                <div class="submenu-item" id="nav-place-ads-all" onclick="selectPlaceAds('')">전체 현황</div>
+                <a class="submenu-item" id="nav-place-ads-all" href="#place-ads" onclick="dashboardRouter.linkClick(event,()=>selectPlaceAds(''))">전체 현황</a>
                 <div id="place-ads-companies" style="font-size:12px;padding:8px 15px 8px 30px;color:#888">광고 화면 로그인 후 업체 목록이 표시됩니다.</div>
             </div>
         </div>
         <div class="menu-group" id="group-power">
-            <div class="menu-title" onclick="toggleGroup('power')">파워링크 현황 <span class="icon">▼</span></div>
+            <a class="menu-title" href="#powerlink" onclick="openDashboardMenu('power',event)">파워링크 현황 <span class="icon">▼</span></a>
             <div class="submenu-container" id="submenu-power"></div>
         </div>
         <div class="menu-group" id="group-integrated">
-            <div class="menu-title" onclick="toggleGroup('integrated')">통합검색 노출 <span class="icon">▼</span></div>
+            <a class="menu-title" href="#search" onclick="openDashboardMenu('integrated',event)">통합검색 노출 <span class="icon">▼</span></a>
             <div class="submenu-container" id="submenu-integrated"></div>
         </div>
         <div class="menu-group" id="group-marketing">
-            <div class="menu-title" onclick="toggleGroup('marketing')">마케팅 도구 <span class="icon">▼</span></div>
+            <a class="menu-title" href="#marketing" onclick="openDashboardMenu('marketing',event)">마케팅 도구 <span class="icon">▼</span></a>
             <div class="submenu-container" id="submenu-marketing"></div>
         </div>
         <div class="menu-group" id="group-bookmark">
-            <div class="menu-title" onclick="toggleGroup('bookmark')">즐겨찾기 <span class="icon">▼</span></div>
+            <a class="menu-title" href="#favorites" onclick="openDashboardMenu('bookmark',event)">즐겨찾기 <span class="icon">▼</span></a>
             <div class="submenu-container" id="submenu-bookmark"></div>
         </div>
     </nav>
@@ -1184,7 +1189,7 @@
         loadedModes.add(mode);
     }
 
-    history.replaceState(null, '', location.pathname + location.search);
+    // Preserve the incoming fragment; the dashboard router restores it after data loads.
 
 function getDaysDiff(dateString) {
     if (!dateString) return 999;
@@ -1330,15 +1335,15 @@ function showNewBadgeOnMenu() {
         const hasCachedReview = !isRefresh && Boolean(
             readSessionCache('review', String(userKey), DATA_CACHE_TTL, true)
         );
-        if (!hasCachedReview) showOverlay("데이터 로딩 중...");
+        if (!hasCachedReview && dashboardRouter.activeMode() === 'review') showOverlay("데이터 로딩 중...");
         try {
             await loadReviewData(userKey, { forceNetwork: isRefresh });
-            if (!placeAdsActive && !placeScheduleUI.isActive()) toggleGroup('review', true);
+            if (dashboardRouter.activeMode() === 'review') toggleGroup('review', true);
             buildSidebar('marketing', dataCache.marketing, orderCache.marketing);
             checkNoticeBadgeOnStart();
         } catch (e) {
             console.error('초기 데이터 로드 실패:', e);
-            if (!placeAdsActive && !placeScheduleUI.isActive()) document.getElementById('page-title').innerText = '데이터를 불러오지 못했습니다.';
+            if (dashboardRouter.activeMode() === 'review') document.getElementById('page-title').innerText = '데이터를 불러오지 못했습니다.';
         } finally {
             hideOverlay();
         }
@@ -1439,6 +1444,7 @@ function showNewBadgeOnMenu() {
     }
 
     function renderFirstReview() {
+        if (dashboardRouter.controls()) { dashboardRouter.dataLoaded('review'); return; }
         const keys = orderCache.review.length > 0 ? orderCache.review : Object.keys(dataCache.review || {});
         const firstSheet = keys.find(sheetName => dataCache.review[sheetName]);
         if (!firstSheet) return;
@@ -1526,6 +1532,7 @@ function showNewBadgeOnMenu() {
         } finally {
             loadingStatus[mode] = false;
             buildSidebar(mode, dataCache[mode], orderCache[mode]);
+            if (loadedModes.has(mode)) dashboardRouter.dataLoaded(mode);
         }
         });
     }
@@ -1574,12 +1581,13 @@ function buildSidebar(mode, data, order) {
             });
 
             Object.keys(grouped).forEach(baseName => {
-                const item = document.createElement('div');
+                const item = document.createElement('a');
                 item.className = 'submenu-item';
+                item.href = dashboardRouter.companyHref('review',baseName);
                 item.id = `nav-group-${baseName}`; 
                 item.innerText = baseName;
                 
-                item.onclick = () => selectIntegratedClinic(baseName, grouped[baseName]);
+                item.onclick = event => dashboardRouter.linkClick(event,()=>selectIntegratedClinic(baseName, grouped[baseName]));
                 
                 container.appendChild(item);
             });
@@ -1591,8 +1599,9 @@ function buildSidebar(mode, data, order) {
             if (mode !== 'power' && sheetName.includes("(파워링크)")) return;
             if (!data[sheetName]) return;
 
-            const item = document.createElement('div');
+            const item = document.createElement('a');
             item.className = 'submenu-item';
+            item.href = mode === 'marketing' ? '#marketing/' + ({'네이버 검색량 조회':'keywords','네이버 공지사항':'notices','네이버 플레이스 일정':'schedule'}[sheetName]) : dashboardRouter.companyHref(mode,sheetName);
             item.id = `nav-${mode}-${sheetName}`; 
             
             let displayName = sheetName.replace('(파워링크)', '');
@@ -1601,12 +1610,13 @@ function buildSidebar(mode, data, order) {
             }
             item.innerText = displayName;
             
-            item.onclick = () => selectClinic(mode, sheetName, false, false);
+            item.onclick = event => dashboardRouter.linkClick(event,()=>selectClinic(mode, sheetName, false, false));
             container.appendChild(item);
         });
     }
 
-    function selectIntegratedClinic(baseName, sheetNames, isInitialLoad = false) {
+    function selectIntegratedClinic(baseName, sheetNames, isInitialLoad = false, isHistorySkip = false) {
+        if (!isInitialLoad && !isHistorySkip) dashboardRouter.record('review',baseName);
         if (isInitialLoad && placeScheduleUI.isActive()) return;
         placeScheduleUI.hide();
         if (isInitialLoad && (placeAdsActive || placeScheduleUI.isActive())) return;
@@ -1751,7 +1761,7 @@ function buildSidebar(mode, data, order) {
         if (mode === 'bookmark') return;
         
         if (!isHistorySkip && !isInitial) {
-             history.pushState({ mode: mode, sheet: sheetName }, '', '#detail');
+             dashboardRouter.record(mode, sheetName);
         }
 
         if (loadingStatus[mode]) {
@@ -2674,13 +2684,15 @@ async function checkNoticeBadgeOnStart() {
             container.style.padding = '8px 15px 8px 30px';
         }
         placeAdsCompanies.forEach(company => {
-            const item = document.createElement('div');
+            const item = document.createElement('a');
+            item.href = dashboardRouter.companyHref('place-ads',company.name);
             item.className = 'submenu-item'; item.textContent = company.name; item.dataset.companyKey = company.key;
-            item.onclick = () => selectPlaceAds(company.key);
+            item.onclick = event => dashboardRouter.linkClick(event,()=>selectPlaceAds(company.key));
             container.appendChild(item);
         });
         if (placeAdsKey && !placeAdsCompanies.some(c => c.key === placeAdsKey)) placeAdsKey = '';
         if (placeAdsActive) updatePlaceAdsTitle();
+        dashboardRouter.adsReady();
     }
     function updatePlaceAdsTitle() {
         const company = placeAdsCompanies.find(c => c.key === placeAdsKey);
@@ -2694,7 +2706,7 @@ async function checkNoticeBadgeOnStart() {
         placeAdsActive = true;
         document.querySelector('.main-content').classList.add('place-ads-active');
         updatePlaceAdsTitle(); toggleGroup('place-ads', true); showMobileContent();
-        if (!isHistorySkip) history.pushState({mode:'place-ads',sheet:placeAdsKey||'__all__'}, '', '#detail');
+        if (!isHistorySkip) dashboardRouter.record('place-ads',placeAdsKey);
         placeAdsUI.select(entering);
     }
     function sendPlaceAds(type) {
@@ -3148,7 +3160,7 @@ async function checkNoticeBadgeOnStart() {
             const interval = items.some(i => ['approved','applying','recovering'].includes(i.status)) ? 20000 : 60000;
             if (placeAdsActive && token && !busy && !loading && !document.hidden && Date.now() - lastRefreshAt >= interval) refresh();
         }, 20000);
-        return {select,refresh};
+        return {select,refresh,routingLoaded:()=>loaded};
     })();
     // PLACE_ADS_HOST_END
 
@@ -3584,18 +3596,167 @@ const placeScheduleUI = (() => {
 
     // Marketing menu remains available even if review data is unavailable.
     buildSidebar('marketing', dataCache.marketing, orderCache.marketing);
-    initDashboard();
-
-    window.addEventListener('popstate', function(event) {
-        if (!event.state) {
-            document.body.classList.remove('show-content');
-        } else {
-            if (event.state.mode && event.state.sheet) {
-                selectClinic(event.state.mode, event.state.sheet, false, true);
-            }
-            document.body.classList.add('show-content');
+    // DASHBOARD_ROUTES_START: read-only navigation; never dispatch analysis or advertising writes.
+    const dashboardRouter = (() => {
+        const paths={review:'reviews',rank:'rankings','place-ads':'place-ads',power:'powerlink',integrated:'search',marketing:'marketing',bookmark:'favorites'};
+        const titles={review:'플레이스 리뷰',rank:'플레이스 순위','place-ads':'플레이스 광고',power:'파워링크 광고',integrated:'통합검색 노출',marketing:'마케팅 도구',bookmark:'즐겨찾기'};
+        const features={keywords:'네이버 검색량 조회',notices:'네이버 공지사항',schedule:'네이버 플레이스 일정'};
+        const companySeed=/*DASHBOARD_COMPANY_IDS*/[["2094b02b0d255d89"],["0852802380ed96ed"],["8ab9cfb5637b55bf","22f474328d160688"],["9cb231dfc138bade","5629694154d8a916"],["847f7296f1ee77bc"],["bfc167c71f22fab9"],["785a3d48b30341f2"],["b334992fc887ebd7","d2f076853e8068b3"],["747ee34015fa50b3"],["b43f0892575c9a78"],["012296f92ff91b47"],["004bdcd8434d5ebd"],["b8b38d6d6087ea16"],["e43560a713e659d1"]];
+        const seedIds=new Map(companySeed.flatMap((entry,index)=>(Array.isArray(entry)?entry:[entry]).map(digest=>[digest,'company_'+(index+1)])));
+        let current=null,epoch=0,rendering=0,boot=null,lastHref='',scheduled=false,started=false;
+        const missingAdCompany='해당 업체 주소를 찾을 수 없습니다. 왼쪽 업체 목록에서 다시 선택하세요.';
+        function companyName(mode,value){
+            let name=String(value||'').trim();
+            if(mode==='review')name=name.replace(/\s*\((?:다음|구글)\)\s*$/,'');
+            if(mode==='power')name=name.replace(/\s*\(파워링크\)\s*$/,'');
+            if(mode==='integrated')name=name.replace(/\s*노출\s*\(통합검색\)\s*$/,'');
+            return name.trim();
         }
-    });
+        function digestName(name){
+            let value=14695981039346656037n;
+            for(const char of name.normalize('NFC').replace(/\s+/g,''))value=((value^BigInt(char.codePointAt(0)))*1099511628211n)&18446744073709551615n;
+            return value.toString(16).padStart(16,'0');
+        }
+        function companyId(mode,name){
+            const digest=digestName(companyName(mode,name));
+            // Unregistered future companies still get portable stable numbers.
+            return seedIds.get(digest)||'company_'+(BigInt('0x'+digest)+1000000n).toString();
+        }
+        function href(route){return '#'+paths[route.mode]+(route.company?'/'+route.company:route.feature?'/'+route.feature:'');}
+        function companyHref(mode,name){return href({mode,company:companyId(mode,name)});}
+        function parse(){
+            let raw;
+            try{raw=decodeURIComponent(location.hash.slice(1));}catch(e){return {invalid:true};}
+            if(!raw)return {mode:'review'};
+            if(raw==='detail'){
+                const old=history.state;
+                return old&&Object.hasOwn(paths,old.mode)&&typeof old.sheet==='string'?{mode:old.mode,legacy:old.sheet}:{mode:'review'};
+            }
+            if(raw.length>100)return {invalid:true};
+            const parts=raw.split('/'),mode=Object.keys(paths).find(key=>paths[key]===parts[0]);
+            if(!mode||parts.length>2||parts.some(p=>!p))return {invalid:true};
+            if(parts.length===1)return {mode};
+            if(mode==='marketing')return Object.hasOwn(features,parts[1])?{mode,feature:parts[1]}:{invalid:true};
+            if(mode==='bookmark'||!/^company_[1-9]\d{0,20}$/.test(parts[1]))return {invalid:true};
+            return {mode,company:parts[1]};
+        }
+        function write(route,replace=false){
+            const address=location.pathname+location.search+href(route);
+            if(location.hash!==href(route)||replace)history[replace?'replaceState':'pushState']({dashboardRoute:route},'',address);
+            current=route;lastHref=location.href;
+        }
+        function record(mode,sheet){
+            if(!started||!Object.hasOwn(paths,mode))return;
+            let route={mode};
+            if(mode==='marketing')route.feature=Object.keys(features).find(key=>features[key]===sheet);
+            else if(mode==='place-ads'&&sheet){const item=placeAdsCompanies.find(c=>c.key===sheet);if(item)route.company=companyId(mode,item.name);}
+            else if(mode!=='bookmark'&&sheet)route.company=companyId(mode,sheet);
+            ++epoch;rendering=0;write(route);
+        }
+        function entries(mode){
+            if(mode==='marketing')return Object.entries(features).map(([feature,name])=>({name,feature}));
+            if(mode==='place-ads')return placeAdsCompanies.map(c=>({name:c.name,sheet:c.key,company:companyId(mode,c.name)}));
+            const data=dataCache[mode]||{},order=orderCache[mode]||[],keys=[...new Set([...order,...Object.keys(data)])].filter(key=>Array.isArray(data[key]));
+            if(mode==='review'){
+                const grouped=new Map();
+                for(const sheet of keys){const name=companyName(mode,sheet);if(!grouped.has(name))grouped.set(name,{name,sheets:[],company:companyId(mode,name)});grouped.get(name).sheets.push(sheet);}
+                return [...grouped.values()];
+            }
+            return keys.filter(key=>mode==='power'?key.includes('(파워링크)'):!key.includes('(파워링크)')).map(sheet=>({sheet,name:companyName(mode,sheet),company:companyId(mode,sheet)}));
+        }
+        function normalClick(event){return !event||event.button===0&&!event.ctrlKey&&!event.metaKey&&!event.shiftKey&&!event.altKey;}
+        function linkClick(event,callback){if(!normalClick(event))return;if(event)event.preventDefault();callback();}
+        function showMenu(mode,list,message=''){
+            hidePlaceAds();placeScheduleUI.hide();renderContent('marketing',[],'');
+            document.querySelectorAll('.submenu-item').forEach(el=>el.classList.remove('active'));
+            document.getElementById('page-title').textContent='['+titles[mode]+'] '+(mode==='marketing'?'도구 선택':mode==='bookmark'?'바로가기':'업체 선택');
+            const notice=document.getElementById('notice-box');notice.textContent=message||(mode==='bookmark'?'즐겨찾기를 누르면 새 탭에서 열립니다.':'아래 목록 또는 왼쪽 메뉴에서 선택하세요.');notice.style.display='block';
+            const table=document.getElementById('table-container');table.replaceChildren();
+            const links=document.createElement('div');links.className='dashboard-route-links';
+            if(mode==='bookmark'){
+                for(const item of dataCache.bookmark||[]){
+                    if(!item||item.name==='-'||typeof item.url!=='string')continue;
+                    const a=document.createElement('a');a.textContent=String(item.name||item.url);a.href=/^https?:\/\//i.test(item.url)?item.url:'https://'+item.url;a.target='_blank';a.rel='noopener noreferrer';links.append(a);
+                }
+            }else for(const item of list){
+                const route={mode,...(item.feature?{feature:item.feature}:{company:item.company})},a=document.createElement('a');
+                a.textContent=item.name;a.href=href(route);a.onclick=e=>linkClick(e,()=>navigate(route));links.append(a);
+            }
+            if(!links.children.length){const empty=document.createElement('p');empty.textContent=message?'목록에서 올바른 주소를 선택해 주세요.':'표시할 항목이 없습니다.';links.append(empty);}
+            table.append(links);
+            document.querySelectorAll('.menu-group').forEach(el=>el.classList.remove('active'));
+            document.querySelectorAll('.submenu-container').forEach(el=>el.classList.remove('open'));
+            document.getElementById('group-'+mode).classList.add('active');document.getElementById('submenu-'+mode).classList.add('open');
+            showMobileContent();
+        }
+        function showAds(route){
+            const list=entries('place-ads');
+            let selected=route.company?list.find(item=>item.company===route.company):null;
+            if(route.legacy&&route.legacy!=='__all__')selected=list.find(item=>item.sheet===route.legacy);
+            if(route.legacy&&(!route.legacy||route.legacy==='__all__'||selected))write({mode:'place-ads',...(selected?{company:selected.company}:{})},true);
+            selectPlaceAds(selected?selected.sheet:'',true);
+            if((route.company||route.legacy)&&!selected&&placeAdsUI.routingLoaded()){
+                const message=document.getElementById('pa-message');message.textContent=missingAdCompany;message.hidden=false;
+            }else{
+                const message=document.getElementById('pa-message');if(message.textContent===missingAdCompany){message.textContent='';message.hidden=true;}
+            }
+        }
+        async function render(route){
+            const ticket=++epoch;rendering=ticket;
+            try{
+                if(route.invalid){showMenu('review',[], '올바르지 않은 메뉴 주소입니다. 왼쪽 메뉴에서 다시 선택하세요.');return;}
+                if(route.mode==='place-ads'){showAds(route);return;}
+                if(route.mode==='marketing'&&route.feature){selectClinic('marketing',features[route.feature],false,true);return;}
+                if(route.mode==='review'&&!loadedModes.has('review')){if(boot)await boot;else await loadReviewData(new URLSearchParams(location.search).get('id'));if(!loadedModes.has('review'))throw new Error('Review unavailable');}
+                else if(!loadedModes.has(route.mode)&&CONFIG[route.mode]?.url){
+                    const user=new URLSearchParams(location.search).get('id');if(!user)throw new Error('Missing user');
+                    await fetchData(route.mode,CONFIG[route.mode].url,user);
+                }
+                if(ticket!==epoch)return;
+                const list=entries(route.mode);
+                let item=route.company?list.find(value=>value.company===route.company):null;
+                if(route.legacy){
+                    item=route.mode==='marketing'?list.find(value=>value.name===route.legacy):list.find(value=>value.sheet===route.legacy||value.name===companyName(route.mode,route.legacy));
+                    if(item){route={mode:route.mode,...(item.feature?{feature:item.feature}:{company:item.company})};write(route,true);}
+                }
+                if((route.company||route.legacy)&&!item){showMenu(route.mode,list,'해당 업체 주소를 찾을 수 없습니다. 목록에서 업체를 선택하세요.');return;}
+                if(!item){showMenu(route.mode,list);return;}
+                if(route.mode==='review')selectIntegratedClinic(item.name,item.sheets,false,true);
+                else selectClinic(route.mode,item.sheet||item.name,false,true);
+            }catch(e){if(ticket===epoch)showMenu(route.invalid?'review':route.mode,[], '데이터를 불러오지 못했습니다. 잠시 후 새로고침해 주세요.');}
+            finally{if(rendering===ticket)rendering=0;}
+        }
+        function navigate(route,replace=false){write(route,replace);return render(route);}
+        function fromLocation(){
+            if(lastHref===location.href)return;
+            current=parse();lastHref=location.href;
+            if(!current.invalid&&!current.legacy)write(current,true);
+            render(current);
+        }
+        function changed(){
+            if(scheduled)return;scheduled=true;
+            Promise.resolve().then(()=>{scheduled=false;fromLocation();});
+        }
+        function dataLoaded(mode){
+            if(started&&!rendering&&current&&!current.invalid&&current.mode===mode){const snapshot=epoch;Promise.resolve().then(()=>{if(snapshot===epoch)render(current);});}
+        }
+        function start(){
+            current=parse();started=true;
+            if(!current.invalid&&!current.legacy)write(current,true);else lastHref=location.href;
+            window.addEventListener('popstate',changed);window.addEventListener('hashchange',changed);
+            boot=initDashboard();render(current);
+        }
+        function open(mode,event){
+            if(!normalClick(event))return;if(event)event.preventDefault();
+            if(current?.mode===mode&&!current.company&&!current.feature&&!current.legacy&&document.getElementById('group-'+mode).classList.contains('active')){toggleGroup(mode);return;}
+            return navigate({mode});
+        }
+        return {start,record,open,companyHref,linkClick,dataLoaded,companyId,parse,activeMode:()=>current?.mode,controls:()=>started,adsReady:()=>{if(started&&current?.mode==='place-ads')showAds(current);}};
+    })();
+    function openDashboardMenu(mode,event){return dashboardRouter.open(mode,event);}
+    // DASHBOARD_ROUTES_END
+
+    dashboardRouter.start();
 
 </script> </body>
 </html>
