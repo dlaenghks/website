@@ -1617,7 +1617,7 @@ function buildSidebar(mode, data, order) {
 
             const item = document.createElement('a');
             item.className = 'submenu-item';
-            item.href = mode === 'marketing' ? '#marketing/' + ({'네이버 검색량 조회':'keywords','네이버 공지사항':'notices','네이버 플레이스 일정':'schedule'}[sheetName]) : dashboardRouter.companyHref(mode,sheetName);
+            item.href = mode === 'marketing' ? '#marketing/' + ({'네이버 플레이스 일정':'schedule','네이버 검색량 조회':'keywords','네이버 공지사항':'notices'}[sheetName]) : dashboardRouter.companyHref(mode,sheetName);
             item.id = `nav-${mode}-${sheetName}`; 
             
             let displayName = sheetName.replace('(파워링크)', '');
