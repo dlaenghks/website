@@ -699,6 +699,13 @@
 .ps-calendar-legend i { width:8px;height:8px;border-radius:2px; }
 .ps-legend-event { background:#c62828; }
 .ps-legend-note { background:#e5aa27; }
+.ps-legend-timeline { background:#9362ca; }
+.ps-timeline-toggle { display:inline-flex;align-items:center;gap:7px;margin-top:8px;font-size:12px;color:#7951a6;cursor:pointer;line-height:1.6; }
+#place-schedule-view .ps-timeline-toggle input,.ps-dialog .ps-timeline-toggle input { flex:0 0 auto;width:16px;height:16px;margin:0;padding:0;accent-color:#8851bc;cursor:pointer; }
+#ps-note-fields .ps-timeline-toggle { flex-direction:row;align-items:center; }
+.ps-timeline-note-label { margin-left:8px;font-size:11px;font-weight:700;background:#eadcfb;color:#70419b;border-radius:4px;padding:2px 5px; }
+.ps-note-text[role="button"] { cursor:pointer; }
+.ps-note-text[role="button"]:focus-visible { outline:2px solid #9362ca;outline-offset:3px; }
 #place-schedule-view .ps-note-button { background:#fff3c4;border-color:#e4b743;color:#79530c;font-weight:700; }
 .ps-month-nav strong { font-size:19px; min-width:128px; text-align:center; }
 #place-schedule-view button,.ps-dialog button { cursor:pointer; border:1px solid #cbd5e1; background:#fff; border-radius:6px; padding:8px 12px; color:#334155; font:inherit; font-size:13px; }
@@ -722,9 +729,10 @@
 #place-schedule-view .ps-day.ps-today { border-color:#2393d1; }
 #place-schedule-view .ps-day.ps-selected { outline:2px solid #2381c5;outline-offset:-2px; background:#f2f8ff; }
 .ps-day-number { display:flex;align-items:center;justify-content:space-between;font-weight:bold;font-size:13px; }
-.ps-day-markers { display:flex;align-items:center;gap:4px;min-width:0; }
+.ps-day-markers { display:flex;align-items:center;gap:4px;min-width:0;flex-wrap:wrap; }
 .ps-day-count { display:none; font-size:10px;line-height:16px;font-weight:700;min-width:16px;text-align:center;background:#c62828;color:#fff;border-radius:4px;padding:0 4px; }
 .ps-day-count.ps-day-note-count { background:#ffe69a;color:#79530c; }
+.ps-day-count.ps-day-timeline-count { background:#e4d0fb;color:#673a91; }
 .ps-compact .ps-day-count { display:inline-block; }
 .ps-compact .ps-day-event,.ps-compact .ps-more { display:none; }
 #place-schedule-view .ps-compact .ps-day { justify-content:center; }
@@ -732,7 +740,9 @@
 .ps-day-event { display:block; font-size:11px; line-height:1.4; padding:4px; margin-top:5px; background:#eff6ff; color:#345778; border-radius:4px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .ps-day-event.ps-closed { background:#fff2f3; color:#a53640; }
 .ps-day-event.ps-day-note { background:#fff3c4;color:#79530c; }
+.ps-day-event.ps-day-timeline { background:#eee1fc;color:#70419b; }
 .ps-note-row { border-left:3px solid #e4b743;background:#fffbeb;border-radius:0px;padding:12px;margin-top:8px; }
+.ps-note-row.ps-timeline-note-row { border-left-color:#9362ca;background:#f6f0ff; }
 .ps-note-info { flex:1 1 240px;min-width:0; margin-left: 10px;}
 .ps-note-info strong { display:block;font-size:13px;color:#79530c; }
 .ps-note-text { margin:5px 0 0;white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px;line-height:1.6; }
@@ -814,6 +824,9 @@
   .ps-event-info { flex-basis:100%; }
   .ps-compact .ps-has-both .ps-day-number { flex-direction:column;align-items:flex-start;gap:1px; }
   .ps-compact .ps-has-both .ps-day-markers { gap:2px; }
+  .ps-day-number { align-items:flex-start;gap:2px; }
+  .ps-day-markers { justify-content:flex-end;gap:2px; }
+  .ps-day-count { padding:1px 3px; }
   .ps-compact .ps-has-both .ps-day-count { font-size:9px;line-height:14px;min-width:12px;padding:0 2px; }
   .ps-job-head { gap:8px; }
   #place-schedule-view .ps-run-button { font-size:12px;padding:6px 9px; }
@@ -1017,7 +1030,7 @@
       <div class="ps-month-nav"><select id="ps-company-filter" aria-label="표시할 업체"><option value="">전체 업체</option></select><button id="ps-check" class="ps-primary" type="button" disabled>일정 확인</button></div>
     </div>
     <p id="ps-sync-info" class="ps-note" role="status" aria-live="polite" hidden></p>
-    <div class="ps-calendar-legend"><span><i class="ps-legend-event"></i>일정</span><span><i class="ps-legend-note"></i>메모</span></div>
+    <div class="ps-calendar-legend"><span><i class="ps-legend-event"></i>일정</span><span><i class="ps-legend-note"></i>메모</span><span><i class="ps-legend-timeline"></i>타임라인 메모</span></div>
     <div class="ps-week" aria-hidden="true"><span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span></div>
     <div id="ps-calendar" class="ps-grid" aria-label="월 달력"></div>
   </div>
@@ -1035,7 +1048,7 @@
     <p id="ps-updated" class="ps-note"></p><div id="ps-results" class="ps-results-wrap"></div>
   </div>
   <section id="ps-timeline" class="ps-card" aria-label="업체별 메모 타임라인" hidden>
-    <div class="ps-timeline-head"><div><p class="ps-timeline-eyebrow">MEMO TIMELINE</p><h3 id="ps-timeline-title">업체 메모</h3><p class="ps-note">전체 기간 · 최근 등록·수정순 · 메모를 더블 클릭해 수정</p></div><span id="ps-timeline-count" class="ps-timeline-count"></span></div>
+    <div class="ps-timeline-head"><div><p class="ps-timeline-eyebrow">MEMO TIMELINE</p><h3 id="ps-timeline-title">업체 메모</h3><p class="ps-note">타임라인 등록한 메모만 · 전체 기간 · 최근 등록·수정순 · 더블 클릭해 수정</p></div><span id="ps-timeline-count" class="ps-timeline-count"></span></div>
     <div id="ps-timeline-status" class="ps-note" role="status" aria-live="polite"></div>
     <div id="ps-timeline-error" class="ps-message ps-error" role="alert" hidden></div>
     <div id="ps-timeline-list" class="ps-timeline-list"></div>
@@ -1082,6 +1095,8 @@
       <fieldset id="ps-note-fields" class="ps-editor-fields">
         <label>업체 (선택)<select id="ps-note-company"><option value="">일반 메모 (업체 선택 안 함)</option></select></label>
         <label>메모<textarea id="ps-note-content" maxlength="2000" required placeholder="이 날짜에 기록할 내용을 입력하세요."></textarea></label>
+        <label class="ps-timeline-toggle"><input id="ps-note-timeline" type="checkbox">타임라인 등록</label>
+        <p id="ps-note-timeline-hint" class="ps-note">업체를 선택하면 해당 업체의 타임라인에 등록할 수 있습니다.</p>
       </fieldset>
       <div id="ps-note-error" class="ps-message ps-error" role="alert" hidden></div>
       <div class="ps-form-actions"><button id="ps-note-cancel" type="button">취소</button><button id="ps-note-save" class="ps-note-button" type="submit">메모 저장</button></div>
@@ -3339,6 +3354,7 @@ const placeScheduleUI = (() => {
   const monthOf=value=>value.slice(0,7);
   const localTime=value=>value?new Date(value).toLocaleString('ko-KR',{timeZone:'Asia/Seoul',month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}):'—';
   const node=(tag,text,cls)=>{const e=document.createElement(tag);if(text!=null)e.textContent=text;if(cls)e.className=cls;return e;};
+  const timelineNote=n=>Boolean(n&&n.company_id)&&(n.timeline===true||String(n.timeline||'').toLowerCase()==='true');
   let month=monthOf(kst()),selected=kst(),compact=false,active=false,busy=false,loading=false,epoch=0,edit=null,poll=null;
   let session=null,companies=[],events=[],notes=[],results=[],job={},latest={};
   let hasData=false,refreshRun=null,refreshWarning='';
@@ -3386,7 +3402,7 @@ const placeScheduleUI = (() => {
     if(historyEdit&&historyEdit.note.company_id===selectedCompany)return;
     $('timeline-list').replaceChildren();
     if(!c&&hasData){$('timeline-list').append(node('p','현재 업체 목록에 없는 주소입니다. 왼쪽 메뉴에서 업체를 선택하세요.','ps-timeline-empty'));return;}
-    if(state.loaded&&!state.rows.length)$('timeline-list').append(node('p','아직 이 업체에 등록된 메모가 없습니다.','ps-timeline-empty'));
+    if(state.loaded&&!state.rows.length)$('timeline-list').append(node('p','타임라인에 등록한 메모가 없습니다. 전체 현황에서 메모의 ‘타임라인 등록’을 체크하세요.','ps-timeline-empty'));
     state.rows.forEach(n=>{
       const item=node('article',null,'ps-timeline-item'),body=node('div',null,'ps-timeline-body'),meta=node('div',null,'ps-timeline-meta');body.dataset.noteId=n.note_id;
       const date=node('time',n.date);date.dateTime=n.date;meta.append(date,node('span',n.updated_at?'최근 수정 '+localTime(n.updated_at):'메모'));
@@ -3415,7 +3431,9 @@ const placeScheduleUI = (() => {
         catch(error){if(!current())return false;if(attempt===0&&error.retryable){await retryDelay(run.controller.signal);continue;}throw error;}
       }
       if(!current())return false;
+      if(data&&data.timeline_filter!==true)throw new Error('타임라인 선택 기능을 사용하려면 Code.gs와 Timeline.gs를 갱신하고 기존 웹앱을 새 버전으로 배포하세요.');
       if(!data||data.company_id!==run.company||!Array.isArray(data.notes)||!Number.isInteger(data.total)||data.total<0||!(data.next_cursor===null||typeof data.next_cursor==='string')||!data.notes.every(n=>n&&typeof n.note_id==='string'&&n.company_id===run.company&&validDate(n.date)&&typeof n.content==='string'))throw responseError('메모 목록 응답 형식이 올바르지 않습니다. 기존 내역을 유지합니다.');
+      if(!data.notes.every(timelineNote))throw responseError('타임라인에 등록하지 않은 메모가 포함되어 목록을 유지했습니다. 서버 버전을 확인하세요.');
       const rows=reset?[]:historyState.rows,ids=new Set(rows.map(n=>n.note_id));
       historyState.rows=[...rows,...data.notes.filter(n=>!ids.has(n.note_id)&&ids.add(n.note_id))];historyState.cursor=data.next_cursor;historyState.total=data.total;historyState.loaded=true;return true;
     }catch(error){if(current())historyState.error=/지원하지 않는/.test(error.message)?'전체 메모 조회용 Apps Script 수정과 기존 웹앱의 새 버전 배포가 필요합니다.':error.message;return false;}
@@ -3430,11 +3448,12 @@ const placeScheduleUI = (() => {
     input.value=note.content;input.maxLength=2000;input.setAttribute('aria-label','메모 내용 수정');
     const status=node('p','바깥 클릭 시 저장 · Esc 취소','ps-history-edit-status');status.setAttribute('role','status');
     const save=node('button','다시 저장'),cancel=node('button','취소');save.type=cancel.type='button';save.hidden=true;
-    footer.append(status,save,cancel);area.append(input,footer);
-    const edit={note:{...note},card,area,input,status,save,cancel,promise:null,needsCheck:false,navigationQueued:false};historyEdit=edit;
+    const timelineLabel=node('label',null,'ps-timeline-toggle'),timeline=node('input');timeline.type='checkbox';timeline.checked=timelineNote(note);timeline.setAttribute('aria-label','타임라인 등록');timelineLabel.append(timeline,document.createTextNode('타임라인 등록'));
+    footer.append(status,save,cancel);area.append(input,timelineLabel,footer);
+    const edit={note:{...note},card,area,input,timeline,status,save,cancel,promise:null,needsCheck:false,navigationQueued:false};historyEdit=edit;
     card.classList.add('ps-editing');card.querySelector('.ps-timeline-content').hidden=true;card.querySelector('.ps-timeline-expand').hidden=true;card.append(area);
-    input.onblur=()=>setTimeout(()=>{if(historyEdit===edit&&!edit.area.contains(document.activeElement))finishHistoryEdit();},0);
-    input.onkeydown=event=>{if(event.key==='Escape'){event.preventDefault();cancelHistoryEdit();}else if(event.key==='Enter'&&(event.ctrlKey||event.metaKey)){event.preventDefault();finishHistoryEdit();}};
+    area.addEventListener('focusout',()=>setTimeout(()=>{if(historyEdit===edit&&!edit.area.contains(document.activeElement))finishHistoryEdit();},0));
+    area.onkeydown=event=>{if(event.key==='Escape'){event.preventDefault();cancelHistoryEdit();}else if(event.key==='Enter'&&(event.ctrlKey||event.metaKey)){event.preventDefault();finishHistoryEdit();}};
     save.onclick=()=>finishHistoryEdit();cancel.onclick=()=>cancelHistoryEdit();input.focus();input.setSelectionRange(input.value.length,input.value.length);
   }
   function cancelHistoryEdit(){
@@ -3446,16 +3465,19 @@ const placeScheduleUI = (() => {
     patchCalendarCache('notes',saved.note_id,saved);
     if(historyState.company===saved.company_id){
       const compare=(a,b)=>a===b?0:a<b?-1:1;
-      historyState.rows=historyState.rows.map(n=>n.note_id===saved.note_id?saved:n).sort((a,b)=>compare(b.updated_at||b.date,a.updated_at||a.date)||compare(b.note_id,a.note_id));
+      const removed=historyState.rows.some(n=>n.note_id===saved.note_id)&&!timelineNote(saved);
+      historyState.rows=historyState.rows.map(n=>n.note_id===saved.note_id?saved:n).filter(timelineNote).sort((a,b)=>compare(b.updated_at||b.date,a.updated_at||a.date)||compare(b.note_id,a.note_id));
+      if(removed)historyState.total=Math.max(0,historyState.total-1);
     }
   }
   function finishHistoryEdit(){
     const edit=historyEdit;if(!edit)return Promise.resolve(true);if(edit.promise)return edit.promise;
     const content=edit.input.value.trim();
     if(!content){edit.status.textContent='메모 내용을 입력하세요. Esc 또는 취소로 수정을 취소할 수 있습니다.';edit.status.classList.add('ps-error');edit.input.focus();return Promise.resolve(false);}
-    if(content===edit.note.content&&!edit.needsCheck){historyEdit=null;renderHistory();return Promise.resolve(true);}
-    const note={note_id:edit.note.note_id,revision:edit.note.revision,date:edit.note.date,company_id:edit.note.company_id,content};
-    beginWrite();edit.input.disabled=true;edit.cancel.disabled=true;edit.save.disabled=true;edit.status.classList.remove('ps-error');edit.status.textContent='저장 중…';
+    const timeline=edit.timeline.checked;
+    if(content===edit.note.content&&timeline===timelineNote(edit.note)&&!edit.needsCheck){historyEdit=null;renderHistory();return Promise.resolve(true);}
+    const note={note_id:edit.note.note_id,revision:edit.note.revision,date:edit.note.date,company_id:edit.note.company_id,content,timeline};
+    beginWrite();edit.input.disabled=true;edit.timeline.disabled=true;edit.cancel.disabled=true;edit.save.disabled=true;edit.status.classList.remove('ps-error');edit.status.textContent='저장 중…';
     edit.promise=(async()=>{
       try{
         let saved=null;
@@ -3463,17 +3485,17 @@ const placeScheduleUI = (() => {
           // A lost receipt may already have committed. Read before retrying the same revision.
           const data=await call('dashboard',{month:monthOf(note.date)}),current=data?.notes?.find(n=>n.note_id===note.note_id);
           if(!current)throw new Error('메모의 현재 상태를 확인하지 못했습니다. 입력 내용을 복사한 뒤 새로고침해 주세요.');
-          if(Number(current.revision)>Number(note.revision)&&current.content===content)saved=current;
+          if(Number(current.revision)>Number(note.revision)&&current.content===content&&timelineNote(current)===timeline)saved=current;
           else if(Number(current.revision)!==Number(note.revision))throw new Error('다른 곳에서 메모가 변경되었습니다. 입력 내용은 유지했습니다. 복사하거나 취소 후 최신 메모를 확인하세요.');
         }
         if(!saved){const data=await call('saveNote',{note});saved=data&&data.note;}
-        if(!saved||saved.note_id!==note.note_id||saved.company_id!==note.company_id||saved.date!==note.date||saved.content!==content||Number(saved.revision)<=Number(note.revision))throw new Error('메모 저장 결과를 확인하지 못했습니다. 다시 저장을 누르면 저장 여부부터 확인합니다.');
+        if(!saved||saved.note_id!==note.note_id||saved.company_id!==note.company_id||saved.date!==note.date||saved.content!==content||timelineNote(saved)!==timeline||Number(saved.revision)<=Number(note.revision))throw new Error('메모 저장 결과를 확인하지 못했습니다. Code.gs 최신 배포를 확인하세요. 다시 저장을 누르면 저장 여부부터 확인합니다.');
         if(historyEdit!==edit)return false;
         applyHistoryNote(saved);historyEdit=null;renderHistory();message('메모를 저장했습니다.');return true;
       }catch(error){
         if(historyEdit===edit){edit.needsCheck=true;edit.status.textContent=error.message;edit.status.classList.add('ps-error');edit.save.hidden=false;}
         return false;
-      }finally{busy=false;edit.promise=null;edit.input.disabled=false;edit.cancel.disabled=false;edit.save.disabled=false;enabled();if(historyEdit===edit)edit.input.focus();}
+      }finally{busy=false;edit.promise=null;edit.input.disabled=false;edit.timeline.disabled=false;edit.cancel.disabled=false;edit.save.disabled=false;enabled();if(historyEdit===edit)edit.input.focus();}
     })();return edit.promise;
   }
   document.addEventListener('click',event=>{
@@ -3586,6 +3608,7 @@ const placeScheduleUI = (() => {
     root.querySelectorAll('[data-ps-edit]').forEach(b=>b.disabled=!ready);
     root.querySelectorAll('[data-ps-delete]').forEach(b=>b.disabled=!ready);
     root.querySelectorAll('[data-ps-note-edit],[data-ps-note-delete]').forEach(b=>b.disabled=!ready);
+    root.querySelectorAll('[data-ps-timeline]').forEach(input=>input.disabled=!ready||!input.dataset.psTimelineCompany);
   }
   function render(){
     const today=kst();$('month').textContent=month.replace('-','년 ')+'월';
@@ -3610,11 +3633,13 @@ const placeScheduleUI = (() => {
       const number=node('span',String(Number(date.slice(8))),'ps-day-number'),markers=node('span',null,'ps-day-markers');
       if(date===today)markers.append(node('span','오늘','ps-today-tag'));
       if(items.length){const count=node('span',String(items.length),'ps-day-count');count.title=`일정 ${items.length}개`;count.setAttribute('aria-hidden','true');markers.append(count);}
-      if(dayNotes.length){const count=node('span',String(dayNotes.length),'ps-day-count ps-day-note-count');count.title=`메모 ${dayNotes.length}개`;count.setAttribute('aria-hidden','true');markers.append(count);}
+      const timelineCount=dayNotes.filter(timelineNote).length,normalCount=dayNotes.length-timelineCount;
+      if(normalCount){const count=node('span',String(normalCount),'ps-day-count ps-day-note-count');count.title=`메모 ${normalCount}개`;count.setAttribute('aria-hidden','true');markers.append(count);}
+      if(timelineCount){const count=node('span',String(timelineCount),'ps-day-count ps-day-timeline-count');count.title=`타임라인 메모 ${timelineCount}개`;count.setAttribute('aria-hidden','true');markers.append(count);}
       number.append(markers);button.append(number);
-      const visibleEvents=items.slice(0,dayNotes.length?1:2),visibleNotes=dayNotes.slice(0,items.length?1:2);
+      const visibleEvents=items.slice(0,dayNotes.length?1:2),visibleNotes=[...dayNotes].sort((a,b)=>Number(timelineNote(b))-Number(timelineNote(a))).slice(0,items.length?1:2);
       visibleEvents.forEach(e=>{const row=node('span',(company(e.company_id)||{}).name+' · '+expected(e),'ps-day-event'+(e.type==='closed'?' ps-closed':''));row.title=row.textContent+' · '+labels[status(e)];button.append(row);});
-      visibleNotes.forEach(n=>{const row=node('span','메모 · '+(n.company_id?(company(n.company_id)||{}).name||n.company_id:'일반')+' · '+n.content,'ps-day-event ps-day-note');row.title=row.textContent;button.append(row);});
+      visibleNotes.forEach(n=>{const flagged=timelineNote(n),row=node('span',(flagged?'타임라인 · ':'메모 · ')+(n.company_id?(company(n.company_id)||{}).name||n.company_id:'일반')+' · '+n.content,'ps-day-event ps-day-note'+(flagged?' ps-day-timeline':''));row.title=row.textContent;button.append(row);});
       const more=items.length+dayNotes.length-visibleEvents.length-visibleNotes.length;
       if(more>0)button.append(node('span','+'+more+'개','ps-more'));
       button.onclick=()=>{compact=!(compact&&selected===date);selected=date;const moved=monthOf(date)!==month;if(moved){month=monthOf(date);restoreCalendarCache();}render();$('calendar').querySelector(`[data-date="${date}"]`).focus({preventScroll:true});if(moved)refresh();};
@@ -3634,8 +3659,13 @@ const placeScheduleUI = (() => {
       const remove=node('button','삭제','ps-danger');remove.type='button';remove.dataset.psDelete=e.event_id;remove.onclick=()=>deleteEvent(e);row.append(editButton,remove);$('day-events').append(row);
     });
     dayNotes.forEach(n=>{
-      const row=node('div',null,'ps-event-row ps-note-row'),info=node('div',null,'ps-note-info');
-      info.append(node('strong',n.company_id?((company(n.company_id)||{}).name||n.company_id)+' ㅣ 메모':'일반 메모'),node('p',n.content,'ps-note-text'));
+      const row=node('div',null,'ps-event-row ps-note-row'+(timelineNote(n)?' ps-timeline-note-row':'')),info=node('div',null,'ps-note-info');row.dataset.psNoteId=n.note_id;
+      const title=node('strong',n.company_id?((company(n.company_id)||{}).name||n.company_id)+' ㅣ 메모':'일반 메모');
+      if(timelineNote(n))title.append(node('span','타임라인','ps-timeline-note-label'));
+      const content=node('p',n.content,'ps-note-text');content.tabIndex=0;content.setAttribute('role','button');content.title='클릭하여 메모 수정';content.onclick=()=>openNote(n);content.onkeydown=event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();openNote(n);}};
+      const label=node('label',null,'ps-timeline-toggle'),input=node('input');input.type='checkbox';input.checked=timelineNote(n);input.dataset.psTimeline=n.note_id;input.dataset.psTimelineCompany=n.company_id;input.setAttribute('aria-label','타임라인 등록');
+      if(!n.company_id)label.title='메모를 수정하여 업체를 선택하면 타임라인에 등록할 수 있습니다.';
+      input.onchange=()=>saveTimelineFlag(n,input.checked);label.append(input,document.createTextNode('타임라인 등록'));info.append(title,content,label);
       const editButton=node('button','수정');editButton.type='button';editButton.dataset.psNoteEdit=n.note_id;editButton.onclick=()=>openNote(n);
       const remove=node('button','삭제','ps-danger');remove.type='button';remove.dataset.psNoteDelete=n.note_id;remove.onclick=()=>deleteNote(n);
       row.append(info,editButton,remove);$('day-events').append(row);
@@ -3838,19 +3868,32 @@ const placeScheduleUI = (() => {
     $('note-company').replaceChildren(general,...companies.map(c=>{const option=node('option',c.name);option.value=c.company_id;return option;}));
     if(note&&note.company_id&&!companies.some(c=>c.company_id===note.company_id)){const old=node('option',note.company_id+' (현재 목록에 없는 업체)');old.value=note.company_id;$('note-company').append(old);}
     $('note-company').value=note?note.company_id:($('company-filter').value||'');$('note-content').value=note?note.content:'';
+    $('note-timeline').checked=timelineNote(note);noteTimelineFields();
     $('note-fields').disabled=false;$('note-error').hidden=true;$('note-save').disabled=false;$('note-cancel').disabled=false;$('note-save').textContent='메모 저장';$('note-editor').showModal();
   }
   function noteError(error){return /지원하지 않는/.test(error.message)?'메모 기능을 사용하려면 수정된 Apps Script 코드를 반영하고 기존 웹앱을 새 버전으로 배포하세요.':error.message;}
+  function noteTimelineFields(){const general=!$('note-company').value;$('note-timeline').disabled=general;if(general)$('note-timeline').checked=false;$('note-timeline-hint').hidden=!general;}
+  $('note-company').onchange=noteTimelineFields;
+  async function saveTimelineFlag(original,timeline){
+    if(!session||busy||!hasData||!original.company_id)return;
+    beginWrite();let saved=false;
+    try{
+      const note={note_id:original.note_id,revision:original.revision,date:original.date,company_id:original.company_id,content:original.content,timeline};
+      const data=await call('saveNote',{note});
+      if(!data?.note||data.note.note_id!==note.note_id||data.note.content!==note.content||data.note.company_id!==note.company_id||data.note.date!==note.date||timelineNote(data.note)!==timeline)throw new Error('타임라인 설정의 저장 결과를 확인하지 못했습니다. Code.gs 최신 배포와 새로고침으로 저장 여부를 확인하세요.');
+      applyHistoryNote(data.note);render();message(timeline?'타임라인에 등록했습니다.':'타임라인에서 제외했습니다. 메모는 달력에 남아 있습니다.');saved=true;
+    }catch(error){render();message(noteError(error),true);}finally{busy=false;enabled();}
+    if(saved)refresh();
+  }
   $('note-form').onsubmit=async e=>{
     e.preventDefault();if(busy)return;
     const content=$('note-content').value.trim();if(!content){$('note-error').textContent='메모 내용을 입력하세요.';$('note-error').hidden=false;return;}
-    const note={note_id:noteEdit&&noteEdit.note_id||'',revision:noteEdit&&noteEdit.revision||0,date:noteDate,company_id:$('note-company').value,content};
+    const note={note_id:noteEdit&&noteEdit.note_id||'',revision:noteEdit&&noteEdit.revision||0,date:noteDate,company_id:$('note-company').value,content,timeline:$('note-timeline').checked&&Boolean($('note-company').value)};
     beginWrite();let saved=false;$('note-fields').disabled=true;$('note-save').disabled=true;$('note-cancel').disabled=true;$('note-save').textContent='저장 중…';$('note-error').hidden=true;
     try{
       const data=await call('saveNote',{note});
-      if(!data||!data.note||!data.note.note_id||data.note.date!==note.date||data.note.company_id!==note.company_id)throw new Error('메모 저장 결과를 확인하지 못했습니다. 새로고침으로 확인하세요.');
-      if(notes.some(row=>row.note_id===data.note.note_id))notes=notes.map(row=>row.note_id===data.note.note_id?data.note:row);else notes.push(data.note);
-      patchCalendarCache('notes',data.note.note_id,data.note);
+      if(!data||!data.note||!data.note.note_id||data.note.date!==note.date||data.note.company_id!==note.company_id||timelineNote(data.note)!==note.timeline)throw new Error('메모·타임라인 설정의 저장 결과를 확인하지 못했습니다. Code.gs 최신 배포와 새로고침으로 확인하세요.');
+      applyHistoryNote(data.note);
       selected=note.date;month=monthOf(selected);compact=true;render();$('note-editor').close();message('메모를 저장했습니다.');saved=true;
     }catch(error){$('note-error').textContent=noteError(error);$('note-error').hidden=false;}
     finally{busy=false;$('note-fields').disabled=false;$('note-save').disabled=false;$('note-cancel').disabled=false;$('note-save').textContent='메모 저장';enabled();schedulePoll();}
@@ -3892,9 +3935,9 @@ const placeScheduleUI = (() => {
     const noteKey='placeSchedulePreviewNotes';let noteRows;try{noteRows=JSON.parse(localStorage.getItem(noteKey)||'[]');}catch(e){noteRows=[];}
     if(action==='dashboard')return Promise.resolve({companies:[{company_id:'yonsei-child',name:'연세우리아동발달클리닉',place_id:'2056728323'},{company_id:'bareunmom',name:'바른몸한방병원',place_id:'38221131'}],events:rows,notes:noteRows.filter(n=>monthOf(n.date)===extra.month),results:[],active_job:{},latest_job:{}});
     if(action==='noteHistory'){
-      const all=noteRows.filter(n=>n.company_id===extra.company_id).sort((a,b)=>(b.updated_at||b.date).localeCompare(a.updated_at||a.date)||b.note_id.localeCompare(a.note_id));
+      const all=noteRows.filter(n=>n.company_id===extra.company_id&&timelineNote(n)).sort((a,b)=>(b.updated_at||b.date).localeCompare(a.updated_at||a.date)||b.note_id.localeCompare(a.note_id));
       const offset=extra.cursor?Math.max(0,all.findIndex(n=>n.note_id===extra.cursor)+1):0,page=all.slice(offset,offset+20);
-      return Promise.resolve({company_id:extra.company_id,notes:page,total:all.length,next_cursor:offset+page.length<all.length?page.at(-1).note_id:null});
+      return Promise.resolve({company_id:extra.company_id,notes:page,total:all.length,timeline_filter:true,next_cursor:offset+page.length<all.length?page.at(-1).note_id:null});
     }
     if(action==='saveNote'){
       const input=extra.note,old=noteRows.find(n=>n.note_id===input.note_id),next={...input,note_id:old?old.note_id:crypto.randomUUID(),revision:old?Number(old.revision)+1:1};
