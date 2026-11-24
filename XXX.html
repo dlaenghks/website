@@ -1048,7 +1048,7 @@
     <p id="ps-updated" class="ps-note"></p><div id="ps-results" class="ps-results-wrap"></div>
   </div>
   <section id="ps-timeline" class="ps-card" aria-label="업체별 메모 타임라인" hidden>
-    <div class="ps-timeline-head"><div><p class="ps-timeline-eyebrow">MEMO TIMELINE</p><h3 id="ps-timeline-title">업체 메모</h3><p class="ps-note">타임라인 등록한 메모만 · 전체 기간 · 최근 등록·수정순 · 더블 클릭해 수정</p></div><span id="ps-timeline-count" class="ps-timeline-count"></span></div>
+    <div class="ps-timeline-head"><div><p class="ps-timeline-eyebrow">MEMO TIMELINE</p><h3 id="ps-timeline-title">업체 메모</h3><p class="ps-note">타임라인 등록한 메모만 · 전체 기간 · 메모 날짜 최신순 · 더블 클릭해 수정</p></div><span id="ps-timeline-count" class="ps-timeline-count"></span></div>
     <div id="ps-timeline-status" class="ps-note" role="status" aria-live="polite"></div>
     <div id="ps-timeline-error" class="ps-message ps-error" role="alert" hidden></div>
     <div id="ps-timeline-list" class="ps-timeline-list"></div>
@@ -3432,6 +3432,7 @@ const placeScheduleUI = (() => {
       }
       if(!current())return false;
       if(data&&data.timeline_filter!==true)throw new Error('타임라인 선택 기능을 사용하려면 Code.gs와 Timeline.gs를 갱신하고 기존 웹앱을 새 버전으로 배포하세요.');
+      if(data&&data.timeline_order!=='date_desc')throw new Error('메모 날짜순 정렬을 적용하려면 최신 Timeline.gs로 교체하고 기존 웹앱을 새 버전으로 배포하세요.');
       if(!data||data.company_id!==run.company||!Array.isArray(data.notes)||!Number.isInteger(data.total)||data.total<0||!(data.next_cursor===null||typeof data.next_cursor==='string')||!data.notes.every(n=>n&&typeof n.note_id==='string'&&n.company_id===run.company&&validDate(n.date)&&typeof n.content==='string'))throw responseError('메모 목록 응답 형식이 올바르지 않습니다. 기존 내역을 유지합니다.');
       if(!data.notes.every(timelineNote))throw responseError('타임라인에 등록하지 않은 메모가 포함되어 목록을 유지했습니다. 서버 버전을 확인하세요.');
       const rows=reset?[]:historyState.rows,ids=new Set(rows.map(n=>n.note_id));
@@ -3466,7 +3467,7 @@ const placeScheduleUI = (() => {
     if(historyState.company===saved.company_id){
       const compare=(a,b)=>a===b?0:a<b?-1:1;
       const removed=historyState.rows.some(n=>n.note_id===saved.note_id)&&!timelineNote(saved);
-      historyState.rows=historyState.rows.map(n=>n.note_id===saved.note_id?saved:n).filter(timelineNote).sort((a,b)=>compare(b.updated_at||b.date,a.updated_at||a.date)||compare(b.note_id,a.note_id));
+      historyState.rows=historyState.rows.map(n=>n.note_id===saved.note_id?saved:n).filter(timelineNote).sort((a,b)=>compare(b.date,a.date)||compare(b.updated_at||b.date,a.updated_at||a.date)||compare(b.note_id,a.note_id));
       if(removed)historyState.total=Math.max(0,historyState.total-1);
     }
   }
@@ -3935,9 +3936,9 @@ const placeScheduleUI = (() => {
     const noteKey='placeSchedulePreviewNotes';let noteRows;try{noteRows=JSON.parse(localStorage.getItem(noteKey)||'[]');}catch(e){noteRows=[];}
     if(action==='dashboard')return Promise.resolve({companies:[{company_id:'yonsei-child',name:'연세우리아동발달클리닉',place_id:'2056728323'},{company_id:'bareunmom',name:'바른몸한방병원',place_id:'38221131'}],events:rows,notes:noteRows.filter(n=>monthOf(n.date)===extra.month),results:[],active_job:{},latest_job:{}});
     if(action==='noteHistory'){
-      const all=noteRows.filter(n=>n.company_id===extra.company_id&&timelineNote(n)).sort((a,b)=>(b.updated_at||b.date).localeCompare(a.updated_at||a.date)||b.note_id.localeCompare(a.note_id));
+      const all=noteRows.filter(n=>n.company_id===extra.company_id&&timelineNote(n)).sort((a,b)=>b.date.localeCompare(a.date)||(b.updated_at||b.date).localeCompare(a.updated_at||a.date)||b.note_id.localeCompare(a.note_id));
       const offset=extra.cursor?Math.max(0,all.findIndex(n=>n.note_id===extra.cursor)+1):0,page=all.slice(offset,offset+20);
-      return Promise.resolve({company_id:extra.company_id,notes:page,total:all.length,timeline_filter:true,next_cursor:offset+page.length<all.length?page.at(-1).note_id:null});
+      return Promise.resolve({company_id:extra.company_id,notes:page,total:all.length,timeline_filter:true,timeline_order:'date_desc',next_cursor:offset+page.length<all.length?page.at(-1).note_id:null});
     }
     if(action==='saveNote'){
       const input=extra.note,old=noteRows.find(n=>n.note_id===input.note_id),next={...input,note_id:old?old.note_id:crypto.randomUUID(),revision:old?Number(old.revision)+1:1};
