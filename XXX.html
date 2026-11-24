@@ -668,18 +668,28 @@
 .ps-timeline-head .ps-note { margin-bottom:0; }
 .ps-timeline-count { flex-shrink:0;color:#79530c;background:#fff5d5;border:1px solid #f2df9b;border-radius:20px;padding:7px 12px;font-size:12px; }
 .ps-timeline-list { padding:8px 2px; }
-.ps-timeline-item { position:relative;margin-left:7px;border-left:2px solid #f1dfac;padding:0 0 22px 24px; }
-.ps-timeline-item::before { content:'';position:absolute;left:-6px;top:18px;width:10px;height:10px;border-radius:50%;background:#d5a534;box-shadow:0 0 0 4px #fff; }
-.ps-timeline-item:last-child { padding-bottom:0;border-left-color:transparent; }
+.ps-timeline-item { --ps-marker-y:24px;position:relative;margin-left:7px;padding:0 0 22px 26px; }
+.ps-timeline-item::before { content:'';position:absolute;left:0;top:var(--ps-marker-y);bottom:calc(-1 * var(--ps-marker-y));width:2px;background:#f1dfac; }
+.ps-timeline-item::after { content:'';position:absolute;left:1px;top:var(--ps-marker-y);width:10px;height:10px;transform:translate(-50%,-50%);border-radius:50%;background:#d5a534;box-shadow:0 0 0 4px #fff; }
+.ps-timeline-item:last-child { padding-bottom:0; }
+.ps-timeline-item:last-child::before { display:none; }
 .ps-timeline-body { background:#fffdf7;border:1px solid #efe6ca;border-radius:10px;padding:16px;min-width:0; }
 .ps-timeline-meta { display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px;font-size:12px;color:#8a7652; }
 .ps-timeline-meta time { color:#665231;font-weight:700;font-size:14px; }
 .ps-timeline-content { margin:0;white-space:pre-wrap;overflow-wrap:anywhere;font-size:14px;line-height:1.8;color:#354052; }
+.ps-timeline-content[tabindex] { cursor:text; }
+.ps-timeline-content:focus-visible { outline:2px solid #d5a534;outline-offset:4px;border-radius:3px; }
+.ps-timeline-body.ps-editing { border-color:#d5a534;box-shadow:0 0 0 2px #fff0be; }
+.ps-history-editor { display:grid;gap:8px; }
+#place-schedule-view .ps-history-input { box-sizing:border-box;width:100%;min-height:140px;resize:vertical;border:1px solid #d5a534;border-radius:6px;background:#fff;padding:10px 12px;font:inherit;font-size:14px;line-height:1.8;color:#354052; }
+.ps-history-editor-footer { display:flex;gap:8px;align-items:center;flex-wrap:wrap; }
+.ps-history-edit-status { flex:1;min-width:150px;margin:0;font-size:12px;color:#8a7652;line-height:1.6;white-space:pre-wrap; }
+.ps-history-edit-status.ps-error { color:#ad2838; }
 .ps-timeline-content.ps-truncated { display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:4;line-clamp:4;overflow:hidden; }
 #place-schedule-view .ps-timeline-expand { margin-top:10px;padding:4px 0;border:0;background:transparent;color:#8c650f;font-size:12px;font-weight:700; }
 .ps-timeline-footer { display:flex;justify-content:center;gap:8px;padding-top:12px; }
 .ps-timeline-empty { text-align:center;padding:44px 12px;color:#64748b;font-size:14px; }
-@media(max-width:768px) { .ps-timeline-body { padding:12px; }.ps-timeline-item { padding-left:17px; }.ps-timeline-head h3 { font-size:18px; } }
+@media(max-width:768px) { .ps-timeline-body { padding:12px; }.ps-timeline-item { --ps-marker-y:22px;padding-left:19px; }.ps-timeline-head h3 { font-size:18px; } }
 .ps-card { background:#fff; border:1px solid #e1e7ed; border-radius:12px; padding:16px; margin-bottom:14px; }
 .ps-toolbar,.ps-month-nav,.ps-login-fields,.ps-detail-head,.ps-event-row,.ps-form-actions { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
 .ps-toolbar { justify-content:space-between; margin-bottom:12px; }
@@ -1025,7 +1035,7 @@
     <p id="ps-updated" class="ps-note"></p><div id="ps-results" class="ps-results-wrap"></div>
   </div>
   <section id="ps-timeline" class="ps-card" aria-label="업체별 메모 타임라인" hidden>
-    <div class="ps-timeline-head"><div><p class="ps-timeline-eyebrow">MEMO TIMELINE</p><h3 id="ps-timeline-title">업체 메모</h3><p class="ps-note">전체 기간 · 최근 등록·수정순</p></div><span id="ps-timeline-count" class="ps-timeline-count"></span></div>
+    <div class="ps-timeline-head"><div><p class="ps-timeline-eyebrow">MEMO TIMELINE</p><h3 id="ps-timeline-title">업체 메모</h3><p class="ps-note">전체 기간 · 최근 등록·수정순 · 메모를 더블 클릭해 수정</p></div><span id="ps-timeline-count" class="ps-timeline-count"></span></div>
     <div id="ps-timeline-status" class="ps-note" role="status" aria-live="polite"></div>
     <div id="ps-timeline-error" class="ps-message ps-error" role="alert" hidden></div>
     <div id="ps-timeline-list" class="ps-timeline-list"></div>
@@ -3335,11 +3345,13 @@ const placeScheduleUI = (() => {
   let dataMonth='',cachedView=false,syncedAt=0;
   let selectedCompany='',sidebarSignature='',historyRun=null;
   let historyState={company:'',rows:[],cursor:null,total:0,loaded:false,loading:false,error:''};
+  let historyEdit=null;
   const expandedNotes=new Set();
   function stopHistory(){if(historyRun)historyRun.controller.abort();historyRun=null;historyState.loading=false;}
   function historyButtonSizes(){
     $('timeline-list').querySelectorAll('.ps-timeline-body').forEach(card=>{
-      const content=card.querySelector('.ps-timeline-content'),button=card.querySelector('button');
+      if(card.classList.contains('ps-editing'))return;
+      const content=card.querySelector('.ps-timeline-content'),button=card.querySelector('.ps-timeline-expand');
       button.hidden=!expandedNotes.has(card.dataset.noteId)&&content.scrollHeight<=content.clientHeight+1;
     });
   }
@@ -3371,6 +3383,7 @@ const placeScheduleUI = (() => {
     $('timeline-error').hidden=!state.error;$('timeline-error').textContent=state.error;
     $('timeline-retry').hidden=!state.error;$('timeline-retry').disabled=state.loading;
     $('timeline-more').hidden=!state.cursor;$('timeline-more').disabled=state.loading;
+    if(historyEdit&&historyEdit.note.company_id===selectedCompany)return;
     $('timeline-list').replaceChildren();
     if(!c&&hasData){$('timeline-list').append(node('p','현재 업체 목록에 없는 주소입니다. 왼쪽 메뉴에서 업체를 선택하세요.','ps-timeline-empty'));return;}
     if(state.loaded&&!state.rows.length)$('timeline-list').append(node('p','아직 이 업체에 등록된 메모가 없습니다.','ps-timeline-empty'));
@@ -3378,6 +3391,9 @@ const placeScheduleUI = (() => {
       const item=node('article',null,'ps-timeline-item'),body=node('div',null,'ps-timeline-body'),meta=node('div',null,'ps-timeline-meta');body.dataset.noteId=n.note_id;
       const date=node('time',n.date);date.dateTime=n.date;meta.append(date,node('span',n.updated_at?'최근 수정 '+localTime(n.updated_at):'메모'));
       const content=node('p',n.content,'ps-timeline-content'),expanded=expandedNotes.has(n.note_id);content.classList.toggle('ps-truncated',!expanded);content.id='ps-history-note-'+n.note_id;
+      content.tabIndex=0;content.title='더블 클릭 또는 Enter로 메모 수정';content.setAttribute('aria-label','메모 수정: '+n.content.slice(0,60));
+      content.onkeydown=event=>{if(event.key==='Enter'){event.preventDefault();openHistoryEdit(n,body);}};
+      body.ondblclick=event=>{if(!event.target.closest('button,textarea,input,.ps-history-editor'))openHistoryEdit(n,body);};
       const button=node('button',expanded?'접기':'전체 보기','ps-timeline-expand');button.type='button';button.setAttribute('aria-expanded',String(expanded));button.setAttribute('aria-controls',content.id);
       button.onclick=()=>{if(expandedNotes.has(n.note_id))expandedNotes.delete(n.note_id);else expandedNotes.add(n.note_id);const open=expandedNotes.has(n.note_id);content.classList.toggle('ps-truncated',!open);button.textContent=open?'접기':'전체 보기';button.setAttribute('aria-expanded',String(open));};
       body.append(meta,content,button);item.append(body);$('timeline-list').append(item);
@@ -3385,6 +3401,7 @@ const placeScheduleUI = (() => {
     requestAnimationFrame(historyButtonSizes);
   }
   async function loadHistory(reset=true){
+    if(historyEdit)return false;
     if(!active||!session||!selectedCompany||!company(selectedCompany))return false;
     if(historyRun){if(!reset)return false;stopHistory();}
     if(historyState.company!==selectedCompany){historyState={company:selectedCompany,rows:[],cursor:null,total:0,loaded:false,loading:false,error:''};expandedNotes.clear();}
@@ -3406,6 +3423,65 @@ const placeScheduleUI = (() => {
   }
   $('timeline-more').onclick=()=>loadHistory(false);
   $('timeline-retry').onclick=()=>loadHistory(true);
+  function openHistoryEdit(note,card){
+    if(historyEdit||busy||historyState.loading||!session||!active)return;
+    if(!Number.isInteger(Number(note.revision))||Number(note.revision)<1){message('메모 버전 정보를 읽지 못했습니다. 홈페이지 새로고침 후 다시 시도하세요.',true);return;}
+    const area=node('div',null,'ps-history-editor'),input=node('textarea',null,'ps-history-input'),footer=node('div',null,'ps-history-editor-footer');
+    input.value=note.content;input.maxLength=2000;input.setAttribute('aria-label','메모 내용 수정');
+    const status=node('p','바깥 클릭 시 저장 · Esc 취소','ps-history-edit-status');status.setAttribute('role','status');
+    const save=node('button','다시 저장'),cancel=node('button','취소');save.type=cancel.type='button';save.hidden=true;
+    footer.append(status,save,cancel);area.append(input,footer);
+    const edit={note:{...note},card,area,input,status,save,cancel,promise:null,needsCheck:false,navigationQueued:false};historyEdit=edit;
+    card.classList.add('ps-editing');card.querySelector('.ps-timeline-content').hidden=true;card.querySelector('.ps-timeline-expand').hidden=true;card.append(area);
+    input.onblur=()=>setTimeout(()=>{if(historyEdit===edit&&!edit.area.contains(document.activeElement))finishHistoryEdit();},0);
+    input.onkeydown=event=>{if(event.key==='Escape'){event.preventDefault();cancelHistoryEdit();}else if(event.key==='Enter'&&(event.ctrlKey||event.metaKey)){event.preventDefault();finishHistoryEdit();}};
+    save.onclick=()=>finishHistoryEdit();cancel.onclick=()=>cancelHistoryEdit();input.focus();input.setSelectionRange(input.value.length,input.value.length);
+  }
+  function cancelHistoryEdit(){
+    if(!historyEdit||historyEdit.promise)return;
+    const recheck=historyEdit.needsCheck;historyEdit=null;renderHistory();if(recheck)loadHistory(true);
+  }
+  function applyHistoryNote(saved){
+    notes=notes.filter(n=>n.note_id!==saved.note_id);if(monthOf(saved.date)===dataMonth)notes.push(saved);
+    patchCalendarCache('notes',saved.note_id,saved);
+    if(historyState.company===saved.company_id){
+      const compare=(a,b)=>a===b?0:a<b?-1:1;
+      historyState.rows=historyState.rows.map(n=>n.note_id===saved.note_id?saved:n).sort((a,b)=>compare(b.updated_at||b.date,a.updated_at||a.date)||compare(b.note_id,a.note_id));
+    }
+  }
+  function finishHistoryEdit(){
+    const edit=historyEdit;if(!edit)return Promise.resolve(true);if(edit.promise)return edit.promise;
+    const content=edit.input.value.trim();
+    if(!content){edit.status.textContent='메모 내용을 입력하세요. Esc 또는 취소로 수정을 취소할 수 있습니다.';edit.status.classList.add('ps-error');edit.input.focus();return Promise.resolve(false);}
+    if(content===edit.note.content&&!edit.needsCheck){historyEdit=null;renderHistory();return Promise.resolve(true);}
+    const note={note_id:edit.note.note_id,revision:edit.note.revision,date:edit.note.date,company_id:edit.note.company_id,content};
+    beginWrite();edit.input.disabled=true;edit.cancel.disabled=true;edit.save.disabled=true;edit.status.classList.remove('ps-error');edit.status.textContent='저장 중…';
+    edit.promise=(async()=>{
+      try{
+        let saved=null;
+        if(edit.needsCheck){
+          // A lost receipt may already have committed. Read before retrying the same revision.
+          const data=await call('dashboard',{month:monthOf(note.date)}),current=data?.notes?.find(n=>n.note_id===note.note_id);
+          if(!current)throw new Error('메모의 현재 상태를 확인하지 못했습니다. 입력 내용을 복사한 뒤 새로고침해 주세요.');
+          if(Number(current.revision)>Number(note.revision)&&current.content===content)saved=current;
+          else if(Number(current.revision)!==Number(note.revision))throw new Error('다른 곳에서 메모가 변경되었습니다. 입력 내용은 유지했습니다. 복사하거나 취소 후 최신 메모를 확인하세요.');
+        }
+        if(!saved){const data=await call('saveNote',{note});saved=data&&data.note;}
+        if(!saved||saved.note_id!==note.note_id||saved.company_id!==note.company_id||saved.date!==note.date||saved.content!==content||Number(saved.revision)<=Number(note.revision))throw new Error('메모 저장 결과를 확인하지 못했습니다. 다시 저장을 누르면 저장 여부부터 확인합니다.');
+        if(historyEdit!==edit)return false;
+        applyHistoryNote(saved);historyEdit=null;renderHistory();message('메모를 저장했습니다.');return true;
+      }catch(error){
+        if(historyEdit===edit){edit.needsCheck=true;edit.status.textContent=error.message;edit.status.classList.add('ps-error');edit.save.hidden=false;}
+        return false;
+      }finally{busy=false;edit.promise=null;edit.input.disabled=false;edit.cancel.disabled=false;edit.save.disabled=false;enabled();if(historyEdit===edit)edit.input.focus();}
+    })();return edit.promise;
+  }
+  document.addEventListener('click',event=>{
+    const edit=historyEdit;if(!edit||edit.card.contains(event.target))return;
+    event.preventDefault();event.stopImmediatePropagation();if(edit.navigationQueued)return;edit.navigationQueued=true;
+    const target=event.target,options={bubbles:true,cancelable:true,view:window,button:event.button,ctrlKey:event.ctrlKey,metaKey:event.metaKey,shiftKey:event.shiftKey,altKey:event.altKey};
+    finishHistoryEdit().then(saved=>{edit.navigationQueued=false;if(saved&&target.isConnected)target.dispatchEvent(new MouseEvent('click',options));});
+  },true);
   const calendarCacheTTL=12*60*60*1000,calendarCacheLimit=6;
   let noteEdit=null,noteDate=selected;
   let dateMode='single',pickerMonth=month,pickedDates=new Set();
@@ -3465,7 +3541,7 @@ const placeScheduleUI = (() => {
   function message(text,error=false){$('message').textContent=text;$('message').hidden=!text;$('message').classList.toggle('ps-error',error);}
   function stopRefresh(){const run=refreshRun;refreshRun=null;loading=false;if(run)run.controller.abort();}
   function beginWrite(){stopRefresh();clearTimeout(poll);busy=true;enabled();}
-  function clear(){epoch++;stopRefresh();stopHistory();historyState={company:'',rows:[],cursor:null,total:0,loaded:false,loading:false,error:''};expandedNotes.clear();try{if(!PLACE_SCHEDULE_CONFIG.demo&&session)localStorage.removeItem(calendarCacheKey());}catch(e){}hasData=false;dataMonth='';cachedView=false;syncedAt=0;refreshWarning='';session=null;companies=[];events=[];notes=[];results=[];job={};latest={};saveSession();$('key').value='';if($('editor').open)$('editor').close();if($('note-editor').open)$('note-editor').close();render();}
+  function clear(){epoch++;stopRefresh();stopHistory();historyEdit=null;historyState={company:'',rows:[],cursor:null,total:0,loaded:false,loading:false,error:''};expandedNotes.clear();try{if(!PLACE_SCHEDULE_CONFIG.demo&&session)localStorage.removeItem(calendarCacheKey());}catch(e){}hasData=false;dataMonth='';cachedView=false;syncedAt=0;refreshWarning='';session=null;companies=[];events=[];notes=[];results=[];job={};latest={};saveSession();$('key').value='';if($('editor').open)$('editor').close();if($('note-editor').open)$('note-editor').close();render();}
   function responseError(text){const error=new Error(text);error.retryable=true;return error;}
   async function call(action,extra={},signal){
     if(PLACE_SCHEDULE_CONFIG.demo)return demoCall(action,extra);
@@ -3600,6 +3676,7 @@ const placeScheduleUI = (() => {
   function currentRefresh(run){return refreshRun===run&&run.version===epoch&&run.month===month&&Boolean(session)&&!run.controller.signal.aborted;}
   function retryDelay(signal){return new Promise(resolve=>{const done=()=>{clearTimeout(timer);signal.removeEventListener('abort',done);resolve();};const timer=setTimeout(done,800);signal.addEventListener('abort',done,{once:true});if(signal.aborted)done();});}
   async function refresh(options={}){
+    if(historyEdit)return false;
     const ok=await refreshCalendar(options);
     if(active&&session&&selectedCompany)await loadHistory(true);
     return ok;
@@ -3832,7 +3909,7 @@ const placeScheduleUI = (() => {
   function show(companyId=''){selectedCompany=companyId;active=true;compact=false;root.style.display='block';document.querySelector('.main-content').classList.add('place-schedule-active');
     if(historyState.company!==selectedCompany){stopHistory();historyState={company:selectedCompany,rows:[],cursor:null,total:0,loaded:false,loading:false,error:''};expandedNotes.clear();}restoreCalendarCache();render();if(PLACE_SCHEDULE_CONFIG.demo){message('화면 체험 모드 · 일정은 이 브라우저에만 저장됩니다. 실제 네이버 검증은 운영 설정 후 사용할 수 있습니다.');if(!session){session={token:'preview-only',account_id:'체험',expires:Date.now()+86400000};render();}}else if(!PLACE_SCHEDULE_CONFIG.webappUrl)message('일정 서버 연결이 필요합니다. 설정 가이드에 따라 Apps Script 웹앱 주소를 입력하세요.');if(selectedCompany&&hasData)loadHistory(true);else refresh();}
   function hide(){active=false;stopHistory();document.querySelector('.main-content').classList.remove('place-schedule-active');root.style.display='none';clearTimeout(poll);if($('editor').open)$('editor').close();if($('note-editor').open)$('note-editor').close();}
-  render();return {show,hide,refresh,isActive:()=>active};
+  render();return {show,hide,refresh,isActive:()=>active,isEditing:()=>Boolean(historyEdit),finishEdit:finishHistoryEdit,selectedCompany:()=>selectedCompany};
 })();
 
 // COLUMN_UI_START
@@ -4305,6 +4382,10 @@ const columnUI = (() => {
         async function render(route){
             const ticket=++epoch;rendering=ticket;
             try{
+                if(placeScheduleUI.isEditing()){
+                    if(!await placeScheduleUI.finishEdit()){if(ticket===epoch)write({mode:'place-schedule',company:placeScheduleUI.selectedCompany()},true);return;}
+                    if(ticket!==epoch)return;
+                }
                 if(route.invalid){showMenu('review',[], '올바르지 않은 메뉴 주소입니다. 왼쪽 메뉴에서 다시 선택하세요.');return;}
                 if(route.mode==='place-ads'){showAds(route);return;}
                 if(route.mode==='place-schedule'){selectPlaceSchedule(route.company||'',true);return;}
