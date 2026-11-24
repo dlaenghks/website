@@ -3332,7 +3332,7 @@ function selectPlaceSchedule(companyId='',isHistorySkip=false) {
 }
 const placeScheduleUI = (() => {
   const root=document.getElementById('place-schedule-view'),$=name=>document.getElementById('ps-'+name);
-  const labels={match:'일치',mismatch:'불일치',error:'확인 실패',unverified:'미확인',stale:'재확인 필요',waiting:'확인 가능일 대기',past:'지난 일정'};
+  const labels={match:'일치',mismatch:'불일치',error:'확인 실패',unverified:'미확인',stale:'재확인 필요',waiting:'확인 가능일 대기',past:'지난 일정',unlinked:'플레이스 등록 전'};
   const jobLabels={queued:'확인 대기',running:'확인 중',completed:'확인 완료',partial_failed:'일부 확인 실패',failed:'확인 실패',dispatch_failed:'실행 요청 실패'};
   const kst=()=>new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
   const addDays=(value,n)=>{const d=new Date(value+'T00:00:00Z');d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10);};
@@ -3562,8 +3562,10 @@ const placeScheduleUI = (() => {
     return data.data;
   }
   function company(id){return companies.find(c=>c.company_id===id);}
+  function linkedCompany(id){return /^\d{1,20}$/.test(String(company(id)?.place_id||''));}
   function resultFor(event){return results.filter(r=>r.event_id===event.event_id).sort((a,b)=>Date.parse(b.checked_at)-Date.parse(a.checked_at))[0];}
   function status(event){
+    if(!linkedCompany(event.company_id))return 'unlinked';
     const today=kst();
     if(event.date>addDays(today,6))return 'waiting';
     const r=resultFor(event);
@@ -3587,7 +3589,7 @@ const placeScheduleUI = (() => {
   }
   function render(){
     const today=kst();$('month').textContent=month.replace('-','년 ')+'월';
-    $('range').textContent=`확인 범위: ${today} ~ ${addDays(today,6)} · 오늘 포함 7일의 등록 일정 전체를 확인합니다.`;
+    $('range').textContent=`확인 범위: ${today} ~ ${addDays(today,6)} · 오늘 포함 7일의 등록 일정을 확인합니다. 플레이스 번호가 없는 업체는 검증에서 제외합니다.`;
     $('login').hidden=Boolean(session);
     ['calendar-card','details','weekly-card'].forEach(id=>$(id).hidden=!session||Boolean(selectedCompany));
     $('timeline').hidden=!session||!selectedCompany;
@@ -3874,7 +3876,10 @@ const placeScheduleUI = (() => {
   function move(delta){const d=new Date(month+'-01T00:00:00Z');d.setUTCMonth(d.getUTCMonth()+delta);const next=d.toISOString().slice(0,7);if(next<'2000-01'||next>'2100-12')return;month=next;selected=month+'-01';compact=false;restoreCalendarCache();render();refresh();}
   $('prev').onclick=()=>move(-1);$('next').onclick=()=>move(1);$('current').onclick=()=>{month=monthOf(kst());selected=kst();compact=false;restoreCalendarCache();render();refresh();};
   $('check').onclick=async()=>{
-    if(busy||!hasData)return;beginWrite();let requested=false;
+    if(busy||!hasData)return;
+    const today=kst(),weekly=events.filter(e=>e.date>=today&&e.date<=addDays(today,6));
+    if(weekly.length&&!weekly.some(e=>linkedCompany(e.company_id))){message('플레이스 번호가 등록된 확인 대상이 없습니다. 일정·메모는 저장할 수 있으며, 업체목록에 place_id를 입력한 뒤 검증할 수 있습니다.');return;}
+    beginWrite();let requested=false;
     try{const data=await call('requestCheck');if(data.job){job=data.job;latest=data.job;cacheJob(data.job);}message(data.message||'확인을 요청했습니다.',data.job&&data.job.status==='dispatch_failed');render();requested=true;}
     catch(e){message(e.message,true);}finally{busy=false;enabled();schedulePoll();}
     if(requested)refresh({success:'확인을 요청했습니다.'});
